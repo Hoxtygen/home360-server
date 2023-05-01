@@ -16,7 +16,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "users")
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"email", "phoneNumber"})})
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"email"}, name = "email"),
+        @UniqueConstraint(columnNames = {"phoneNumber"}, name = "phoneNumber")
+})
 public class AppUser implements UserDetails {
     @Id
     @SequenceGenerator(name = "users_id_sequence", sequenceName = "users_id_sequence", allocationSize = 1)

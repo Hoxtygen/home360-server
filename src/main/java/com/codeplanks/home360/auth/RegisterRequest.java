@@ -26,15 +26,14 @@ public class RegisterRequest {
     @Size(min = 3, max = 50, message = "Last name should be between 3-50 characters")
     private String lastName;
 
-    @NotNull(message = "Email is required")
+    @NotBlank(message = "Email is required")
     @Column(name = "email", unique = true, nullable = false)
     @Email(message = "Enter a valid email address")
     @ValidEmail(message = "Enter a valid email address")
     private String email;
 
-    @NotNull(message = "Password is required")
     @Column(name = "password", nullable = false)
-    @Password
+    @Password(message = "Password is required")
     private String password;
 
     @Size(min = 11, max = 11, message = "Phone number must be 11 characters long.")

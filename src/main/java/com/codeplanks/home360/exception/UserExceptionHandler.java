@@ -8,11 +8,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class UserExceptionHandler {
 
-    @ExceptionHandler(value = {UserExistsException.class})
-    public ResponseEntity<Object> handleUserExistsException(UserExistsException exception) {
+    @ExceptionHandler(value = {UserAlreadyExistsException.class})
+    public ResponseEntity<Object> handleUserExistsException(UserAlreadyExistsException exception) {
         AuthenticationException authenticationException = new AuthenticationException(
                 exception.getMessage(),
-                exception.getCause(),
                 HttpStatus.CONFLICT
         );
         return new ResponseEntity<>(authenticationException, HttpStatus.CONFLICT);
@@ -23,7 +22,6 @@ public class UserExceptionHandler {
     public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException exception) {
         AuthenticationException authenticationException = new AuthenticationException(
                 exception.getMessage(),
-                exception.getCause(),
                 HttpStatus.NOT_FOUND
         );
         return new ResponseEntity<>(authenticationException, HttpStatus.NOT_FOUND);
