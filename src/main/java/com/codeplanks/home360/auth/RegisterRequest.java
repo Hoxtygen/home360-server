@@ -1,6 +1,7 @@
 package com.codeplanks.home360.auth;
 
 
+import com.codeplanks.home360.user.Role;
 import com.codeplanks.home360.validation.Password;
 import com.codeplanks.home360.validation.ValidEmail;
 import jakarta.persistence.Column;
@@ -17,17 +18,14 @@ import lombok.NoArgsConstructor;
 public class RegisterRequest {
 
     @NotNull(message = "First name is required")
-    @Column(name = "firstName", nullable = false)
     @Size(min = 3, max = 50, message = "First name should be between 3-50 characters")
     private String firstName;
 
     @NotNull(message = "Last name is required")
-    @Column(name = "lastName", nullable = false)
     @Size(min = 3, max = 50, message = "Last name should be between 3-50 characters")
     private String lastName;
 
     @NotBlank(message = "Email is required")
-    @Column(name = "email", unique = true, nullable = false)
     @Email(message = "Enter a valid email address")
     @ValidEmail(message = "Enter a valid email address")
     private String email;
@@ -40,7 +38,6 @@ public class RegisterRequest {
     @NotNull(message = "Phone number is required")
     @Pattern(regexp = "^([0]{1})([7-9]{1})([0|1]{1})([\\d]{1})([\\d]{7,8})$", message =
             "Enter a valid Nigerian number E.g 08022345678")
-    @Column(name = "phoneNumber", unique = true, nullable = false)
     private String phoneNumber;
 
     @NotNull(message = "Address is required")

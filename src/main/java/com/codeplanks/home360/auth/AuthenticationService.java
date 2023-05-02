@@ -11,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class AuthenticationService implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(@RequestBody RegisterRequest request) throws UserAlreadyExistsException {
+    public AuthenticationResponse register(RegisterRequest request) throws UserAlreadyExistsException {
         boolean newUserEmail = emailExists(request.getEmail());
         boolean newUserPhoneNumber = phoneNumberExists(request.getPhoneNumber());
         if (newUserEmail) {
@@ -45,6 +46,8 @@ public class AuthenticationService implements IUserService {
                               .phoneNumber(request.getPhoneNumber())
                               .password(passwordEncoder.encode(request.getPassword()))
                               .role(Role.USER)
+                              .createdAt(new Date())
+                              .updatedAt(new Date())
                               .build();
 
         AppUser newUser = userRepository.save(user);
