@@ -5,6 +5,6 @@ import com.codeplanks.home360.auth.AuthenticationResponse;
 import com.codeplanks.home360.auth.RegisterRequest;
 
 public interface IUserService {
-    AuthenticationResponse register(RegisterRequest request);
-    AuthenticationResponse login(AuthenticationRequest request);
+  AuthenticationResponse register(RegisterRequest request);
+  AuthenticationResponse login(AuthenticationRequest request);
 }

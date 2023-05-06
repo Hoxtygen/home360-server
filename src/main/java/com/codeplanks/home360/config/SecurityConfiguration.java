@@ -15,12 +15,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    private  final JwtAuthenticationFilter jwtAuthFilter;
-    private  final AuthenticationProvider authenticationProvider;
+  private  final JwtAuthenticationFilter jwtAuthFilter;
+  private  final AuthenticationProvider authenticationProvider;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.csrf()
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    httpSecurity.csrf()
                 .disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/api/v1")
@@ -42,6 +42,6 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 
-        return  httpSecurity.build();
-    }
+    return  httpSecurity.build();
+  }
 }

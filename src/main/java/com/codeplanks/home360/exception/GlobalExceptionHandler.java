@@ -13,22 +13,22 @@ import java.util.*;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleUserSignupValidationErrors(
-            MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        List<String> errors = ex.getBindingResult()
-                                .getFieldErrors()
-                                .stream()
-                                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                                .toList();
-        var statusCode = ex.getStatusCode().value();
-        body.put("errors", errors);
-        body.put("status", statusCode);
-        body.put("timestamp", new Date());
-        return new ResponseEntity<>(body, new HttpHeaders(),
-                HttpStatus.BAD_REQUEST);
-    }
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Object> handleUserSignupValidationErrors(
+          MethodArgumentNotValidException ex) {
+    Map<String, Object> body = new HashMap<>();
+    List<String> errors = ex.getBindingResult()
+                            .getFieldErrors()
+                            .stream()
+                            .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                            .toList();
+    var statusCode = ex.getStatusCode().value();
+    body.put("errors", errors);
+    body.put("status", statusCode);
+    body.put("timestamp", new Date());
+    return new ResponseEntity<>(body, new HttpHeaders(),
+            HttpStatus.BAD_REQUEST);
+  }
 
 }
 
