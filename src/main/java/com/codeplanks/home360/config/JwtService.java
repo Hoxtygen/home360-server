@@ -1,6 +1,7 @@
 package com.codeplanks.home360.config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -32,10 +33,10 @@ public class JwtService {
 
   private Claims extractAllClaims(String token) {
     return Jwts.parserBuilder()
-               .setSigningKey(getSigninKey())
-               .build()
-               .parseClaimsJws(token)
-               .getBody();
+            .setSigningKey(getSigninKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
   }
 
   private Key getSigninKey() {
@@ -43,7 +44,9 @@ public class JwtService {
     return Keys.hmacShaKeyFor((keyBytes));
   }
 
-  // generate token from just user details
+  /**
+   * generate token from just user details
+   */
   public String generateToken(UserDetails userDetails) {
     return generateToken(new HashMap<>(), userDetails);
   }
@@ -64,13 +67,17 @@ public class JwtService {
     return (username.equals((userDetails.getUsername())) && !isTokenExpired(token));
   }
 
-  private boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
+  public Boolean isTokenExpired(String token) {
+    try {
+      return extractExpiration(token).before(new Date());
+    } catch (ExpiredJwtException exception) {
+      throw new ExpiredJwtException(exception.getHeader(), exception.getClaims(),
+              exception.getMessage());
+    }
+
   }
 
   private Date extractExpiration(String token) {
     return extractClaim(token, Claims::getExpiration);
   }
-
-
 }
