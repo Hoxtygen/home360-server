@@ -7,8 +7,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ListingRepository extends MongoRepository<Listing, String> {
-
-//  Optional<Listing> findById(Integer integer);
-//  Optional<List<Listing>> findListingByState(String location);
-  Optional<ListingRequest> findByAgentId(Integer agentId);
+  Optional<ListingDTO> findByAgentId(Integer agentId);
 }

@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ListingService {
+public class ListingService implements ListingServiceRepository {
   private final ListingRepository listingRepository;
   private final UserRepository userRepository;
   private final HttpServletRequest httpServletRequest;
@@ -24,7 +24,7 @@ public class ListingService {
 
   Logger logger = LoggerFactory.getLogger(ListingService.class);
 
-  public Listing createListing(Listing request) {
+  public ListingDTO createListing(Listing request) {
     String authHeader = httpServletRequest.getHeader("Authorization");
     String token = authHeader.substring(7);
 
@@ -34,11 +34,17 @@ public class ListingService {
     request.setAgentId(userId);
     request.setCreatedAt(LocalDateTime.now());
     request.setUpdatedAt(LocalDateTime.now());
-    return listingRepository.save(request);
+    Listing savedListing = listingRepository.save(request);
+
+    logger.info("Listing created successfully: " + savedListing);
+
+    return ListingMapper.mapToListingDTO(savedListing);
+
   }
 
   private AppUser getUser(String email) throws UserNotFoundException {
     return userRepository.findByEmail(email).orElseThrow(
             () -> new UserNotFoundException("Agent does not exist"));
   }
+
 }

@@ -17,12 +17,13 @@ public class ListingController {
   private final ListingService listingService;
 
   @PostMapping("/listing")
-  public ResponseEntity<SuccessDataResponse<Listing>> createListing(@RequestBody @Validated Listing request) {
-    SuccessDataResponse<Listing> newListing = new SuccessDataResponse<>();
+  public ResponseEntity<SuccessDataResponse<ListingDTO>> createListing(
+          @RequestBody @Validated Listing request) {
+    SuccessDataResponse<ListingDTO> newListing = new SuccessDataResponse<>();
     newListing.setData(listingService.createListing(request));
     newListing.setMessage("Listing created successfully");
-    newListing.setStatus( HttpStatus.CREATED);
-    return new ResponseEntity<SuccessDataResponse<Listing>>(newListing, HttpStatus.CREATED);
+    newListing.setStatus(HttpStatus.CREATED);
+    return new ResponseEntity<>(newListing, HttpStatus.CREATED);
   }
 
 }

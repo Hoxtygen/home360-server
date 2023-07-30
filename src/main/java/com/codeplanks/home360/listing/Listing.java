@@ -23,6 +23,7 @@ import java.util.List;
 @Setter
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Document(collection = "listings")
 public class Listing {
   @Id
@@ -54,7 +55,6 @@ public class Listing {
   private boolean available;
 
   @Field(name = "agent_id")
-  @NotNull(message = "Agent id is required")
   private Integer agentId;
 
   @Field(name = "available_from", targetType = FieldType.DATE_TIME)
