@@ -56,10 +56,6 @@ public class AppUser implements UserDetails {
   @Enumerated(EnumType.STRING)
   private Role role;
 
-//  @OneToMany(cascade = CascadeType.ALL)
-//  @JoinColumn(name = "agentId", referencedColumnName = "id")
-//  private  List<Listing> listings;
-
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority(role.name()));
@@ -74,7 +70,6 @@ public class AppUser implements UserDetails {
   public String getUsername() {
     return email;
   }
-
 
   @Override
   public boolean isAccountNonExpired() {
@@ -95,14 +90,9 @@ public class AppUser implements UserDetails {
     return email;
   }
 
-//  public List<Listing> getListings() {
-//    return listings;
-//  }
-
   @Override
   public boolean isEnabled() {
     return true;
   }
-
 
 }
