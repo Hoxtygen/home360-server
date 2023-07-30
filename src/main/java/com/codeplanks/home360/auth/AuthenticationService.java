@@ -9,6 +9,8 @@ import com.codeplanks.home360.user.IUserService;
 import com.codeplanks.home360.user.Role;
 import com.codeplanks.home360.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,16 +28,19 @@ public class AuthenticationService implements IUserService {
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
 
+  Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
   public AuthenticationResponse register(RegisterRequest request) throws UserAlreadyExistsException {
     boolean newUserEmail = emailExists(request.getEmail());
     boolean newUserPhoneNumber = phoneNumberExists(request.getPhoneNumber());
     if (newUserEmail) {
+      logger.error("User with the email already exists");
       throw new UserAlreadyExistsException("User with email " + request
               .getEmail() + " " +
               "already exists");
     }
 
     if (newUserPhoneNumber) {
+      logger.error("User with the phone number already exists");
       throw new UserAlreadyExistsException("User with phone number " + request
               .getPhoneNumber()
               + " already exists"
@@ -55,7 +60,8 @@ public class AuthenticationService implements IUserService {
                           .build();
 
     AppUser newUser = userRepository.save(user);
-    var jwtToken = jwtService.generateToken(user);
+    var jwtToken = jwtService.generateToken(newUser);
+    logger.info("User created " + newUser );
     return AuthenticationResponse
             .builder()
             .token(jwtToken)
@@ -84,6 +90,7 @@ public class AuthenticationService implements IUserService {
     boolean userExist = emailExists(request.getEmail());
     String jwtToken;
     if (!userExist) {
+      logger.error("User does not exist: " + request.getEmail());
       throw new BadCredentialsException("Incorrect email/password");
     }
     try {
@@ -94,10 +101,12 @@ public class AuthenticationService implements IUserService {
               )
       );
       if (!authentication.isAuthenticated()) {
+        logger.error("Incorrect password: " + request.getEmail());
         throw new UserNotFoundException("Incorrect email/password");
       }
       AppUser user = getUser(request.getEmail());
       jwtToken = jwtService.generateToken(user);
+      logger.info("User authenticated Successfully: " + user);
       return AuthenticationResponse.builder()
                                    .token(jwtToken)
                                    .firstName(user.getFirstName())
@@ -107,7 +116,7 @@ public class AuthenticationService implements IUserService {
                                    .build();
 
     } catch (BadCredentialsException exception) {
-      throw new BadCredentialsException("Invalid username/password");
+      throw new BadCredentialsException("Incorrect username/password");
     }
   }
 }
