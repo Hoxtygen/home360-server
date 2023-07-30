@@ -10,6 +10,6 @@ public enum ApartmentType {
   GROUND_FLOOR_APARTMENT,
   LOFT,
   PENTHOUSE,
-  Terrace_Apartment,
+  TERRACE_APARTMENT,
   OTHERS,
 }
