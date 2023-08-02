@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -52,6 +53,16 @@ public class UserExceptionHandler {
   @ExceptionHandler(ExpiredJwtException.class)
   public ResponseEntity<ExceptionResponse> handleExpiredJwtException(
           ExpiredJwtException exception) {
+    ExceptionResponse response = new ExceptionResponse();
+    response.setErrorCode("UNAUTHORIZED");
+    response.setErrorMessage(exception.getMessage());
+    response.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<ExceptionResponse>(response, HttpStatus.UNAUTHORIZED);
+  }
+
+  @ExceptionHandler(UsernameNotFoundException.class)
+  public ResponseEntity<ExceptionResponse> handleUsernameNotFoundException(
+          UsernameNotFoundException exception) {
     ExceptionResponse response = new ExceptionResponse();
     response.setErrorCode("UNAUTHORIZED");
     response.setErrorMessage(exception.getMessage());
