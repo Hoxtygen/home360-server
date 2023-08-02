@@ -5,10 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +23,15 @@ public class ListingController {
     newListing.setMessage("Listing created successfully");
     newListing.setStatus(HttpStatus.CREATED);
     return new ResponseEntity<>(newListing, HttpStatus.CREATED);
+  }
+
+  @GetMapping("/listings")
+  public ResponseEntity<SuccessDataResponse<List<Listing>>> getAllListings() {
+    SuccessDataResponse<List<Listing>> allListings = new SuccessDataResponse<>();
+    allListings.setMessage("Listings retrieved successfully");
+    allListings.setStatus(HttpStatus.OK);
+    allListings.setData(listingService.allListings());
+    return new ResponseEntity<>(allListings, HttpStatus.OK);
   }
 
 }

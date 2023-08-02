@@ -61,14 +61,12 @@ public class GlobalExceptionHandler {
   }
 
 
-  @ExceptionHandler(HttpMessageNotReadableException.class)
+  @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(
-          HttpMessageNotReadableException exception) {
-    System.out.println("HttpMessageNotReadableException::: " + exception.getCause());
-
+          IllegalArgumentException exception) {
     ExceptionResponse response = new ExceptionResponse();
     response.setErrorCode("BAD_REQUEST");
-    response.setErrorMessage(String.valueOf(exception.getMessage()));
+    response.setErrorMessage(exception.getMessage());
     response.setTimestamp(LocalDateTime.now());
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }

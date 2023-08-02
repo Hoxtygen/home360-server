@@ -25,6 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "listings")
+@JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class Listing {
   @Id
   private String id;
@@ -41,9 +42,11 @@ public class Listing {
   private String furnishing;
 
   @Field(name = "position")
+//  @JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
   private String position;
 
   @Field(name = "miscellaneous")
+//  @JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
   private String miscellaneous;
 
   @Field(name = "address")
@@ -88,6 +91,7 @@ public class Listing {
   private List<String> applicationDocs;
 
   @Field(name = "apartment_images", targetType = FieldType.ARRAY)
+//  @JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
   private List<String> apartmentImages;
 
   @CreatedDate

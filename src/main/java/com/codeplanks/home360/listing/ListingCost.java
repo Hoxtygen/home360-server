@@ -1,6 +1,7 @@
 package com.codeplanks.home360.listing;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mongodb.lang.NonNull;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @Builder
+@JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class ListingCost {
     @NotNull(message = "Annual rent is required")
     @Field(name = "annual_rent")
