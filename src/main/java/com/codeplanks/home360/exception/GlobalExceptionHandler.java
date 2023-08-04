@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,13 +63,33 @@ public class GlobalExceptionHandler {
 
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(
+  public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(
           IllegalArgumentException exception) {
     ExceptionResponse response = new ExceptionResponse();
     response.setErrorCode("BAD_REQUEST");
     response.setErrorMessage(exception.getMessage());
     response.setTimestamp(LocalDateTime.now());
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(NoSuchElementException.class)
+  public ResponseEntity<ExceptionResponse> handleNoSuchElementException(
+          NoSuchElementException exception) {
+    ExceptionResponse response = new ExceptionResponse();
+    response.setErrorCode("BAD_REQUEST");
+    response.setErrorMessage("Item does not exist: " + exception.getMessage());
+    response.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ExceptionResponse> handleNoSuchElementException(
+          HttpRequestMethodNotSupportedException exception) {
+    ExceptionResponse response = new ExceptionResponse();
+    response.setErrorCode("METHOD_NOT_ALLOWED");
+    response.setErrorMessage(exception.getMessage());
+    response.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<>(response, HttpStatus.METHOD_NOT_ALLOWED);
   }
 
 }
