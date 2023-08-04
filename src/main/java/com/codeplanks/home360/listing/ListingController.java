@@ -34,4 +34,16 @@ public class ListingController {
     return new ResponseEntity<>(allListings, HttpStatus.OK);
   }
 
+
+  @DeleteMapping("/listings/{listingId}")
+  public ResponseEntity<?> deleteListing(@PathVariable String listingId) {
+    SuccessDataResponse<Object> response = new SuccessDataResponse<>();
+    response.setMessage("Listing deleted successfully");
+    response.setStatus(HttpStatus.OK);
+    response.setData(listingService.deleteListing(listingId));
+    return new ResponseEntity<>(response, HttpStatus.OK);
+
+
+  }
+
 }
