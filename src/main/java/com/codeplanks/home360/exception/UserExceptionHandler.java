@@ -15,60 +15,27 @@ import java.time.LocalDateTime;
 public class UserExceptionHandler {
 
   @ExceptionHandler(value = {UserAlreadyExistsException.class})
-  public ResponseEntity<Object> handleUserExistsException(UserAlreadyExistsException exception) {
-    AuthenticationException authenticationException = new AuthenticationException(
-            exception.getMessage(),
-            HttpStatus.CONFLICT
-    );
-    return new ResponseEntity<>(authenticationException, HttpStatus.CONFLICT);
+  public ResponseEntity<ApiError> handleUserExistsException(UserAlreadyExistsException exception) {
+    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.CONFLICT, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(value = {UserNotFoundException.class})
-  public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException exception) {
-    AuthenticationException authenticationException = new AuthenticationException(
-            exception.getMessage(),
-            HttpStatus.NOT_FOUND
-    );
-    return new ResponseEntity<>(authenticationException, HttpStatus.NOT_FOUND);
+  public ResponseEntity<ApiError> handleUserNotFoundException(UserNotFoundException exception) {
+    ApiError apiError = new ApiError(LocalDateTime.now(),HttpStatus.NOT_FOUND, exception.getMessage() );
+
+    return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(value = {BadCredentialsException.class})
-  public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException exception) {
-    AuthenticationException authenticationException =
-            new AuthenticationException(exception.getMessage(), HttpStatus.UNAUTHORIZED);
-    return new ResponseEntity<>(authenticationException, HttpStatus.UNAUTHORIZED);
+  @ExceptionHandler(value = {BadCredentialsException.class, AccessDeniedException.class,
+          ExpiredJwtException.class, UsernameNotFoundException.class})
+  public ResponseEntity<ApiError> handleBadCredentialsException(RuntimeException exception) {
+    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
   }
 
-  @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<ExceptionResponse> handleAccessDeniedException(
-          AccessDeniedException exception) {
-    ExceptionResponse response = new ExceptionResponse();
-    response.setErrorCode("UNAUTHORIZED");
-    response.setErrorMessage(exception.getMessage());
-    System.out.println("Inside handleAccessDeniedException");
-    response.setTimestamp(LocalDateTime.now());
-    return new ResponseEntity<ExceptionResponse>(response, HttpStatus.UNAUTHORIZED);
-  }
-
-  @ExceptionHandler(ExpiredJwtException.class)
-  public ResponseEntity<ExceptionResponse> handleExpiredJwtException(
-          ExpiredJwtException exception) {
-    ExceptionResponse response = new ExceptionResponse();
-    response.setErrorCode("UNAUTHORIZED");
-    response.setErrorMessage(exception.getMessage());
-    response.setTimestamp(LocalDateTime.now());
-    return new ResponseEntity<ExceptionResponse>(response, HttpStatus.UNAUTHORIZED);
-  }
-
-  @ExceptionHandler(UsernameNotFoundException.class)
-  public ResponseEntity<ExceptionResponse> handleUsernameNotFoundException(
-          UsernameNotFoundException exception) {
-    ExceptionResponse response = new ExceptionResponse();
-    response.setErrorCode("UNAUTHORIZED");
-    response.setErrorMessage(exception.getMessage());
-    response.setTimestamp(LocalDateTime.now());
-    return new ResponseEntity<ExceptionResponse>(response, HttpStatus.UNAUTHORIZED);
-  }
 }
 
 

@@ -1,7 +1,6 @@
 package com.codeplanks.home360.config;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -70,9 +69,8 @@ public class JwtService {
   public Boolean isTokenExpired(String token) {
     try {
       return extractExpiration(token).before(new Date());
-    } catch (ExpiredJwtException exception) {
-      throw new ExpiredJwtException(exception.getHeader(), exception.getClaims(),
-              exception.getMessage());
+    } catch (RuntimeException exception) {
+      throw new RuntimeException(exception.getMessage(), exception);
     }
 
   }
