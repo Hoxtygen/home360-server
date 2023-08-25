@@ -29,7 +29,9 @@ public class AuthenticationService implements IUserService {
   private final AuthenticationManager authenticationManager;
 
   Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
-  public AuthenticationResponse register(RegisterRequest request) throws UserAlreadyExistsException {
+
+  public AuthenticationResponse register(
+          RegisterRequest request) throws UserAlreadyExistsException {
     boolean newUserEmail = emailExists(request.getEmail());
     boolean newUserPhoneNumber = phoneNumberExists(request.getPhoneNumber());
     if (newUserEmail) {
@@ -48,20 +50,20 @@ public class AuthenticationService implements IUserService {
     }
 
     AppUser user = AppUser.builder()
-                          .firstName(request.getFirstName())
-                          .lastName(request.getLastName())
-                          .email(request.getEmail())
-                          .address(request.getAddress())
-                          .phoneNumber(request.getPhoneNumber())
-                          .password(passwordEncoder.encode(request.getPassword()))
-                          .role(Role.USER)
-                          .createdAt(new Date())
-                          .updatedAt(new Date())
-                          .build();
+            .firstName(request.getFirstName())
+            .lastName(request.getLastName())
+            .email(request.getEmail())
+            .address(request.getAddress())
+            .phoneNumber(request.getPhoneNumber())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .role(Role.USER)
+            .createdAt(new Date())
+            .updatedAt(new Date())
+            .build();
 
     AppUser newUser = userRepository.save(user);
     var jwtToken = jwtService.generateToken(newUser);
-    logger.info("User created " + newUser );
+    logger.info("User created " + newUser);
     return AuthenticationResponse
             .builder()
             .token(jwtToken)
@@ -69,6 +71,7 @@ public class AuthenticationService implements IUserService {
             .lastName(newUser.getLastName())
             .email(newUser.getUsername())
             .message("User signup successful")
+            .status(201)
             .build();
   }
 
@@ -86,7 +89,8 @@ public class AuthenticationService implements IUserService {
   }
 
 
-  public AuthenticationResponse login(AuthenticationRequest request) throws BadCredentialsException {
+  public AuthenticationResponse login(
+          AuthenticationRequest request) throws BadCredentialsException {
     boolean userExist = emailExists(request.getEmail());
     String jwtToken;
     if (!userExist) {
@@ -108,12 +112,13 @@ public class AuthenticationService implements IUserService {
       jwtToken = jwtService.generateToken(user);
       logger.info("User authenticated Successfully: " + user);
       return AuthenticationResponse.builder()
-                                   .token(jwtToken)
-                                   .firstName(user.getFirstName())
-                                   .lastName(user.getLastName())
-                                   .email(user.getEmail())
-                                   .message("User login successful")
-                                   .build();
+              .token(jwtToken)
+              .firstName(user.getFirstName())
+              .lastName(user.getLastName())
+              .email(user.getEmail())
+              .message("User login successful")
+              .status(200)
+              .build();
 
     } catch (BadCredentialsException exception) {
       throw new BadCredentialsException("Incorrect username/password");
