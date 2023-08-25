@@ -14,22 +14,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-
 @RestController
 @RequestMapping("api/v1/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
   private final AuthenticationService authenticationService;
   Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
   @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request) {
+  public ResponseEntity<AuthenticationResponse> register(
+          @RequestBody @Valid RegisterRequest request) {
     return new ResponseEntity<>(authenticationService.register(request),
             HttpStatus.CREATED);
 
   }
 
   @PostMapping("/login")
-  public  ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request) {
+  public ResponseEntity<AuthenticationResponse> login(
+          @RequestBody @Valid AuthenticationRequest request) {
     return new ResponseEntity<>(authenticationService.login(request), HttpStatus.OK);
   }
 
