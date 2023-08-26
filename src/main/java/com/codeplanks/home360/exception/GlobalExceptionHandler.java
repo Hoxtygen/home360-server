@@ -41,7 +41,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<ApiError> unauthorizedException(UnauthorizedException exception) {
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED, exception.getMessage());
+    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED,
+            exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
   }
@@ -49,7 +50,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ApiError> handleIllegalArgumentException(
           IllegalArgumentException exception) {
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST,
+            exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
