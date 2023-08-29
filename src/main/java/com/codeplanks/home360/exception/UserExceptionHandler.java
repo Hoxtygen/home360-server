@@ -21,8 +21,8 @@ public class UserExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
   }
 
-  @ExceptionHandler(value = {UserNotFoundException.class})
-  public ResponseEntity<ApiError> handleUserNotFoundException(UserNotFoundException exception) {
+  @ExceptionHandler(value = {NotFoundException.class})
+  public ResponseEntity<ApiError> handleUserNotFoundException(NotFoundException exception) {
     ApiError apiError = new ApiError(LocalDateTime.now(),HttpStatus.NOT_FOUND, exception.getMessage() );
 
     return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);

@@ -3,7 +3,7 @@ package com.codeplanks.home360.auth;
 
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
-import com.codeplanks.home360.exception.UserNotFoundException;
+import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.user.IUserService;
 import com.codeplanks.home360.user.Role;
@@ -83,9 +83,9 @@ public class AuthenticationService implements IUserService {
     return userRepository.findByPhoneNumber(phoneNumber).isPresent();
   }
 
-  private AppUser getUser(String email) throws UserNotFoundException {
+  private AppUser getUser(String email) throws NotFoundException {
     return userRepository.findByEmail(email).orElseThrow(
-            () -> new UserNotFoundException("email/password incorrect"));
+            () -> new NotFoundException("email/password incorrect"));
   }
 
 
@@ -106,7 +106,7 @@ public class AuthenticationService implements IUserService {
       );
       if (!authentication.isAuthenticated()) {
         logger.error("Incorrect password: " + request.getEmail());
-        throw new UserNotFoundException("Incorrect email/password");
+        throw new NotFoundException("Incorrect email/password");
       }
       AppUser user = getUser(request.getEmail());
       jwtToken = jwtService.generateToken(user);

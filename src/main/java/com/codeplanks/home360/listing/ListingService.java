@@ -2,7 +2,7 @@ package com.codeplanks.home360.listing;
 
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.exception.UnauthorizedException;
-import com.codeplanks.home360.exception.UserNotFoundException;
+import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,10 +59,16 @@ public class ListingService implements ListingServiceRepository {
     return null;
   }
 
+  public Listing getListingById(String listingId) {
+    return listingRepository.findById(listingId).orElseThrow(() -> new NotFoundException(
+            "Listing not found"));
 
-  private AppUser getUser(String email) throws UserNotFoundException {
+  }
+
+
+  private AppUser getUser(String email) throws NotFoundException {
     return userRepository.findByEmail(email).orElseThrow(
-            () -> new UserNotFoundException("Agent does not exist"));
+            () -> new NotFoundException("Agent does not exist"));
   }
 
   private Integer extractUserId() {

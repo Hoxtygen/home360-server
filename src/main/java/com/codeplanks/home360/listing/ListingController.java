@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +43,15 @@ public class ListingController {
     response.setStatus(HttpStatus.OK);
     response.setData(listingService.deleteListing(listingId));
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
 
-
+  @GetMapping("/listings/{listingId}")
+  public ResponseEntity<SuccessDataResponse<Listing>> getListing(@PathVariable String listingId){
+    SuccessDataResponse<Listing> response = new SuccessDataResponse<>();
+    response.setMessage("Listing fetched successfully");
+    response.setStatus(HttpStatus.OK);
+    response.setData(listingService.getListingById(listingId));
+    return  new ResponseEntity<>(response, HttpStatus.OK);
   }
 
 }
