@@ -5,6 +5,7 @@ import com.codeplanks.home360.exception.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,52 +25,54 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider;
+  private final JwtAuthenticationFilter jwtAuthFilter;
+  private final AuthenticationProvider authenticationProvider;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .addFilterBefore(jwtAuthFilter, LogoutFilter.class)
-                .cors(Customizer.withDefaults())
-                .csrf()
-                .disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/v1")
-                .permitAll()
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/register")
-                .permitAll()
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/v1/listings")
-                .permitAll()
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/login")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptions) -> exceptions.authenticationEntryPoint(
-                        new CustomAuthenticationEntryPoint()).accessDeniedHandler(new CustomAccessDeniedHandler()))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        return httpSecurity.build();
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity
+            .addFilterBefore(jwtAuthFilter, LogoutFilter.class)
+            .cors(Customizer.withDefaults())
+            .csrf()
+            .disable()
+            .authorizeHttpRequests()
+            .requestMatchers("/api/v1")
+            .permitAll()
+            .and()
+            .authorizeHttpRequests()
+            .requestMatchers("/api/v1/auth/register")
+            .permitAll()
+            .and()
+            .authorizeHttpRequests()
+            .requestMatchers(HttpMethod.GET, "/api/v1/listings", "/api/v1/listings/*")
+            .permitAll()
+            .and()
+            .authorizeHttpRequests()
+            .requestMatchers("/api/v1/auth/login")
+            .permitAll()
+            .anyRequest()
+            .authenticated()
+            .and()
+            .sessionManagement(
+                    (session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling((exceptions) -> exceptions.authenticationEntryPoint(
+                            new CustomAuthenticationEntryPoint())
+                    .accessDeniedHandler(new CustomAccessDeniedHandler()))
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+    return httpSecurity.build();
 
-    }
+  }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("*"));
-        configuration.setAllowedHeaders(List.of("*"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of("*"));
+    configuration.setAllowedMethods(List.of("*"));
+    configuration.setAllowedHeaders(List.of("*"));
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
 
 }
