@@ -19,16 +19,16 @@ import java.math.BigDecimal;
 public class ListingCost {
     @NotNull(message = "Annual rent is required")
     @Field(name = "annual_rent")
-    private BigDecimal annualRent;
+    private Integer annualRent;
 
     @Field(name = "agent_fee")
-    private BigDecimal agentFee;
+    private Integer agentFee;
 
     @Field(name = "caution_fee")
-    private BigDecimal cautionFee;
+    private Integer cautionFee;
 
     @Field(name = "agreement_fee")
-    private BigDecimal agreementFee;
+    private Integer agreementFee;
 
 }
 
