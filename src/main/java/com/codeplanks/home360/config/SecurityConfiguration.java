@@ -44,7 +44,8 @@ public class SecurityConfiguration {
             .permitAll()
             .and()
             .authorizeHttpRequests()
-            .requestMatchers(HttpMethod.GET, "/api/v1/listings", "/api/v1/listings/*")
+            .requestMatchers(HttpMethod.GET, "/api/v1/listings", "/api/v1/listings/*", "/api/v1" +
+                    "/listings/search/*")
             .permitAll()
             .and()
             .authorizeHttpRequests()
