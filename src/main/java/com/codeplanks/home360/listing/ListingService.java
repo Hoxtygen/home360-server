@@ -102,5 +102,3 @@ public class ListingService implements ListingServiceRepository {
     return listing.getAgentId();
   }
 }
-
-//filter=address.state={state}&address.lga={lga}&apartmentType={apartmentType}

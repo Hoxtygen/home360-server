@@ -59,13 +59,6 @@ public interface FilterableRepository<T> {
         case nin -> criteriaMap.put(filter.key,
                 Criteria.where(filter.key).nin((HashSet<Object>) filter.value));
 
-        // this is a special case, because this can be used as a search operator in the ui
-        // but proper testing is needed to make sure this works as expected
-        // because of the special characters in regex, it is possible that this will not work as
-        // expected
-        // todo test this
-        case regex -> criteriaMap.put(filter.key,
-                Criteria.where(filter.key).regex((String) filter.value));
         default -> throw new IllegalArgumentException("Unknown operator: " + filter.operator);
       }
     }
