@@ -5,11 +5,16 @@ import com.codeplanks.home360.exception.UnauthorizedException;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.user.UserRepository;
+import com.codeplanks.home360.utils.FilteringFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -65,6 +70,20 @@ public class ListingService implements ListingServiceRepository {
 
   }
 
+  public PaginatedResponse<Listing> getFilteredListings(int page, int size, List<String> filter) {
+    Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
+
+    Page<Listing> allListings = listingRepository.findAllWithFilter(Listing.class,
+            FilteringFactory.parseFromParams(filter, Listing.class), pageable);
+    return PaginatedResponse.<Listing>builder()
+            .currentPage(allListings.getNumber() + 1)
+            .totalItems(allListings.getTotalElements())
+            .totalPages(allListings.getTotalPages())
+            .items(allListings.getContent())
+            .hasNext(allListings.hasNext())
+            .build();
+  }
+
 
   private AppUser getUser(String email) throws NotFoundException {
     return userRepository.findByEmail(email).orElseThrow(
@@ -83,3 +102,5 @@ public class ListingService implements ListingServiceRepository {
     return listing.getAgentId();
   }
 }
+
+//filter=address.state={state}&address.lga={lga}&apartmentType={apartmentType}
