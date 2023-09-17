@@ -1,11 +1,10 @@
 package com.codeplanks.home360.listing;
 
 import com.codeplanks.home360.config.JwtService;
-import com.codeplanks.home360.exception.UnauthorizedException;
 import com.codeplanks.home360.exception.NotFoundException;
+import com.codeplanks.home360.exception.UnauthorizedException;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.user.UserRepository;
-import com.codeplanks.home360.utils.FilteringFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -70,20 +69,27 @@ public class ListingService implements ListingServiceRepository {
 
   }
 
-  public PaginatedResponse<Listing> getFilteredListings(int page, int size, List<String> filter) {
+  public PaginatedResponse<Listing> getFiltered(
+          int page,
+          int size,
+          String city,
+          int annualRent,
+          String apartmentType
+  ) {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
-
-    Page<Listing> allListings = listingRepository.findAllWithFilter(Listing.class,
-            FilteringFactory.parseFromParams(filter, Listing.class), pageable);
+    Page<Listing> filteredListings = listingRepository.findAllWithFilter(
+            Listing.class,
+            city,
+            annualRent,
+            apartmentType, pageable);
     return PaginatedResponse.<Listing>builder()
-            .currentPage(allListings.getNumber() + 1)
-            .totalItems(allListings.getTotalElements())
-            .totalPages(allListings.getTotalPages())
-            .items(allListings.getContent())
-            .hasNext(allListings.hasNext())
+            .currentPage(filteredListings.getNumber() + 1)
+            .totalItems(filteredListings.getTotalElements())
+            .totalPages(filteredListings.getTotalPages())
+            .items(filteredListings.getContent())
+            .hasNext(filteredListings.hasNext())
             .build();
   }
-
 
   private AppUser getUser(String email) throws NotFoundException {
     return userRepository.findByEmail(email).orElseThrow(

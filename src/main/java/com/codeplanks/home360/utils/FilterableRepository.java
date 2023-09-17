@@ -6,64 +6,33 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 public interface FilterableRepository<T> {
-  Page<T> findAllWithFilter(Class<T> typeParameterClass, Filtering filtering, Pageable pageable);
+  Page<T> findAllWithFilter(Class<T> typeParameterClass, String city, int annualRent,
+                            String apartmentType,
+                            Pageable pageable);
 
-  List<Object> getAllPossibleValuesForFilter(
-          Class<T> typeParameterClass,
-          Filtering filtering, String filterKey
-  );
-
-  default Query constructQueryFromFiltering(Filtering filtering) {
+  default Query constructFilterQuery(String city, int annualRent, String apartmentType) {
     Query query = new Query();
     Map<String, Criteria> criteriaMap = new HashMap<>();
+    Criteria cityCriteria = Criteria.where("address.city").is(city);
+    Criteria annualRentCriteria = Criteria.where("cost.annualRent").gte(annualRent);
+    Criteria apartmentTypeCriteria =
+            Criteria.where("apartmentInfo.apartmentType").is(apartmentType);
 
-    for (Filtering.Filter filter : filtering.getFilterList()) {
-      switch (filter.operator) {
-        case eq -> criteriaMap.put(filter.key, Criteria.where(filter.key).is(filter.value));
-        case gt -> {
-          if (criteriaMap.containsKey(filter.key)) {
-            criteriaMap.get(filter.key).gt(filter.value);
-          } else {
-            criteriaMap.put(filter.key, Criteria.where(filter.key).gt(filter.value));
-          }
-        }
-        case gte -> {
-          if (criteriaMap.containsKey(filter.key)) {
-            criteriaMap.get(filter.key).gte(filter.value);
-          } else {
-            criteriaMap.put(filter.key, Criteria.where(filter.key).gte(filter.value));
-          }
-        }
-        case in -> criteriaMap.put(filter.key,
-                Criteria.where(filter.key).in((HashSet<Object>) filter.value));
-        case lt -> {
-          if (criteriaMap.containsKey(filter.key)) {
-            criteriaMap.get(filter.key).lt(filter.value);
-          } else {
-            criteriaMap.put(filter.key, Criteria.where(filter.key).lt(filter.value));
-          }
-        }
-        case lte -> {
-          if (criteriaMap.containsKey(filter.key)) {
-            criteriaMap.get(filter.key).lte(filter.value);
-          } else {
-            criteriaMap.put(filter.key, Criteria.where(filter.key).lte(filter.value));
-          }
-        }
-        case ne -> criteriaMap.put(filter.key, Criteria.where(filter.key).ne(filter.value));
-        case nin -> criteriaMap.put(filter.key,
-                Criteria.where(filter.key).nin((HashSet<Object>) filter.value));
-
-        default -> throw new IllegalArgumentException("Unknown operator: " + filter.operator);
-      }
+    if (city != null && !city.isEmpty()) {
+      criteriaMap.put("address.city", cityCriteria);
     }
+
+    if (apartmentType!= null && !apartmentType.isEmpty() ) {
+      criteriaMap.put("apartmentInfo.apartmentType", apartmentTypeCriteria);
+    }
+    criteriaMap.put("cost.annualRent", annualRentCriteria);
+
     criteriaMap.values().forEach(query::addCriteria);
 
-    return query;
+    return  query;
   }
+
 }
