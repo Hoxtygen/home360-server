@@ -15,23 +15,14 @@ public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
   private MongoTemplate mongoTemplate;
 
   @Override
-  public Page<T> findAllWithFilter(Class<T> typeParameterClass, Filtering filtering,
-                                   Pageable pageable) {
+  public Page<T> findAllWithFilter(Class<T> typeParameterClass, String city, int annualRent,
+                                   String apartmentType, Pageable pageable) {
     Collation collation = Collation.of("en").strength(2);
-    Query query = constructQueryFromFiltering(filtering).with(pageable).collation(collation);
-    List<T> ts = mongoTemplate.find(query, typeParameterClass);
-    return PageableExecutionUtils.getPage(ts, pageable,
-            () -> mongoTemplate.count(query.limit(-1).skip(-1),
-                    typeParameterClass));
+    Query query =
+            constructFilterQuery(city, annualRent, apartmentType).with(pageable)
+                    .collation(collation);
+    List<T> listings = mongoTemplate.find(query, typeParameterClass, "listings");
+    return PageableExecutionUtils.getPage(listings, pageable,
+            () -> mongoTemplate.count(query.limit(-1).skip(-1), typeParameterClass));
   }
-
-  @Override
-  public List<Object> getAllPossibleValuesForFilter(
-          Class<T> typeParameterClass,
-          Filtering filtering, String filterKey
-  ) {
-    Query query = constructQueryFromFiltering(filtering);
-    return mongoTemplate.query(typeParameterClass).distinct(filterKey).matching(query).all();
-  }
-
 }

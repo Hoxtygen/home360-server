@@ -27,7 +27,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Document(collection = "listings")
-@JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
+@JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class Listing {
   @Id
   private String id;
@@ -102,4 +102,4 @@ public class Listing {
   @Field(name = "updated_at", targetType = FieldType.DATE_TIME)
   private LocalDateTime updatedAt;
 
-  }
+}

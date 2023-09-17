@@ -54,18 +54,20 @@ public class ListingController {
   }
 
   @GetMapping("/listings/search")
-  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getFilterListings(
+  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getMyFilterListings(
           @RequestParam(value = "page", defaultValue = "1") int page,
           @RequestParam(value = "size", defaultValue = "25") int size,
-          @RequestParam List<String> filter) {
-
+          @RequestParam(required = false) String city,
+          @RequestParam(required = false, defaultValue = "0") int annualRent,
+          @RequestParam(required = false) String apartmentType
+  ) {
     SuccessDataResponse<PaginatedResponse<Listing>
             > response = new SuccessDataResponse<>();
+    response.setData(listingService.getFiltered(page - 1, size, city, annualRent,
+            apartmentType));
     response.setMessage("Listing fetched successfully");
     response.setStatus(HttpStatus.OK);
-    response.setData(listingService.getFilteredListings(page-1, size, filter));
-    return new ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>>(response,
-            HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
 }
