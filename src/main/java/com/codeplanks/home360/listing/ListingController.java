@@ -54,7 +54,7 @@ public class ListingController {
   }
 
   @GetMapping("/listings/search")
-  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getMyFilterListings(
+  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getFilteredListings(
           @RequestParam(value = "page", defaultValue = "1") int page,
           @RequestParam(value = "size", defaultValue = "25") int size,
           @RequestParam(required = false) String city,
