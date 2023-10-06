@@ -20,6 +20,7 @@ public interface FilterableRepository<T> {
     Criteria annualRentCriteria = Criteria.where("cost.annualRent").gte(annualRent);
     Criteria apartmentTypeCriteria =
             Criteria.where("apartmentInfo.apartmentType").is(apartmentType);
+    Criteria apartmentAvailableCriteria = Criteria.where("available").is(true);
 
     if (city != null && !city.isEmpty()) {
       criteriaMap.put("address.city", cityCriteria);
@@ -29,6 +30,7 @@ public interface FilterableRepository<T> {
       criteriaMap.put("apartmentInfo.apartmentType", apartmentTypeCriteria);
     }
     criteriaMap.put("cost.annualRent", annualRentCriteria);
+    criteriaMap.put("available", apartmentAvailableCriteria);
 
     criteriaMap.values().forEach(query::addCriteria);
 
