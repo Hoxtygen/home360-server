@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-class AuthenticationServiceTest {
+class AuthenticationServiceTests {
   @InjectMocks
   private AuthenticationServiceImpl authenticationService;
 
