@@ -1,7 +1,6 @@
 package com.codeplanks.home360.auth;
 
 
-import com.codeplanks.home360.user.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
-  private final AuthenticationService authenticationService;
+  private final AuthenticationServiceImpl authenticationServiceImpl;
   Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
   @PostMapping("/register")
   public ResponseEntity<AuthenticationResponse> register(
           @RequestBody @Valid RegisterRequest request) {
-    return new ResponseEntity<>(authenticationService.register(request),
+    return new ResponseEntity<>(authenticationServiceImpl.register(request),
             HttpStatus.CREATED);
 
   }
@@ -32,7 +31,7 @@ public class AuthenticationController {
   @PostMapping("/login")
   public ResponseEntity<AuthenticationResponse> login(
           @RequestBody AuthenticationRequest request) {
-    return new ResponseEntity<>(authenticationService.login(request), HttpStatus.OK);
+    return new ResponseEntity<>(authenticationServiceImpl.login(request), HttpStatus.OK);
   }
 
 }
