@@ -92,6 +92,7 @@ public class UserRepositoryTests {
   }
 
   // JUnit test for find user by id
+  @DisplayName("get user by id")
   @Test
   public void givenUserObject_whenFindById_thenReturnUserObject() {
     // Given - precondition or setup

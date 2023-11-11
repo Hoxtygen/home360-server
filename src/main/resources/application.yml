@@ -9,6 +9,8 @@ spring:
       database: home360dev
       auto-index-creation: true
       uri: mongodb://localhost:27017/home360dev
+      embedded:
+        enabled: false
 
   output:
     ansi:
