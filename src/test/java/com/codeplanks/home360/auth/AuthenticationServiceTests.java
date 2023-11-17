@@ -91,23 +91,16 @@ class AuthenticationServiceTests {
     given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
     given(userRepository.findByPhoneNumber(request.getPhoneNumber())).willReturn(Optional.empty());
     given(userRepository.save(any(AppUser.class))).willReturn(user);
-    given(jwtService.generateToken(user)).willReturn(token);
     when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
     // When - action or the behaviour we're testing for
-    AuthenticationResponse response = authenticationService.register(request);
+    AppUser response = authenticationService.register(request);
 
     // Then - verify the output
     assertThat(response).isNotNull();
     assertThat(response.getFirstName()).isEqualTo("Elaeis");
     assertThat(response.getFirstName()).isNotEqualTo("Malaysia");
     assertThat(response.getFirstName()).isNotEmpty();
-
-    assertThat(response.getStatus()).isEqualTo(201);
-
-    assertThat(response.getMessage()).isEqualTo("User signup successful");
-
-    assertThat(response.getToken()).isEqualTo(token);
 
     assertThat(response.getEmail()).isEqualTo("elaeis@example.com");
   }

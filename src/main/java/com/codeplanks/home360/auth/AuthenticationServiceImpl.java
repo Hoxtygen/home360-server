@@ -1,12 +1,12 @@
 package com.codeplanks.home360.auth;
 
 
+import com.codeplanks.home360.auth.token.VerificationToken;
+import com.codeplanks.home360.auth.token.VerificationTokenRepository;
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.user.AppUser;
-import com.codeplanks.home360.user.Role;
-import com.codeplanks.home360.user.UserRepository;
+import com.codeplanks.home360.user.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+
+/**
+ * @author Wasiu Idowu
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -26,10 +30,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
+  private final VerificationTokenRepository tokenRepository;
 
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
-  public AuthenticationResponse register(
+  public AppUser register(
           RegisterRequest request) throws UserAlreadyExistsException {
     boolean newUserEmail = emailExists(request.getEmail());
     boolean newUserPhoneNumber = phoneNumberExists(request.getPhoneNumber());
@@ -61,17 +66,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             .build();
 
     AppUser newUser = userRepository.save(user);
-    var jwtToken = jwtService.generateToken(newUser);
+//    var jwtToken = jwtService.generateToken(newUser);
     logger.info("User created " + newUser);
-    return AuthenticationResponse
-            .builder()
-            .token(jwtToken)
-            .firstName(newUser.getFirstName())
-            .lastName(newUser.getLastName())
-            .email(newUser.getUsername())
-            .message("User signup successful")
-            .status(201)
-            .build();
+    return newUser;
+//    return AuthenticationResponse
+//            .builder()
+//            .token(jwtToken)
+//            .firstName(newUser.getFirstName())
+//            .lastName(newUser.getLastName())
+//            .email(newUser.getUsername())
+//            .message("User signup successful")
+//            .status(201)
+//            .build();
   }
 
   private boolean emailExists(String email) {
@@ -122,5 +128,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     } catch (BadCredentialsException exception) {
       throw new BadCredentialsException("Incorrect username/password");
     }
+  }
+
+  @Override
+  public void saveUserVerificationToken(AppUser theUser, String token) {
+    VerificationToken verificationToken = new VerificationToken(token, theUser);
+    tokenRepository.save(verificationToken);
   }
 }
