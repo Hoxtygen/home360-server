@@ -17,7 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 
 /**
@@ -69,30 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //    var jwtToken = jwtService.generateToken(newUser);
     logger.info("User created " + newUser);
     return newUser;
-//    return AuthenticationResponse
-//            .builder()
-//            .token(jwtToken)
-//            .firstName(newUser.getFirstName())
-//            .lastName(newUser.getLastName())
-//            .email(newUser.getUsername())
-//            .message("User signup successful")
-//            .status(201)
-//            .build();
   }
-
-  private boolean emailExists(String email) {
-    return userRepository.findByEmail(email).isPresent();
-  }
-
-  private boolean phoneNumberExists(String phoneNumber) {
-    return userRepository.findByPhoneNumber(phoneNumber).isPresent();
-  }
-
-  private AppUser getUser(String email) throws NotFoundException {
-    return userRepository.findByEmail(email).orElseThrow(
-            () -> new NotFoundException("email/password incorrect"));
-  }
-
 
   public AuthenticationResponse login(
           AuthenticationRequest request) throws BadCredentialsException {
@@ -130,9 +109,54 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
+
+  public String verify(String token) {
+    VerificationToken verificationToken = tokenRepository.findByToken(token);
+    if (verificationToken.getUser().isEnabled()) {
+      return "This account has already been verified. Please login";
+    }
+    String verificationTokenResult = validateVerificationToken(token);
+    if (verificationTokenResult.equalsIgnoreCase("valid")) {
+      return "Email verified successfully. Proceed to login to your account";
+    } else {
+      return "Verification failed";
+    }
+  }
+
+
+  private boolean emailExists(String email) {
+    return userRepository.findByEmail(email).isPresent();
+  }
+
+  private boolean phoneNumberExists(String phoneNumber) {
+    return userRepository.findByPhoneNumber(phoneNumber).isPresent();
+  }
+
+  private AppUser getUser(String email) throws NotFoundException {
+    return userRepository.findByEmail(email).orElseThrow(
+            () -> new NotFoundException("email/password incorrect"));
+  }
+
   @Override
   public void saveUserVerificationToken(AppUser theUser, String token) {
     VerificationToken verificationToken = new VerificationToken(token, theUser);
     tokenRepository.save(verificationToken);
+  }
+
+  @Override
+  public String validateVerificationToken(String token) {
+    VerificationToken verificationToken = tokenRepository.findByToken(token);
+    if (verificationToken == null) {
+      return "Invalid verification token";
+    }
+    AppUser user = verificationToken.getUser();
+    Calendar calendar = Calendar.getInstance();
+    if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
+      tokenRepository.delete(verificationToken);
+      return "Token already expired";
+    }
+    user.setEnabled(true);
+    userRepository.save(user);
+    return "valid";
   }
 }

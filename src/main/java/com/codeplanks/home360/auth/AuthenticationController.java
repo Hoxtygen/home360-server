@@ -12,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -37,7 +34,6 @@ public class AuthenticationController {
     newUser.setData("Registration Successful");
     newUser.setMessage("User registration successful");
     newUser.setStatus(HttpStatus.CREATED);
-    // publish registration event. this entails sending verification email
     publisher.publishEvent(new RegistrationCompleteEvent(response, applicationUrl(servletRequest)));
     return new ResponseEntity<>(newUser,
             HttpStatus.CREATED);
@@ -50,8 +46,13 @@ public class AuthenticationController {
     return new ResponseEntity<>(authenticationServiceImpl.login(request), HttpStatus.OK);
   }
 
+  @GetMapping("/verifyEmail")
+  public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
+    return new ResponseEntity<String>(authenticationServiceImpl.verify(token), HttpStatus.OK);
+  }
+
   public String applicationUrl(HttpServletRequest request) {
-    return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+    return "http://" + request.getServerName() + ":" + request.getServerPort() + "/api/v1/auth" + request.getContextPath();
   }
 
 }
