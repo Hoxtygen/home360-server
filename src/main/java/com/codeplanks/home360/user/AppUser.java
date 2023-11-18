@@ -3,6 +3,7 @@ package com.codeplanks.home360.user;
 import com.codeplanks.home360.listing.Listing;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NaturalId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,8 +12,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-@Getter
-@Setter
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,6 +34,8 @@ public class AppUser implements UserDetails {
   @Column(name="lastName", length=50, nullable=false)
   private String lastName;
 
+  @Getter
+  @NaturalId(mutable = true)
   @Column(name="email", nullable=false, unique=true)
   private String email;
 
@@ -55,6 +57,9 @@ public class AppUser implements UserDetails {
   @Column(name="role", length=50, nullable=false)
   @Enumerated(EnumType.STRING)
   private Role role;
+
+  @Column(name = "isEnabled")
+  private boolean isEnabled = false;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -86,13 +91,9 @@ public class AppUser implements UserDetails {
     return true;
   }
 
-  public String getEmail() {
-    return email;
-  }
-
   @Override
   public boolean isEnabled() {
-    return true;
+    return isEnabled;
   }
 
   public AppUser(String firstName, String lastName, String email, String password, String address,

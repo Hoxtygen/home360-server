@@ -18,9 +18,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * @author Wasiu Idowu
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -41,6 +44,10 @@ public class SecurityConfiguration {
             .and()
             .authorizeHttpRequests()
             .requestMatchers("/api/v1/auth/register")
+            .permitAll()
+            .and()
+            .authorizeHttpRequests()
+            .requestMatchers(HttpMethod.GET, "/api/v1/auth/verifyEmail")
             .permitAll()
             .and()
             .authorizeHttpRequests()
