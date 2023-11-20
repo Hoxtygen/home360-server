@@ -1,5 +1,6 @@
 package com.codeplanks.home360.exception;
 
+import jakarta.mail.AuthenticationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -82,6 +83,17 @@ public class GlobalExceptionHandler {
     apiError.setTimestamp(LocalDateTime.now());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(AuthenticationFailedException.class)
+  public ResponseEntity<ApiError> handleAuthenticationFailedException(
+          AuthenticationFailedException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.BAD_REQUEST);
+    apiError.setMessage(exception.getMessage());
+    apiError.setTimestamp(LocalDateTime.now());
+
+    return new ResponseEntity<>(apiError, HttpStatus.NOT_IMPLEMENTED);
   }
 
 }
