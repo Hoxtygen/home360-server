@@ -1,6 +1,5 @@
 package com.codeplanks.home360.auth;
 
-import com.codeplanks.home360.auth.token.VerificationToken;
 import com.codeplanks.home360.user.AppUser;
 
 

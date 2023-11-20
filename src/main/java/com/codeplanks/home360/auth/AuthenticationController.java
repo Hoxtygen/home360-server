@@ -2,6 +2,8 @@ package com.codeplanks.home360.auth;
 
 
 import com.codeplanks.home360.event.RegistrationCompleteEvent;
+import com.codeplanks.home360.token.TokenRequest;
+import com.codeplanks.home360.token.TokenResponse;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +33,7 @@ public class AuthenticationController {
           @RequestBody @Valid RegisterRequest request, final HttpServletRequest servletRequest) {
     SuccessDataResponse<String> newUser = new SuccessDataResponse<>();
     AppUser response = authenticationServiceImpl.register(request);
-    newUser.setData("Registration Successful");
+    newUser.setData("Registration Successful. A verification link have been sent to your email.");
     newUser.setMessage("User registration successful");
     newUser.setStatus(HttpStatus.CREATED);
     publisher.publishEvent(new RegistrationCompleteEvent(response, applicationUrl(servletRequest)));
@@ -50,6 +52,17 @@ public class AuthenticationController {
   public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
     return new ResponseEntity<String>(authenticationServiceImpl.verify(token), HttpStatus.OK);
   }
+
+  @PostMapping("/refreshToken")
+  public ResponseEntity<SuccessDataResponse<TokenResponse>> getRefreshToken(
+          @RequestBody TokenRequest tokenRequest) {
+    SuccessDataResponse<TokenResponse> response = new SuccessDataResponse<>();
+    response.setData(authenticationServiceImpl.refreshToken(tokenRequest));
+    response.setMessage("Success");
+    response.setStatus(HttpStatus.CREATED);
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
+  }
+
 
   public String applicationUrl(HttpServletRequest request) {
     return "http://" + request.getServerName() + ":" + request.getServerPort() + "/api/v1/auth" + request.getContextPath();
