@@ -10,6 +10,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+/**
+ * @author Wasiu Idowu
+ * */
+
 @Entity(name = "refresh_tokens")
 @Data
 @NoArgsConstructor
