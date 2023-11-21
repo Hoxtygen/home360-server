@@ -1,8 +1,12 @@
 package com.codeplanks.home360.auth;
 
 
-import com.codeplanks.home360.auth.token.VerificationToken;
-import com.codeplanks.home360.auth.token.VerificationTokenRepository;
+import com.codeplanks.home360.token.TokenRequest;
+import com.codeplanks.home360.token.TokenResponse;
+import com.codeplanks.home360.token.refreshToken.RefreshToken;
+import com.codeplanks.home360.token.refreshToken.RefreshTokenServiceImpl;
+import com.codeplanks.home360.token.verificationToken.VerificationToken;
+import com.codeplanks.home360.token.verificationToken.VerificationTokenRepository;
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.exception.NotFoundException;
@@ -19,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Optional;
 
 
 /**
@@ -33,6 +36,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final VerificationTokenRepository tokenRepository;
+  private final RefreshTokenServiceImpl refreshTokenServiceImpl;
 
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
@@ -77,6 +81,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           AuthenticationRequest request) throws BadCredentialsException {
     boolean userExist = emailExists(request.getEmail());
     String jwtToken;
+
     if (!userExist) {
       logger.error("User does not exist: " + request.getEmail());
       throw new BadCredentialsException("Incorrect email/password");
@@ -93,10 +98,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         throw new NotFoundException("Incorrect email/password");
       }
       AppUser user = getUser(request.getEmail());
-      jwtToken = jwtService.generateToken(user);
+      RefreshToken refreshToken = refreshTokenServiceImpl.generateRefreshToken(user);
+      TokenResponse tokenResponse = TokenResponse.builder()
+              .accessToken(jwtService.generateToken(user))
+              .refreshToken(refreshToken.getToken())
+              .build();
       logger.info("User authenticated Successfully: " + user);
       return AuthenticationResponse.builder()
-              .token(jwtToken)
+              .token(tokenResponse)
               .firstName(user.getFirstName())
               .lastName(user.getLastName())
               .email(user.getEmail())
@@ -121,6 +130,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     } else {
       return "Verification failed";
     }
+  }
+
+  public TokenResponse refreshToken(TokenRequest request) {
+    return refreshTokenServiceImpl.findByToken(request.getToken())
+            .map(refreshTokenServiceImpl::verifyRefreshTokenExpirationTime)
+            .map(RefreshToken::getUser)
+            .map(userInfo -> {
+              String accessToken = jwtService.generateToken(userInfo);
+              return TokenResponse.builder()
+                      .accessToken(accessToken)
+                      .refreshToken(request.getToken())
+                      .build();
+            }).orElseThrow(() -> new RuntimeException("Refresh token not in Database"));
   }
 
 

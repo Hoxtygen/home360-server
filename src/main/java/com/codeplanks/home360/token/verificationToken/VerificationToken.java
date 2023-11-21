@@ -1,12 +1,9 @@
-package com.codeplanks.home360.auth.token;
+package com.codeplanks.home360.token.verificationToken;
 
 
 import com.codeplanks.home360.user.AppUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -16,8 +13,7 @@ import java.util.Date;
  * @author Wasiu Idowu
  */
 @Entity(name = "verification_tokens")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerificationToken {

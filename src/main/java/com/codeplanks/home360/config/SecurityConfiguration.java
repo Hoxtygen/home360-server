@@ -23,6 +23,7 @@ import java.util.List;
 
 /**
  * @author Wasiu Idowu
+ *
  */
 @Configuration
 @EnableWebSecurity
@@ -43,20 +44,12 @@ public class SecurityConfiguration {
             .permitAll()
             .and()
             .authorizeHttpRequests()
-            .requestMatchers("/api/v1/auth/register")
-            .permitAll()
-            .and()
-            .authorizeHttpRequests()
-            .requestMatchers(HttpMethod.GET, "/api/v1/auth/verifyEmail")
+            .requestMatchers("/api/v1/auth/*")
             .permitAll()
             .and()
             .authorizeHttpRequests()
             .requestMatchers(HttpMethod.GET, "/api/v1/listings", "/api/v1/listings/*", "/api/v1" +
                     "/listings/search/*")
-            .permitAll()
-            .and()
-            .authorizeHttpRequests()
-            .requestMatchers("/api/v1/auth/login")
             .permitAll()
             .anyRequest()
             .authenticated()

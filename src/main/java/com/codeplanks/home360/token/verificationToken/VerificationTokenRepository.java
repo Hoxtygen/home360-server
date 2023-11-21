@@ -1,4 +1,4 @@
-package com.codeplanks.home360.auth.token;
+package com.codeplanks.home360.token.verificationToken;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
