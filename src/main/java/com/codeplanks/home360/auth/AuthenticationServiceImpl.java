@@ -98,7 +98,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         throw new NotFoundException("Incorrect email/password");
       }
       AppUser user = getUser(request.getEmail());
-//      jwtToken = jwtService.generateToken(user);
       RefreshToken refreshToken = refreshTokenServiceImpl.generateRefreshToken(user);
       TokenResponse tokenResponse = TokenResponse.builder()
               .accessToken(jwtService.generateToken(user))
