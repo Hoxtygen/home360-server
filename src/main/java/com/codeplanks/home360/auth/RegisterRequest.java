@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Wasiu Idowu
+ */
 @Data
 @Builder
 @AllArgsConstructor
