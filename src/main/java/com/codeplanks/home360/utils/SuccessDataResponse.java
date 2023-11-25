@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
+
+/**
+ * @author Wasiu Idowu
+ */
 @Data
 @Builder
 @AllArgsConstructor
