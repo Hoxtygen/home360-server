@@ -28,20 +28,6 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     passwordResetTokenRepository.save(passwordRestToken);
   }
 
-//  @Override
-//  public String validatePasswordResetToken(String passwordResetToken) {
-//    PasswordResetToken passwordToken =
-//            passwordResetTokenRepository.findByToken(passwordResetToken);
-//    if (passwordToken == null) {
-//      return "Invalid verification token";
-//    }
-//    Calendar calendar = Calendar.getInstance();
-//    if ((passwordToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
-//      return "Link already expired, resend link";
-//    }
-//    return "valid";
-//  }
-
   @Override
   public Optional<AppUser> findUserByPasswordToken(String passwordResetToken) {
     PasswordResetToken resetToken =
