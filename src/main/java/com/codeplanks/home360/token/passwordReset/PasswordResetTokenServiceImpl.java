@@ -47,7 +47,6 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     return passwordResetToken;
   }
 
-  // re-imple
 @Override
   public String validatePasswordResetToken(String passwordResetToken) {
     PasswordResetToken passwordToken =
