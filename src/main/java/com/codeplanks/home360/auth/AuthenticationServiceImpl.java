@@ -67,7 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     AppUser user = AppUser.builder()
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
-            .email(request.getEmail())
+            .email(request.getEmail().toLowerCase())
             .address(request.getAddress())
             .phoneNumber(request.getPhoneNumber())
             .password(passwordEncoder.encode(request.getPassword()))
@@ -82,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public AuthenticationResponse login(
           AuthenticationRequest request) throws BadCredentialsException {
-    boolean userExist = emailExists(request.getEmail());
+    boolean userExist = emailExists(request.getEmail().toLowerCase());
 
     if (!userExist) {
       logger.error("User does not exist: " + request.getEmail());
@@ -91,7 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     try {
       Authentication authentication = authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(
-                      request.getEmail(),
+                      request.getEmail().toLowerCase(),
                       request.getPassword()
               )
       );
@@ -99,7 +99,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         logger.error("Incorrect password: " + request.getEmail());
         throw new NotFoundException("Incorrect email/password");
       }
-      AppUser user = getUser(request.getEmail());
+      AppUser user = getUser(request.getEmail().toLowerCase());
       RefreshToken refreshToken = refreshTokenServiceImpl.generateRefreshToken(user);
       TokenResponse tokenResponse = TokenResponse.builder()
               .accessToken(jwtService.generateToken(user))
