@@ -42,8 +42,8 @@ public class RegistrationCompleteEventListener implements
 
   }
 
-  public void sendVerificationEmail(
-          String url) throws MessagingException, UnsupportedEncodingException {
+  public void sendVerificationEmail(String url)
+          throws MessagingException, UnsupportedEncodingException {
     String subject = "Home360 Email Verification";
     String senderName = "Home360";
     String mailContent = "<p> Hi, " + appUser.getFirstName() + ", </p>" +
@@ -51,6 +51,24 @@ public class RegistrationCompleteEventListener implements
             "Please, follow the link below to complete your registration.</p>" +
             "<a href=\"" + url + "\">Verify your email to activate your account</a>" +
             "<p> Thank you <br> Users Registration Portal Service";
+    MimeMessage message = mailSender.createMimeMessage();
+    var messageHelper = new MimeMessageHelper(message);
+    messageHelper.setFrom("udubit@hotmail.com", senderName);
+    messageHelper.setTo(appUser.getEmail());
+    messageHelper.setSubject(subject);
+    messageHelper.setText(mailContent, true);
+    mailSender.send(message);
+  }
+
+  public void sendPasswordResetVerificationEmail(
+          String url) throws MessagingException, UnsupportedEncodingException {
+    String subject = "Password Reset";
+    String senderName = "Home360";
+    String mailContent = "<p> Hi, " + appUser.getFirstName() + ", </p>" +
+            "<p><b>You recently requested to reset your password,</b>" + "" +
+            "Please, follow the link below to complete the action.</p>" +
+            "<a href=\"" + url + "\">Reset password</a>" +
+            "<p> Users Registration Portal Service";
     MimeMessage message = mailSender.createMimeMessage();
     var messageHelper = new MimeMessageHelper(message);
     messageHelper.setFrom("udubit@hotmail.com", senderName);

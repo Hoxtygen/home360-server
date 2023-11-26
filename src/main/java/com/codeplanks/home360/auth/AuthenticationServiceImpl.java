@@ -1,16 +1,20 @@
 package com.codeplanks.home360.auth;
 
 
+import com.codeplanks.home360.config.JwtService;
+import com.codeplanks.home360.exception.NotFoundException;
+import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.token.TokenRequest;
 import com.codeplanks.home360.token.TokenResponse;
+import com.codeplanks.home360.token.passwordReset.PasswordResetRequest;
+import com.codeplanks.home360.token.passwordReset.PasswordResetTokenServiceImpl;
 import com.codeplanks.home360.token.refreshToken.RefreshToken;
 import com.codeplanks.home360.token.refreshToken.RefreshTokenServiceImpl;
 import com.codeplanks.home360.token.verificationToken.VerificationToken;
 import com.codeplanks.home360.token.verificationToken.VerificationTokenRepository;
-import com.codeplanks.home360.config.JwtService;
-import com.codeplanks.home360.exception.UserAlreadyExistsException;
-import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.user.*;
+import com.codeplanks.home360.user.AppUser;
+import com.codeplanks.home360.user.Role;
+import com.codeplanks.home360.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 
 /**
@@ -37,22 +42,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final VerificationTokenRepository tokenRepository;
   private final RefreshTokenServiceImpl refreshTokenServiceImpl;
+  private final PasswordResetTokenServiceImpl passwordResetTokenServiceImpl;
 
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
+  @Override
   public AppUser register(
           RegisterRequest request) throws UserAlreadyExistsException {
     boolean newUserEmail = emailExists(request.getEmail());
     boolean newUserPhoneNumber = phoneNumberExists(request.getPhoneNumber());
     if (newUserEmail) {
-      logger.error("User with the email already exists");
       throw new UserAlreadyExistsException("User with email " + request
               .getEmail() + " " +
               "already exists");
     }
 
     if (newUserPhoneNumber) {
-      logger.error("User with the phone number already exists");
       throw new UserAlreadyExistsException("User with phone number " + request
               .getPhoneNumber()
               + " already exists"
@@ -62,7 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     AppUser user = AppUser.builder()
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
-            .email(request.getEmail())
+            .email(request.getEmail().toLowerCase())
             .address(request.getAddress())
             .phoneNumber(request.getPhoneNumber())
             .password(passwordEncoder.encode(request.getPassword()))
@@ -71,16 +76,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             .updatedAt(new Date())
             .build();
 
-    AppUser newUser = userRepository.save(user);
-//    var jwtToken = jwtService.generateToken(newUser);
-    logger.info("User created " + newUser);
-    return newUser;
+    return userRepository.save(user);
   }
 
+  @Override
   public AuthenticationResponse login(
           AuthenticationRequest request) throws BadCredentialsException {
-    boolean userExist = emailExists(request.getEmail());
-    String jwtToken;
+    boolean userExist = emailExists(request.getEmail().toLowerCase());
 
     if (!userExist) {
       logger.error("User does not exist: " + request.getEmail());
@@ -89,7 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     try {
       Authentication authentication = authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(
-                      request.getEmail(),
+                      request.getEmail().toLowerCase(),
                       request.getPassword()
               )
       );
@@ -97,7 +99,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         logger.error("Incorrect password: " + request.getEmail());
         throw new NotFoundException("Incorrect email/password");
       }
-      AppUser user = getUser(request.getEmail());
+      AppUser user = getUser(request.getEmail().toLowerCase());
       RefreshToken refreshToken = refreshTokenServiceImpl.generateRefreshToken(user);
       TokenResponse tokenResponse = TokenResponse.builder()
               .accessToken(jwtService.generateToken(user))
@@ -145,20 +147,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }).orElseThrow(() -> new RuntimeException("Refresh token not in Database"));
   }
 
-
-  private boolean emailExists(String email) {
-    return userRepository.findByEmail(email).isPresent();
-  }
-
-  private boolean phoneNumberExists(String phoneNumber) {
-    return userRepository.findByPhoneNumber(phoneNumber).isPresent();
-  }
-
-  private AppUser getUser(String email) throws NotFoundException {
-    return userRepository.findByEmail(email).orElseThrow(
-            () -> new NotFoundException("email/password incorrect"));
-  }
-
   @Override
   public void saveUserVerificationToken(AppUser theUser, String token) {
     VerificationToken verificationToken = new VerificationToken(token, theUser);
@@ -180,5 +168,65 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     user.setEnabled(true);
     userRepository.save(user);
     return "valid";
+  }
+
+  @Override
+  public String validatePasswordResetToken(String token) {
+    return passwordResetTokenServiceImpl.validatePasswordResetToken(token);
+  }
+
+  @Override
+  public String resetPassword(PasswordResetRequest passwordResetRequest, String token) {
+    String tokenVerificationResult = validatePasswordResetToken(token);
+    if (!tokenVerificationResult.equalsIgnoreCase("valid")) {
+      throw new NotFoundException("Invalid password reset token");
+    }
+    AppUser appUser = findUserByPasswordToken(token);
+    if (appUser == null) {
+      throw new NotFoundException("Invalid password reset token");
+    }
+    changePassword(appUser, passwordResetRequest.getNewPassword());
+    return "Password has been reset successfully";
+  }
+
+  @Override
+  public void createPasswordResetTokenForUser(AppUser user, String passwordResetToken) {
+    passwordResetTokenServiceImpl.createPasswordResetUserToken(user, passwordResetToken);
+  }
+
+
+  @Override
+  public AppUser findUserByPasswordToken(String token) {
+    return passwordResetTokenServiceImpl.findUserByPasswordToken(token).get();
+  }
+
+  @Override
+  public Optional<AppUser> findByEmail(String email) {
+    return userRepository.findByEmail(email);
+  }
+
+  @Override
+  public void changePassword(AppUser appUser, String newPassword) {
+    appUser.setPassword(passwordEncoder.encode(newPassword));
+    userRepository.save(appUser);
+  }
+
+  @Override
+  public boolean oldPasswordIsValid(AppUser appUser, String oldPassword) {
+    return passwordEncoder.matches(oldPassword, appUser.getPassword());
+  }
+
+
+  private boolean emailExists(String email) {
+    return userRepository.findByEmail(email).isPresent();
+  }
+
+  private boolean phoneNumberExists(String phoneNumber) {
+    return userRepository.findByPhoneNumber(phoneNumber).isPresent();
+  }
+
+  private AppUser getUser(String email) throws NotFoundException {
+    return userRepository.findByEmail(email).orElseThrow(
+            () -> new NotFoundException("email/password incorrect"));
   }
 }
