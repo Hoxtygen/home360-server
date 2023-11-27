@@ -63,8 +63,11 @@ public class AuthenticationController {
   }
 
   @GetMapping("/verifyEmail")
-  public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
-    return new ResponseEntity<String>(authenticationServiceImpl.verify(token), HttpStatus.OK);
+  public ResponseEntity<SuccessDataResponse<String>> verifyEmail(
+          @RequestParam("token") String token) {
+    SuccessDataResponse<String> response = new SuccessDataResponse<>(HttpStatus.OK, "Success",
+            authenticationServiceImpl.verify(token));
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @PostMapping("/refreshToken")
@@ -124,6 +127,5 @@ public class AuthenticationController {
   public String applicationUrl(HttpServletRequest request) {
     return "http://" + request.getServerName() + ":" + request.getServerPort() + "/api/v1/auth" + request.getContextPath();
   }
-
 
 }

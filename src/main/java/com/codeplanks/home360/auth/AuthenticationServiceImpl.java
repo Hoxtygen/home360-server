@@ -96,7 +96,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               )
       );
       if (!authentication.isAuthenticated()) {
-        logger.error("Incorrect password: " + request.getEmail());
         throw new NotFoundException("Incorrect email/password");
       }
       AppUser user = getUser(request.getEmail().toLowerCase());
@@ -123,7 +122,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   public String verify(String token) {
     VerificationToken verificationToken = tokenRepository.findByToken(token);
-    if (verificationToken.getUser().isEnabled()) {
+    if (verificationToken == null) {
+      throw new BadCredentialsException("Invalid verification token");
+    }
+    AppUser user = verificationToken.getUser();
+    if (user.isEnabled()) {
       return "This account has already been verified. Please login";
     }
     String verificationTokenResult = validateVerificationToken(token);
@@ -156,14 +159,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public String validateVerificationToken(String token) {
     VerificationToken verificationToken = tokenRepository.findByToken(token);
-    if (verificationToken == null) {
-      return "Invalid verification token";
-    }
     AppUser user = verificationToken.getUser();
     Calendar calendar = Calendar.getInstance();
     if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
       tokenRepository.delete(verificationToken);
-      return "Token already expired";
+      throw new BadCredentialsException("Token already expired");
     }
     user.setEnabled(true);
     userRepository.save(user);

@@ -56,6 +56,8 @@ application:
       url: http://localhost:3000/auth/password-reset-request
     reset-password:
       url: http://localhost:3000/auth/reset-password
+    verify-email:
+      url: http://localhost:3000/auth/email-verify
 
 logging:
   file.name: logs/application-debug.log
