@@ -38,7 +38,6 @@ public class RegistrationCompleteEventListener implements
     appUser = event.getUser();
     String verificationToken = UUID.randomUUID().toString();
     authenticationService.saveUserVerificationToken(appUser, verificationToken);
-//    String url = event.getApplicationUrl() + "/verifyEmail?token=" + verificationToken;
     String url = emailVerificationUrl + "?token=" + verificationToken;
     try {
       sendVerificationEmail(url);
