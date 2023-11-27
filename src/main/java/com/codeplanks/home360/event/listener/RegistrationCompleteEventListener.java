@@ -2,11 +2,13 @@ package com.codeplanks.home360.event.listener;
 
 import com.codeplanks.home360.auth.AuthenticationServiceImpl;
 import com.codeplanks.home360.event.RegistrationCompleteEvent;
+import com.codeplanks.home360.token.verificationToken.VerificationToken;
 import com.codeplanks.home360.user.AppUser;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -28,12 +30,15 @@ public class RegistrationCompleteEventListener implements
   private final JavaMailSender mailSender;
   private AppUser appUser;
 
+  @Value("${application.frontend.verify-email.url}")
+  private  String emailVerificationUrl;
+
   @Override
   public void onApplicationEvent(RegistrationCompleteEvent event) {
     appUser = event.getUser();
     String verificationToken = UUID.randomUUID().toString();
     authenticationService.saveUserVerificationToken(appUser, verificationToken);
-    String url = event.getApplicationUrl() + "/verifyEmail?token=" + verificationToken;
+    String url = emailVerificationUrl + "?token=" + verificationToken;
     try {
       sendVerificationEmail(url);
     } catch (MessagingException | UnsupportedEncodingException e) {
@@ -77,5 +82,4 @@ public class RegistrationCompleteEventListener implements
     messageHelper.setText(mailContent, true);
     mailSender.send(message);
   }
-
 }
