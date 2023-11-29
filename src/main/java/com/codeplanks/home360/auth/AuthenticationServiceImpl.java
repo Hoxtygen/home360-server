@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 
 /**
@@ -157,13 +158,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
+  public VerificationToken generateNewVerificationToken(String oldVerificationToken) {
+    VerificationToken verificationToken = tokenRepository.findByToken(oldVerificationToken);
+    var verificationTokenTime = new VerificationToken();
+    verificationToken.setToken(UUID.randomUUID().toString());
+    verificationToken.setExpirationTime(verificationTokenTime.getTokenExpirationTime());
+    return tokenRepository.save(verificationToken);
+  }
+
+  @Override
   public String validateVerificationToken(String token) {
     VerificationToken verificationToken = tokenRepository.findByToken(token);
     AppUser user = verificationToken.getUser();
     Calendar calendar = Calendar.getInstance();
     if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
-      tokenRepository.delete(verificationToken);
-      throw new BadCredentialsException("Token already expired");
+      throw new BadCredentialsException("Token already expired. Click the  link below to request " +
+              "for a new token");
     }
     user.setEnabled(true);
     userRepository.save(user);

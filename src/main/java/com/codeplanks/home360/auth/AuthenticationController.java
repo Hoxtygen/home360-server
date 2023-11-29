@@ -7,6 +7,7 @@ import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.token.TokenRequest;
 import com.codeplanks.home360.token.TokenResponse;
 import com.codeplanks.home360.token.passwordReset.PasswordResetRequest;
+import com.codeplanks.home360.token.verificationToken.VerificationToken;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import jakarta.mail.MessagingException;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +42,8 @@ public class AuthenticationController {
   private final RegistrationCompleteEventListener eventListener;
   @Value("${application.frontend.reset-password.url}")
   private String resetPasswordUrl;
+  @Value("${application.frontend.verify-email.url}")
+  private String emailVerificationUrl;
   Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
   @PostMapping("/register")
@@ -65,9 +69,27 @@ public class AuthenticationController {
   @GetMapping("/verifyEmail")
   public ResponseEntity<SuccessDataResponse<String>> verifyEmail(
           @RequestParam("token") String token) {
-    SuccessDataResponse<String> response = new SuccessDataResponse<>(HttpStatus.OK, "Success",
+    SuccessDataResponse<String> response = new SuccessDataResponse<>(
+            HttpStatus.OK,
+            "Success",
             authenticationServiceImpl.verify(token));
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @GetMapping("/resend-verification-token")
+  public ResponseEntity<SuccessDataResponse<String>> resendVerificationToken(
+          @RequestParam("token") String oldToken,
+          final HttpServletRequest request)
+          throws MessagingException, UnsupportedEncodingException {
+    VerificationToken verificationToken =
+            authenticationServiceImpl.generateNewVerificationToken(oldToken);
+    AppUser appUser = verificationToken.getUser();
+    resendVerificationTokenEmail(appUser, emailVerificationUrl, verificationToken);
+    SuccessDataResponse<String> response = new SuccessDataResponse<>(HttpStatus.OK, "Success",
+            "A new verification link has been sent to your email. Check your inbox to activate " +
+                    "your account");
+    return new ResponseEntity<>(response, HttpStatus.OK);
+
   }
 
   @PostMapping("/refreshToken")
@@ -124,8 +146,16 @@ public class AuthenticationController {
 
   }
 
+  private void resendVerificationTokenEmail(AppUser user, String applicationUrl,
+                                            VerificationToken verificationToken)
+          throws MessagingException, UnsupportedEncodingException {
+    String url = applicationUrl + "?token=" + verificationToken.getToken();
+    eventListener.sendVerificationEmail(url);
+  }
+
   public String applicationUrl(HttpServletRequest request) {
-    return "http://" + request.getServerName() + ":" + request.getServerPort() + "/api/v1/auth" + request.getContextPath();
+    return "http://" + request.getServerName() + ":" + request.getServerPort()
+            + "/api/v1/auth" + request.getContextPath();
   }
 
 }
