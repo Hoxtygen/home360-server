@@ -1,6 +1,7 @@
 package com.codeplanks.home360.auth;
 
 import com.codeplanks.home360.token.passwordReset.PasswordResetRequest;
+import com.codeplanks.home360.token.verificationToken.VerificationToken;
 import com.codeplanks.home360.user.AppUser;
 
 import java.util.Optional;
@@ -16,6 +17,8 @@ public interface AuthenticationService {
   AuthenticationResponse login(AuthenticationRequest request);
 
   void saveUserVerificationToken(AppUser theUser, String verificationToken);
+
+  VerificationToken generateNewVerificationToken(String oldVerificationToken);
 
   String validateVerificationToken(String token);
 
