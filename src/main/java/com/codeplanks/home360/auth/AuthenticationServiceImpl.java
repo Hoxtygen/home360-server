@@ -160,6 +160,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public VerificationToken generateNewVerificationToken(String oldVerificationToken) {
     VerificationToken verificationToken = tokenRepository.findByToken(oldVerificationToken);
+    if (verificationToken == null) {
+      throw new NotFoundException("Invalid User. Please register");
+    }
     var verificationTokenTime = new VerificationToken();
     verificationToken.setToken(UUID.randomUUID().toString());
     verificationToken.setExpirationTime(verificationTokenTime.getTokenExpirationTime());
