@@ -1,16 +1,17 @@
 package com.codeplanks.home360.auth;
 
 
-import com.codeplanks.home360.user.Role;
 import com.codeplanks.home360.validation.Password;
 import com.codeplanks.home360.validation.ValidEmail;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Wasiu Idowu
+ */
 @Data
 @Builder
 @AllArgsConstructor
