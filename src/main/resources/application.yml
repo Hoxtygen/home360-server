@@ -48,7 +48,7 @@ application:
   security:
     jwt:
       secret-key: 4125442A472D4B6150645367566B58703273357638792F423F4528482B4D6251655468576D5A7133743677397A24432646294A404E635266556A586E32723575
-      jwtTokenExpirationMs: 86400000
+      jwtTokenExpirationMs: 1800000
 
   frontend:
     url: http://localhost:3000
