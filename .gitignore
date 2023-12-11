@@ -36,4 +36,6 @@ TODO
 
 #logs
 logs
- Trash.java
+
+# environmental variables
+ .env
