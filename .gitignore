@@ -38,4 +38,13 @@ TODO
 logs
 
 # environmental variables
- .env
+
+!/.env
+
+ SPRING_APPLICATION_JSON: '{
+              "spring.datasource.url"  : "jdbc:postgresql://postgresdb:$POSTGRESDB_DOCKER_PORT/$POSTGRESDB_DATABASE",
+              "spring.datasource.username" : "$POSTGRESDB_USER",
+              "spring.datasource.password" : "$POSTGRESDB_ROOT_PASSWORD",
+              "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+              "spring.jpa.hibernate.ddl-auto" : "create-drop"
+            }'
