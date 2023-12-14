@@ -1,4 +1,6 @@
 spring:
+  profiles: test
+
   data:
     mongodb:
       embedded:
