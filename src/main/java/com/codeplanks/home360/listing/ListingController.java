@@ -1,5 +1,7 @@
 package com.codeplanks.home360.listing;
 
+import com.codeplanks.home360.listing.listingDtos.HomeDTO;
+import com.codeplanks.home360.listing.listingDtos.LandDTO;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,25 @@ public class ListingController {
     newListing.setMessage("Listing created successfully");
     newListing.setStatus(HttpStatus.CREATED);
     return new ResponseEntity<>(newListing, HttpStatus.CREATED);
+  }
+
+  @PostMapping("/landListing")
+  public ResponseEntity<SuccessDataResponse<LandDTO>> createLandListing(
+          @RequestBody @Validated LandListing landListing) {
+    SuccessDataResponse<LandDTO> newListing = new SuccessDataResponse<>();
+    newListing.setData(listingService.createLandListing(landListing));
+    newListing.setMessage("Listing created successfully");
+    newListing.setStatus(HttpStatus.CREATED);
+    return new ResponseEntity<>(newListing, HttpStatus.CREATED);
+  }
+
+  @PostMapping("/homeListing")
+  public ResponseEntity<SuccessDataResponse<HomeDTO>> createHomeListing(@RequestBody @Validated Home homeListing){
+    SuccessDataResponse<HomeDTO> newHomeListing = new SuccessDataResponse<>();
+    newHomeListing.setData(listingService.createHomeListing(homeListing));
+    newHomeListing.setMessage("Listing created successfully");
+    newHomeListing.setStatus(HttpStatus.CREATED);
+    return new ResponseEntity<>(newHomeListing, HttpStatus.CREATED);
   }
 
   @GetMapping("/listings")
