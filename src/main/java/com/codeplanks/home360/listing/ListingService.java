@@ -3,6 +3,11 @@ package com.codeplanks.home360.listing;
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnauthorizedException;
+import com.codeplanks.home360.listing.listingDtos.HomeDTO;
+import com.codeplanks.home360.listing.listingDtos.LandDTO;
+import com.codeplanks.home360.listing.listingMappers.HomeListingDtoMapper;
+import com.codeplanks.home360.listing.listingMappers.LandListingDtoMapper;
+import com.codeplanks.home360.listing.listingMappers.ListingMapper;
 import com.codeplanks.home360.user.AppUser;
 import com.codeplanks.home360.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,9 +32,13 @@ import java.util.Optional;
 public class ListingService implements ListingServiceRepository {
   @Autowired
   private final ListingRepository listingRepository;
+  @Autowired
+  private final NewListingRepository newListingRepository;
+
   private final UserRepository userRepository;
   private final HttpServletRequest httpServletRequest;
   private final JwtService jwtService;
+
 
   Logger logger = LoggerFactory.getLogger(ListingService.class);
 
@@ -43,8 +52,26 @@ public class ListingService implements ListingServiceRepository {
     logger.info("Listing created successfully: " + savedListing);
 
     return ListingMapper.mapToListingDTO(savedListing);
-
   }
+
+  public LandDTO createLandListing(LandListing request) {
+    Integer userId = extractUserId();
+    request.setAgentId(userId);
+    request.setCreatedAt(LocalDateTime.now());
+    request.setUpdatedAt(LocalDateTime.now());
+    LandListing newLandListing = newListingRepository.save(request);
+    return LandListingDtoMapper.mapToLandListingDTO(newLandListing);
+  }
+
+  public HomeDTO createHomeListing(Home request) {
+    Integer userId = extractUserId();
+    request.setAgentId(userId);
+    request.setCreatedAt(LocalDateTime.now());
+    request.setUpdatedAt(LocalDateTime.now());
+    Home homeListing = newListingRepository.save(request);
+    return HomeListingDtoMapper.mapToHomeListingDTO(homeListing);
+  }
+
 
   public List<Listing> allListings() {
     return listingRepository.findAll();
@@ -107,4 +134,5 @@ public class ListingService implements ListingServiceRepository {
     Listing listing = listingRepository.findById(listingId).orElseThrow();
     return listing.getAgentId();
   }
+
 }

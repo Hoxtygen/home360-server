@@ -1,4 +1,7 @@
-package com.codeplanks.home360.listing;
+package com.codeplanks.home360.listing.listingMappers;
+
+import com.codeplanks.home360.listing.Listing;
+import com.codeplanks.home360.listing.ListingDTO;
 
 public class ListingMapper {
 

@@ -2,7 +2,9 @@ server:
   port: <port>
 
 spring:
-  profiles: dev
+  config:
+    activate:
+      on-profiles: dev
 
   mail:
     host: <enter host>

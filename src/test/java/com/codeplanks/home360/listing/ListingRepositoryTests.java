@@ -50,7 +50,7 @@ public class ListingRepositoryTests {
             .description("Lorem ipsum dolor sit amet consectetur adipscing")
             .furnishing("Full POP, fully tiled, borehole water running, kitchen cabinet, " +
                     "wardrobe")
-            .position("Besides Kwara State House of Assembly Housing complex")
+            .position("Besides Kwara State Home of Assembly Housing complex")
             .miscellaneous("Another lorem ipsum incoming at")
             .address(new Address("Baker street", "221B", "Ikeja", "Lagos", "Ikeja"))
             .available(true)
@@ -101,7 +101,7 @@ public class ListingRepositoryTests {
             .description("Lorem ipsum dolor sit amet consectetur adipscing")
             .furnishing("Full POP, fully tiled, borehole water running, kitchen cabinet, " +
                     "wardrobe")
-            .position("Besides Kwara State House of Assembly Housing complex")
+            .position("Besides Kwara State Home of Assembly Housing complex")
             .miscellaneous("Another lorem ipsum incoming at")
             .address(new Address("Baker street", "221B", "Ikeja", "Lagos", "Ikeja"))
             .available(true)
@@ -151,7 +151,7 @@ public class ListingRepositoryTests {
             .description("Lorem ipsum dolor sit amet consectetur adipscing")
             .furnishing("Full POP, fully tiled, borehole water running, kitchen cabinet, " +
                     "wardrobe")
-            .position("Besides Kwara State House of Assembly Housing complex")
+            .position("Besides Kwara State Home of Assembly Housing complex")
             .miscellaneous("Another lorem ipsum incoming at")
             .address(new Address("Baker street", "221B", "Ikeja", "Lagos", "Ikeja"))
             .available(true)

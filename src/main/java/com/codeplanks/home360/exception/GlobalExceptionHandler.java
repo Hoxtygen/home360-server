@@ -1,11 +1,14 @@
 package com.codeplanks.home360.exception;
 
 import jakarta.mail.AuthenticationFailedException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -96,4 +99,13 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.NOT_IMPLEMENTED);
   }
 
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ApiError> handleHttpMessageNotReadableException(
+          HttpMessageNotReadableException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.BAD_REQUEST);
+    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setMessage(exception.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
 }
