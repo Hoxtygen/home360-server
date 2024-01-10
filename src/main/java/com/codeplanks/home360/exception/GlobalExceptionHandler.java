@@ -1,11 +1,14 @@
 package com.codeplanks.home360.exception;
 
+import com.sun.mail.util.MailConnectException;
 import jakarta.mail.AuthenticationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -95,5 +98,15 @@ public class GlobalExceptionHandler {
 
     return new ResponseEntity<>(apiError, HttpStatus.NOT_IMPLEMENTED);
   }
+
+  @ExceptionHandler(value = {MailSendException.class, MailConnectException.class})
+  public ResponseEntity<ApiError> handleMailException(MailSendException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+    apiError.setMessage(exception.getMessage());
+    apiError.setTimestamp(LocalDateTime.now());
+    return  new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
 
 }
