@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -34,6 +35,7 @@ public class RegistrationCompleteEventListener implements
   private  String emailVerificationUrl;
 
   @Override
+  @Async
   public void onApplicationEvent(RegistrationCompleteEvent event) {
     appUser = event.getUser();
     String verificationToken = UUID.randomUUID().toString();
