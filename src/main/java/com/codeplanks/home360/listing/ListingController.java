@@ -2,12 +2,21 @@ package com.codeplanks.home360.listing;
 
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+
+
+/**
+ * @author Wasiu Idowu
+ *
+ * */
 
 @RestController
 @RequiredArgsConstructor
@@ -63,11 +72,22 @@ public class ListingController {
   ) {
     SuccessDataResponse<PaginatedResponse<Listing>
             > response = new SuccessDataResponse<>();
-    response.setData(listingService.getFiltered(page - 1, size, city, annualRent,
+    response.setData(listingService.getFilteredListings(page - 1, size, city, annualRent,
             apartmentType));
     response.setMessage("Listing fetched successfully");
     response.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @GetMapping("/userListings")
+  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getAgentListings(
+          @RequestParam(value = "page", defaultValue = "1") int page,
+          @RequestParam(value = "size", defaultValue = "25") int size
+  ) {
+    SuccessDataResponse<PaginatedResponse<Listing>> agentListings = new SuccessDataResponse<>();
+    agentListings.setMessage("Listings retrieved successfully");
+    agentListings.setStatus(HttpStatus.OK);
+    agentListings.setData(listingService.getListingsByAgentId(page - 1, size));
+    return new ResponseEntity<>(agentListings, HttpStatus.OK);
+  }
 }

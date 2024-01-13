@@ -10,6 +10,12 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
+
+/**
+ * @author Wasiu Idowu
+ *
+ * */
+
 public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
   @Autowired
   private MongoTemplate mongoTemplate;
@@ -24,5 +30,14 @@ public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
     List<T> listings = mongoTemplate.find(query, typeParameterClass, "listings");
     return PageableExecutionUtils.getPage(listings, pageable,
             () -> mongoTemplate.count(query.limit(-1).skip(-1), typeParameterClass));
+  }
+
+  @Override
+  public Page<T> findListingsByAgentId(Class<T> typeParameter, Integer agentId, Pageable pageable) {
+    Collation collation = Collation.of("en").strength(2);
+    Query query   = fetchAgentListings(agentId).with(pageable).collation(collation);
+    List<T> listings  = mongoTemplate.find(query, typeParameter, "listings");
+    return PageableExecutionUtils.getPage(listings, pageable,
+            ()-> mongoTemplate.count(query.limit(-1).skip(-1), typeParameter));
   }
 }

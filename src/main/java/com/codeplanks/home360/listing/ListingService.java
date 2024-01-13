@@ -22,6 +22,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 
+/**
+ * @author Wasiu Idowu
+ *
+ * */
+
 @Service
 @RequiredArgsConstructor
 public class ListingService implements ListingServiceRepository {
@@ -46,6 +51,7 @@ public class ListingService implements ListingServiceRepository {
 
   }
 
+  @Override
   public List<Listing> allListings() {
     return listingRepository.findAll();
   }
@@ -63,13 +69,30 @@ public class ListingService implements ListingServiceRepository {
     return null;
   }
 
+  @Override
   public Listing getListingById(String listingId) {
     return listingRepository.findById(listingId).orElseThrow(() -> new NotFoundException(
             "Listing not found"));
 
   }
 
-  public PaginatedResponse<Listing> getFiltered(
+  @Override
+  public PaginatedResponse<Listing> getListingsByAgentId(int page, int size) {
+    Integer userId = extractUserId();
+    Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
+    Page<Listing> agentListings = listingRepository.findListingsByAgentId(Listing.class, userId,
+            pageable);
+    return PaginatedResponse.<Listing>builder()
+            .currentPage(agentListings.getNumber() + 1)
+            .totalItems(agentListings.getTotalElements())
+            .totalPages(agentListings.getTotalPages())
+            .items(agentListings.getContent())
+            .hasNext(agentListings.hasNext())
+            .build();
+  }
+
+  @Override
+  public PaginatedResponse<Listing> getFilteredListings(
           int page,
           int size,
           String city,
@@ -90,6 +113,7 @@ public class ListingService implements ListingServiceRepository {
             .hasNext(filteredListings.hasNext())
             .build();
   }
+
 
   private AppUser getUser(String email) throws NotFoundException {
     return userRepository.findByEmail(email).orElseThrow(
