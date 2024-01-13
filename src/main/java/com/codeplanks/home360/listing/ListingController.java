@@ -2,12 +2,21 @@ package com.codeplanks.home360.listing;
 
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+
+
+/**
+ * @author Wasiu Idowu
+ *
+ * */
 
 @RestController
 @RequiredArgsConstructor
@@ -28,9 +37,9 @@ public class ListingController {
   @GetMapping("/listings")
   public ResponseEntity<SuccessDataResponse<List<Listing>>> getAllListings() {
     SuccessDataResponse<List<Listing>> allListings = new SuccessDataResponse<>();
+    allListings.setData(listingService.allListings());
     allListings.setMessage("Listings retrieved successfully");
     allListings.setStatus(HttpStatus.OK);
-    allListings.setData(listingService.allListings());
     return new ResponseEntity<>(allListings, HttpStatus.OK);
   }
 
@@ -38,18 +47,18 @@ public class ListingController {
   @DeleteMapping("/listings/{listingId}")
   public ResponseEntity<?> deleteListing(@PathVariable String listingId) {
     SuccessDataResponse<Object> response = new SuccessDataResponse<>();
+    response.setData(listingService.deleteListing(listingId));
     response.setMessage("Listing deleted successfully");
     response.setStatus(HttpStatus.OK);
-    response.setData(listingService.deleteListing(listingId));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @GetMapping("/listings/{listingId}")
   public ResponseEntity<SuccessDataResponse<Listing>> getListing(@PathVariable String listingId) {
     SuccessDataResponse<Listing> response = new SuccessDataResponse<>();
+    response.setData(listingService.getListingById(listingId));
     response.setMessage("Listing fetched successfully");
     response.setStatus(HttpStatus.OK);
-    response.setData(listingService.getListingById(listingId));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -63,11 +72,22 @@ public class ListingController {
   ) {
     SuccessDataResponse<PaginatedResponse<Listing>
             > response = new SuccessDataResponse<>();
-    response.setData(listingService.getFiltered(page - 1, size, city, annualRent,
+    response.setData(listingService.getFilteredListings(page - 1, size, city, annualRent,
             apartmentType));
     response.setMessage("Listing fetched successfully");
     response.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @GetMapping("/userListings")
+  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getAgentListings(
+          @RequestParam(value = "page", defaultValue = "1") int page,
+          @RequestParam(value = "size", defaultValue = "25") int size
+  ) {
+    SuccessDataResponse<PaginatedResponse<Listing>> agentListings = new SuccessDataResponse<>();
+    agentListings.setData(listingService.getListingsByAgentId(page - 1, size));
+    agentListings.setMessage("Listings retrieved successfully");
+    agentListings.setStatus(HttpStatus.OK);
+    return new ResponseEntity<>(agentListings, HttpStatus.OK);
+  }
 }

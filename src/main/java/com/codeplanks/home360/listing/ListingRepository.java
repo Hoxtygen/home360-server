@@ -10,6 +10,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 import java.util.Optional;
 
+
+/**
+ * @author Wasiu Idowu
+ *
+ * */
+
 public interface ListingRepository extends MongoRepository<Listing, String>,
         FilterableRepository<Listing> {
   Optional<ListingDTO> findByAgentId(Integer agentId);

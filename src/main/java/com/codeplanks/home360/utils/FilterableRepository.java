@@ -8,10 +8,17 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Wasiu Idowu
+ *
+ * */
+
 public interface FilterableRepository<T> {
   Page<T> findAllWithFilter(Class<T> typeParameterClass, String city, int annualRent,
                             String apartmentType,
                             Pageable pageable);
+
+  Page<T> findListingsByAgentId(Class<T> typeParameterClass, Integer agentId, Pageable pageable);
 
   default Query constructFilterQuery(String city, int annualRent, String apartmentType) {
     Query query = new Query();
@@ -35,6 +42,15 @@ public interface FilterableRepository<T> {
     criteriaMap.values().forEach(query::addCriteria);
 
     return  query;
+  }
+
+  default Query fetchAgentListings(Integer agentId) {
+    Query query = new Query();
+    Map<String, Criteria> criteriaMap = new HashMap<>();
+    Criteria agentCriteria = Criteria.where("agentId").is(agentId);
+    criteriaMap.put("agentId", agentCriteria);
+    criteriaMap.values().forEach((query::addCriteria));
+    return query;
   }
 
 }
