@@ -37,9 +37,9 @@ public class ListingController {
   @GetMapping("/listings")
   public ResponseEntity<SuccessDataResponse<List<Listing>>> getAllListings() {
     SuccessDataResponse<List<Listing>> allListings = new SuccessDataResponse<>();
+    allListings.setData(listingService.allListings());
     allListings.setMessage("Listings retrieved successfully");
     allListings.setStatus(HttpStatus.OK);
-    allListings.setData(listingService.allListings());
     return new ResponseEntity<>(allListings, HttpStatus.OK);
   }
 
@@ -47,18 +47,18 @@ public class ListingController {
   @DeleteMapping("/listings/{listingId}")
   public ResponseEntity<?> deleteListing(@PathVariable String listingId) {
     SuccessDataResponse<Object> response = new SuccessDataResponse<>();
+    response.setData(listingService.deleteListing(listingId));
     response.setMessage("Listing deleted successfully");
     response.setStatus(HttpStatus.OK);
-    response.setData(listingService.deleteListing(listingId));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @GetMapping("/listings/{listingId}")
   public ResponseEntity<SuccessDataResponse<Listing>> getListing(@PathVariable String listingId) {
     SuccessDataResponse<Listing> response = new SuccessDataResponse<>();
+    response.setData(listingService.getListingById(listingId));
     response.setMessage("Listing fetched successfully");
     response.setStatus(HttpStatus.OK);
-    response.setData(listingService.getListingById(listingId));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -85,9 +85,9 @@ public class ListingController {
           @RequestParam(value = "size", defaultValue = "25") int size
   ) {
     SuccessDataResponse<PaginatedResponse<Listing>> agentListings = new SuccessDataResponse<>();
+    agentListings.setData(listingService.getListingsByAgentId(page - 1, size));
     agentListings.setMessage("Listings retrieved successfully");
     agentListings.setStatus(HttpStatus.OK);
-    agentListings.setData(listingService.getListingsByAgentId(page - 1, size));
     return new ResponseEntity<>(agentListings, HttpStatus.OK);
   }
 }
