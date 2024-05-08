@@ -1,11 +1,9 @@
 package com.codeplanks.home360.listing;
 
-import com.codeplanks.home360.config.JwtService;
+import com.codeplanks.home360.auth.AuthenticationServiceImpl;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnauthorizedException;
 import com.codeplanks.home360.user.AppUser;
-import com.codeplanks.home360.user.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,22 +22,24 @@ import java.util.Optional;
 
 /**
  * @author Wasiu Idowu
- *
- * */
+ */
 
 @Service
 @RequiredArgsConstructor
 public class ListingService implements ListingServiceRepository {
   @Autowired
   private final ListingRepository listingRepository;
-  private final UserRepository userRepository;
-  private final HttpServletRequest httpServletRequest;
-  private final JwtService jwtService;
+  private final AuthenticationServiceImpl authenticationService;
 
   Logger logger = LoggerFactory.getLogger(ListingService.class);
 
   public ListingDTO createListing(Listing request) {
-    Integer userId = extractUserId();
+    Integer userId = authenticationService.extractUserId();
+    AppUser user = authenticationService.getUserByUserId(userId);
+    if (!user.isEnabled()) {
+      throw new UnauthorizedException("You are not authorized to create a listing." +
+              " Please confirm your email to proceed.");
+    }
     request.setAgentId(userId);
     request.setCreatedAt(LocalDateTime.now());
     request.setUpdatedAt(LocalDateTime.now());
@@ -57,13 +57,12 @@ public class ListingService implements ListingServiceRepository {
   }
 
   public Object deleteListing(String listingId) {
-    Integer userId = extractUserId();
+    Integer userId = authenticationService.extractUserId();
     Integer agentId = getAgentId(listingId);
     if (!Objects.equals(agentId, userId)) {
       throw new UnauthorizedException("You do not have the permission to delete this listing");
     }
     Optional<Listing> listing = listingRepository.findById(listingId);
-
     listingRepository.deleteById(listingId);
 
     return null;
@@ -78,7 +77,7 @@ public class ListingService implements ListingServiceRepository {
 
   @Override
   public PaginatedResponse<Listing> getListingsByAgentId(int page, int size) {
-    Integer userId = extractUserId();
+    Integer userId = authenticationService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<Listing> agentListings = listingRepository.findListingsByAgentId(Listing.class, userId,
             pageable);
@@ -114,18 +113,6 @@ public class ListingService implements ListingServiceRepository {
             .build();
   }
 
-
-  private AppUser getUser(String email) throws NotFoundException {
-    return userRepository.findByEmail(email).orElseThrow(
-            () -> new NotFoundException("Agent does not exist"));
-  }
-
-  private Integer extractUserId() {
-    String authHeader = httpServletRequest.getHeader("Authorization");
-    String token = authHeader.substring(7);
-    String username = jwtService.extractUsername(token);
-    return getUser(username).getId();
-  }
 
   private Integer getAgentId(String listingId) {
     Listing listing = listingRepository.findById(listingId).orElseThrow();
