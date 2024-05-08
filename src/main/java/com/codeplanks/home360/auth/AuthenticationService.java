@@ -35,4 +35,5 @@ public interface AuthenticationService {
   boolean oldPasswordIsValid(AppUser appUser, String oldPassword);
 
   String resetPassword(PasswordResetRequest passwordResetRequest, String token);
+  AppUser getUserByUserId(Integer userId);
 }
