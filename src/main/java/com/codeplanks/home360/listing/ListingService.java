@@ -3,6 +3,7 @@ package com.codeplanks.home360.listing;
 import com.codeplanks.home360.auth.AuthenticationServiceImpl;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnauthorizedException;
+import com.codeplanks.home360.listing.RentUpdate;
 import com.codeplanks.home360.user.AppUser;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class ListingService implements ListingServiceRepository {
     request.setAgentId(userId);
     request.setCreatedAt(LocalDateTime.now());
     request.setUpdatedAt(LocalDateTime.now());
-    Listing savedListing = listingRepository.save(request);
+   Listing savedListing = listingRepository.save(request);
 
     logger.info("Listing created successfully: " + savedListing);
 
@@ -113,6 +114,20 @@ public class ListingService implements ListingServiceRepository {
             .build();
   }
 
+  @Override
+  public ListingDTO updateRentedListing(RentUpdate rentUpdate){
+    Optional<Listing> listing = listingRepository.findById(rentUpdate.listingId);
+    if (listing.isEmpty()) {
+      throw  new NotFoundException("listing not found");
+    }
+    Listing listingToUpdate = listing.get();
+    listingToUpdate.setRented(rentUpdate.isRented);
+    listingToUpdate.setRentDate(LocalDateTime.now());
+    Listing savedListing = listingRepository.save(listingToUpdate);
+    logger.info("Listing rent status updated successfully: " + savedListing);
+
+    return ListingMapper.mapToListingDTO(savedListing);
+  }
 
   private Integer getAgentId(String listingId) {
     Listing listing = listingRepository.findById(listingId).orElseThrow();

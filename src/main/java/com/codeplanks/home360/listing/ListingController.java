@@ -2,15 +2,12 @@ package com.codeplanks.home360.listing;
 
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -89,5 +86,13 @@ public class ListingController {
     agentListings.setMessage("Listings retrieved successfully");
     agentListings.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(agentListings, HttpStatus.OK);
+  }
+  @PatchMapping("/listing")
+  public ResponseEntity<SuccessDataResponse<ListingDTO>> updateTakenListing(@RequestBody @Validated RentUpdate updateRequest) {
+    SuccessDataResponse<ListingDTO> updatedListing = new SuccessDataResponse<>();
+    updatedListing.setData(listingService.updateRentedListing(updateRequest));
+    updatedListing.setMessage("Listing updated successfully");
+    updatedListing.setStatus(HttpStatus.OK);
+    return new ResponseEntity<>(updatedListing, HttpStatus.OK);
   }
 }

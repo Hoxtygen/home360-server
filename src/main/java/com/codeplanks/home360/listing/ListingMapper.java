@@ -12,7 +12,8 @@ public class ListingMapper {
             listing.getPosition(),
             listing.getMiscellaneous(),
             listing.getAddress(),
-            listing.isAvailable(),
+            listing.isDraft(),
+            listing.isRented(),
             listing.getAvailableFrom(),
             listing.getCost(),
             listing.getDetails(),
@@ -22,7 +23,9 @@ public class ListingMapper {
             listing.getApplicationDocs(),
             listing.getApartmentImages(),
             listing.getCreatedAt(),
-            listing.getUpdatedAt()
+            listing.getUpdatedAt(),
+            listing.getDraftDate(),
+            listing.getRentDate()
     );
 
   }

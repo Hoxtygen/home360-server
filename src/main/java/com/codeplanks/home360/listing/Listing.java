@@ -2,13 +2,10 @@ package com.codeplanks.home360.listing;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.mongodb.lang.NonNull;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,7 +22,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(builderClassName = "listingBuilder")
 @Document(collection = "listings")
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class Listing {
@@ -54,9 +51,13 @@ public class Listing {
   @Valid
   private Address address;
 
-  @Field(name = "available")
+  @Field(name = "draft")
   @Builder.Default
-  private boolean available = true;
+  private boolean isDraft = false;
+
+  @Field(name = "draftDate", targetType = FieldType.DATE_TIME)
+  @Builder.Default
+  private LocalDateTime draftDate = null;
 
   @Field(name = "agent_id")
   private Integer agentId;
@@ -102,4 +103,11 @@ public class Listing {
   @Field(name = "updated_at", targetType = FieldType.DATE_TIME)
   private LocalDateTime updatedAt;
 
+  @Field(name = "rented", targetType = FieldType.BOOLEAN)
+  @Builder.Default
+  private  boolean isRented = false;
+
+  @Field(name = "rentDate", targetType = FieldType.DATE_TIME)
+  @Builder.Default
+  private LocalDateTime rentDate = null;
 }
