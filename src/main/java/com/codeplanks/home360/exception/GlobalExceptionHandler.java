@@ -2,12 +2,12 @@ package com.codeplanks.home360.exception;
 
 import com.sun.mail.util.MailConnectException;
 import jakarta.mail.AuthenticationFailedException;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.MethodNotAllowedException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @ControllerAdvice
@@ -27,7 +28,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleMethodArgumentNotValid(
           MethodArgumentNotValidException exception) {
-    logger.error("User registration error: {}", exception.getMessage());
+    logger.error("Error: {}", exception.getMessage());
     List<String> errors = exception.getBindingResult()
             .getFieldErrors()
             .stream()
@@ -105,8 +106,16 @@ public class GlobalExceptionHandler {
     apiError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
     apiError.setMessage(exception.getMessage());
     apiError.setTimestamp(LocalDateTime.now());
-    return  new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ExceptionHandler(value = {ConstraintViolationException.class,})
+  public ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.BAD_REQUEST);
+    apiError.setMessage(exception.getMessage());
+    apiError.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
 
+  }
 }
