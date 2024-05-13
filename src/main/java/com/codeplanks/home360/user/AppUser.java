@@ -1,6 +1,5 @@
 package com.codeplanks.home360.user;
 
-import com.codeplanks.home360.listing.Listing;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.NaturalId;
@@ -59,6 +58,7 @@ public class AppUser implements UserDetails {
   private Role role;
 
   @Column(name = "isEnabled")
+  @Builder.Default
   private boolean isEnabled = false;
 
   @Override

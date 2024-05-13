@@ -3,7 +3,6 @@ package com.codeplanks.home360.auth;
 
 import com.codeplanks.home360.validation.Password;
 import com.codeplanks.home360.validation.ValidEmail;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

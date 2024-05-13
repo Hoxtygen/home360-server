@@ -2,7 +2,6 @@ package com.codeplanks.home360.listing;
 
 import java.util.List;
 
-
 /**
  * @author Wasiu Idowu
  *
@@ -26,5 +25,6 @@ public interface ListingServiceRepository {
   List<Listing> allListings();
 
   PaginatedResponse<Listing> getListingsByAgentId(int page, int size);
+  ListingDTO updateRentedListing(RentUpdate update);
 
 }

@@ -3,7 +3,6 @@ package com.codeplanks.home360.listing;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -26,7 +25,8 @@ public class ListingDTO {
   private String position;
   private String miscellaneous;
   private Address address;
-  private boolean available;
+  private boolean isDraft;
+  private boolean isRented;
   private Date availableFrom;
   private ListingCost cost;
   private List<String> details;
@@ -37,6 +37,9 @@ public class ListingDTO {
   private List<String> apartmentImages;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+  private LocalDateTime draftDate;
+  private LocalDateTime rentDate;
+
 }
 
 
