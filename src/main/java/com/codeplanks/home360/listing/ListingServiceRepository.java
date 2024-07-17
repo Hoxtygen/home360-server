@@ -20,7 +20,7 @@ public interface ListingServiceRepository {
           String apartmentType
   );
 
-  Listing getListingById(String listingId);
+  ListingWithAgentInfo getListingById(String listingId);
 
   List<Listing> allListings();
 
