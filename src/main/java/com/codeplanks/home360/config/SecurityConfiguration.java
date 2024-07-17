@@ -23,7 +23,6 @@ import java.util.List;
 
 /**
  * @author Wasiu Idowu
- *
  */
 @Configuration
 @EnableWebSecurity
@@ -40,11 +39,7 @@ public class SecurityConfiguration {
             .csrf()
             .disable()
             .authorizeHttpRequests()
-            .requestMatchers("/api/v1")
-            .permitAll()
-            .and()
-            .authorizeHttpRequests()
-            .requestMatchers("/api/v1/auth/*")
+            .requestMatchers("/api/v1", "/api/v1/auth/*","/api-docs/**", "/swagger-ui/**")
             .permitAll()
             .and()
             .authorizeHttpRequests()
@@ -75,5 +70,4 @@ public class SecurityConfiguration {
     source.registerCorsConfiguration("/**", configuration);
     return source;
   }
-
 }
