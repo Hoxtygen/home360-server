@@ -3,7 +3,6 @@ package com.codeplanks.home360.listing;
 import com.codeplanks.home360.auth.AuthenticationServiceImpl;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnauthorizedException;
-import com.codeplanks.home360.listing.RentUpdate;
 import com.codeplanks.home360.user.AppUser;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -15,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +44,7 @@ public class ListingService implements ListingServiceRepository {
     request.setAgentId(userId);
     request.setCreatedAt(LocalDateTime.now());
     request.setUpdatedAt(LocalDateTime.now());
-   Listing savedListing = listingRepository.save(request);
+    Listing savedListing = listingRepository.save(request);
 
     logger.info("Listing created successfully: " + savedListing);
 
@@ -70,10 +70,17 @@ public class ListingService implements ListingServiceRepository {
   }
 
   @Override
-  public Listing getListingById(String listingId) {
-    return listingRepository.findById(listingId).orElseThrow(() -> new NotFoundException(
-            "Listing not found"));
+  public ListingWithAgentInfo getListingById(String listingId) {
 
+    Listing listing = listingRepository.findById(listingId).orElseThrow(() -> new NotFoundException(
+            "Listing not found"));
+    int agentId = listing.getAgentId();
+    AppUser listingAgent = authenticationService.getUserByUserId(agentId);
+    ListingAgentInfo agentInfo = ListingMapper.mapToListingAgentInfo(listingAgent);
+    return ListingWithAgentInfo.builder()
+            .agentInfo(agentInfo)
+            .listing(listing)
+            .build();
   }
 
   @Override
@@ -115,10 +122,10 @@ public class ListingService implements ListingServiceRepository {
   }
 
   @Override
-  public ListingDTO updateRentedListing(RentUpdate rentUpdate){
+  public ListingDTO updateRentedListing(RentUpdate rentUpdate) {
     Optional<Listing> listing = listingRepository.findById(rentUpdate.listingId);
     if (listing.isEmpty()) {
-      throw  new NotFoundException("listing not found");
+      throw new NotFoundException("listing not found");
     }
     Listing listingToUpdate = listing.get();
     listingToUpdate.setRented(rentUpdate.isRented);

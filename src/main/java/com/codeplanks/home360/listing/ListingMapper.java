@@ -1,5 +1,7 @@
 package com.codeplanks.home360.listing;
 
+import com.codeplanks.home360.user.AppUser;
+
 public class ListingMapper {
 
   public static ListingDTO mapToListingDTO(Listing listing) {
@@ -28,6 +30,15 @@ public class ListingMapper {
             listing.getRentDate()
     );
 
+  }
+
+  public static ListingAgentInfo mapToListingAgentInfo(AppUser user){
+    return ListingAgentInfo.builder()
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .email(user.getEmail())
+            .phoneNumber(user.getPhoneNumber())
+            .build();
   }
 
 }
