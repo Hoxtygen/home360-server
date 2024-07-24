@@ -14,11 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
-@Getter
-@Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -64,7 +61,7 @@ public class Listing {
 
   @Field(name = "available_from", targetType = FieldType.DATE_TIME)
   @NotNull(message = "Date apartment will be available is required")
-  private Date availableFrom;
+  private LocalDateTime availableFrom;
 
   @Field(name = "cost")
   @NotNull(message = "Cost is required")
