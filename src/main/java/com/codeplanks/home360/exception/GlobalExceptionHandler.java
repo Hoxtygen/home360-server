@@ -118,4 +118,14 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
 
   }
+
+  @ExceptionHandler(value = {RuntimeException.class,})
+  public ResponseEntity<ApiError> handleRuntimeException(RuntimeException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.BAD_REQUEST);
+    apiError.setMessage(exception.getMessage());
+    apiError.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+
+  }
 }

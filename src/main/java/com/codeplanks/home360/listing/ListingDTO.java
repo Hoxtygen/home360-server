@@ -2,15 +2,15 @@ package com.codeplanks.home360.listing;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Data
-@Setter
-@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +27,7 @@ public class ListingDTO {
   private Address address;
   private boolean isDraft;
   private boolean isRented;
-  private Date availableFrom;
+  private LocalDateTime availableFrom;
   private ListingCost cost;
   private List<String> details;
   private FacilityQuality facilityQuality;

@@ -23,7 +23,7 @@ public class ListingController {
 
   @PostMapping("/listing")
   public ResponseEntity<SuccessDataResponse<ListingDTO>> createListing(
-          @RequestBody @Validated Listing request) {
+          @RequestBody Listing request) {
     SuccessDataResponse<ListingDTO> newListing = new SuccessDataResponse<>();
     newListing.setData(listingService.createListing(request));
     newListing.setMessage("Listing created successfully");
@@ -51,8 +51,8 @@ public class ListingController {
   }
 
   @GetMapping("/listings/{listingId}")
-  public ResponseEntity<SuccessDataResponse<Listing>> getListing(@PathVariable String listingId) {
-    SuccessDataResponse<Listing> response = new SuccessDataResponse<>();
+  public ResponseEntity<SuccessDataResponse<ListingWithAgentInfo>> getListing(@PathVariable String listingId) {
+    SuccessDataResponse<ListingWithAgentInfo> response = new SuccessDataResponse<>();
     response.setData(listingService.getListingById(listingId));
     response.setMessage("Listing fetched successfully");
     response.setStatus(HttpStatus.OK);

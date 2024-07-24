@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 
 
 /**
@@ -16,7 +15,7 @@ import org.springframework.http.HttpStatusCode;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SuccessDataResponse<T> {
-  private HttpStatusCode status;
+  private HttpStatus status;
   private String message;
   private  T data;
 }

@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,8 +54,7 @@ public class AuthenticationController {
     newUser.setMessage("User registration successful");
     newUser.setStatus(HttpStatus.CREATED);
     publisher.publishEvent(new RegistrationCompleteEvent(response, applicationUrl(servletRequest)));
-    return new ResponseEntity<>(newUser,
-            HttpStatus.CREATED);
+    return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 
   }
 
