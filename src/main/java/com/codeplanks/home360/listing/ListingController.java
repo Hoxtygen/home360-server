@@ -26,7 +26,7 @@ public class ListingController {
           @RequestBody Listing request) {
     SuccessDataResponse<ListingDTO> newListing = new SuccessDataResponse<>();
     newListing.setData(listingService.createListing(request));
-    newListing.setMessage("Listing enquiry created successfully");
+    newListing.setMessage("Listing created successfully");
     newListing.setStatus(HttpStatus.CREATED);
     return new ResponseEntity<>(newListing, HttpStatus.CREATED);
   }
