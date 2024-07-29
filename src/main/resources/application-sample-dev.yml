@@ -15,8 +15,6 @@ spring:
           auth: true
           starttls:
             enable: true
-    mailSenderName: Home360
-    mailSenderAddress: udubit@hotmail.com
 
   data:
     mongodb:
@@ -64,6 +62,10 @@ application:
       url: <frontend email verification page>
     user-listings-url:
       url: <frontend listing url>
+
+  mail:
+    mailSenderName: Home360
+    mailSenderAddress: udubit@hotmail.com
 
 logging:
   file.name: <log file url>
