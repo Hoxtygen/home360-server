@@ -60,6 +60,12 @@ application:
       url: <frontend password reset url>
     verify-email:
       url: <frontend email verification page>
+    user-listings-url:
+      url: <frontend listing url>
+
+  mail:
+    mailSenderName: Home360
+    mailSenderAddress: udubit@hotmail.com
 
 logging:
   file.name: <log file url>
@@ -71,3 +77,4 @@ logging:
     org.springframework.web: ERROR
     com.codeplanks: DEBUG
     org.hibernate: ERROR
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
