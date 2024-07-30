@@ -15,8 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -43,7 +41,6 @@ public class AuthenticationController {
   private String resetPasswordUrl;
   @Value("${application.frontend.verify-email.url}")
   private String emailVerificationUrl;
-  Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
   @PostMapping("/register")
   public ResponseEntity<SuccessDataResponse<String>> register(
@@ -140,7 +137,7 @@ public class AuthenticationController {
   private void passwordResetEmailLink(AppUser user, String passwordToken)
           throws MessagingException, UnsupportedEncodingException {
     String url = resetPasswordUrl + "/?token=" + passwordToken;
-    eventListener.sendPasswordResetVerificationEmail(url);
+    eventListener.sendPasswordResetEmail(url);
 
   }
 
