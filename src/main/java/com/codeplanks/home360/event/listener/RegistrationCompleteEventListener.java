@@ -1,21 +1,20 @@
 package com.codeplanks.home360.event.listener;
 
 import com.codeplanks.home360.auth.AuthenticationServiceImpl;
+import com.codeplanks.home360.email.EmailServiceImpl;
 import com.codeplanks.home360.event.RegistrationCompleteEvent;
-import com.codeplanks.home360.token.verificationToken.VerificationToken;
 import com.codeplanks.home360.user.AppUser;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.thymeleaf.context.Context;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 import java.util.UUID;
 
 
@@ -28,11 +27,11 @@ import java.util.UUID;
 public class RegistrationCompleteEventListener implements
         ApplicationListener<RegistrationCompleteEvent> {
   private final AuthenticationServiceImpl authenticationService;
-  private final JavaMailSender mailSender;
+  private final EmailServiceImpl emailService;
   private AppUser appUser;
 
   @Value("${application.frontend.verify-email.url}")
-  private  String emailVerificationUrl;
+  private String emailVerificationUrl;
 
   @Override
   @Async
@@ -51,37 +50,36 @@ public class RegistrationCompleteEventListener implements
 
   public void sendVerificationEmail(String url)
           throws MessagingException, UnsupportedEncodingException {
+    Context context = new Context(Locale.ENGLISH);
+    String firstName = appUser.getFirstName();
+    String userEmail = appUser.getEmail();
+
     String subject = "Home360 Email Verification";
-    String senderName = "Home360";
-    String mailContent = "<p> Hi, " + appUser.getFirstName() + ", </p>" +
-            "<p>Thank you for registering with us," + "" +
-            "Please, follow the link below to complete your registration.</p>" +
-            "<a href=\"" + url + "\">Verify your email to activate your account</a>" +
-            "<p> Thank you <br> Users Registration Portal Service";
-    MimeMessage message = mailSender.createMimeMessage();
-    var messageHelper = new MimeMessageHelper(message);
-    messageHelper.setFrom("udubit@hotmail.com", senderName);
-    messageHelper.setTo(appUser.getEmail());
-    messageHelper.setSubject(subject);
-    messageHelper.setText(mailContent, true);
-    mailSender.send(message);
+    String mailContent = "Thank you for registering with us. Please, follow the link below to " +
+            "complete your registration.";
+
+    context.setVariable("name", firstName);
+    context.setVariable("subject", subject);
+    context.setVariable("message", mailContent);
+    context.setVariable("verificationLink", url);
+
+    emailService.sendMail(userEmail, subject, "userAuth", context);
   }
 
-  public void sendPasswordResetVerificationEmail(
+  public void sendPasswordResetEmail(
           String url) throws MessagingException, UnsupportedEncodingException {
+    Context context =  new Context(Locale.ENGLISH);
+    String firstName = appUser.getFirstName();
+
     String subject = "Password Reset";
-    String senderName = "Home360";
-    String mailContent = "<p> Hi, " + appUser.getFirstName() + ", </p>" +
-            "<p><b>You recently requested to reset your password,</b>" + "" +
-            "Please, follow the link below to complete the action.</p>" +
-            "<a href=\"" + url + "\">Reset password</a>" +
-            "<p> Users Registration Portal Service";
-    MimeMessage message = mailSender.createMimeMessage();
-    var messageHelper = new MimeMessageHelper(message);
-    messageHelper.setFrom("udubit@hotmail.com", senderName);
-    messageHelper.setTo(appUser.getEmail());
-    messageHelper.setSubject(subject);
-    messageHelper.setText(mailContent, true);
-    mailSender.send(message);
+    String mailContent = "You recently requested to reset your password. Please, follow the link " +
+            "below to complete the action.";
+
+    context.setVariable("name", firstName);
+    context.setVariable("subject", subject);
+    context.setVariable("message", mailContent);
+    context.setVariable("passwordResetLink", url);
+
+    emailService.sendMail(appUser.getEmail(), subject, "resetPassword", context);
   }
 }
