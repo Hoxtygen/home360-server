@@ -26,17 +26,17 @@ public class ListingEnquiry {
   @Id
   private String Id;
 
-  @Field(name = "firstName")
+  @Field(name = "firstName", targetType = FieldType.STRING)
   @NotBlank(message = "First name is required")
   @Size(min = 3, max = 50, message = "First name should be between 3-50 characters")
   private String firstName;
 
-  @Field(name = "lastName")
+  @Field(name = "lastName", targetType = FieldType.STRING)
   @NotBlank(message = "Last name is required")
   @Size(min = 3, max = 50, message = "Last name should be between 3-50 characters")
   private String lastName;
 
-  @Field(name = "email")
+  @Field(name = "email", targetType = FieldType.STRING)
   @NotBlank(message = "Email is required")
   @Email(message = "Enter a valid email address")
   @ValidEmail(message = "Enter a valid email address")
@@ -50,16 +50,16 @@ public class ListingEnquiry {
   private String phoneNumber;
 
 
-  @Field(name = "location")
+  @Field(name = "location", targetType = FieldType.STRING)
   @NotBlank(message = "Location is required")
   @Size(min = 3, max = 50, message = "Location should be between 3-50 characters")
   private String location;
 
-  @Field(name = "salutation")
+  @Field(name = "salutation", targetType = FieldType.STRING)
   @NotBlank(message = "Salutation is required")
   private String salutation;
 
-  @Field(name = "message")
+  @Field(name = "message", targetType = FieldType.STRING)
   @NotBlank(message = "Message is required")
   @Size(min = 3, max = 2000, message = "message should be between 3-2000 characters")
   private String message;
@@ -78,11 +78,13 @@ public class ListingEnquiry {
   private String commercialPurpose;
 
   @NotBlank(message = "ListingId field is required")
+  @Field(name = "listingId", targetType = FieldType.STRING)
   private String listingId;
 
+  @Field(name = "userId", targetType = FieldType.INT32)
   private Integer userId;
 
-  @Field(name = "agentId", targetType = FieldType.STRING)
+  @Field(name = "agentId", targetType = FieldType.INT32)
   @NotNull(message = "Agent Id is required")
   private Integer agentId;
 
