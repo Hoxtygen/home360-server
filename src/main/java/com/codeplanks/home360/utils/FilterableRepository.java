@@ -20,6 +20,9 @@ public interface FilterableRepository<T> {
 
   Page<T> findListingsByAgentId(Class<T> typeParameterClass, Integer agentId, Pageable pageable);
 
+  Page<T> findListingEnquiriesByAgentId(Class<T> typeParameterClass, Integer agentId,
+                                        Pageable pageable);
+
   default Query constructFilterQuery(String city, int annualRent, String apartmentType) {
     Query query = new Query();
     Map<String, Criteria> criteriaMap = new HashMap<>();
@@ -49,6 +52,15 @@ public interface FilterableRepository<T> {
     Map<String, Criteria> criteriaMap = new HashMap<>();
     Criteria agentCriteria = Criteria.where("agentId").is(agentId);
     criteriaMap.put("agentId", agentCriteria);
+    criteriaMap.values().forEach((query::addCriteria));
+    return query;
+  }
+
+  default Query fetchAgentListingEnquiries(Integer agentId){
+    Query query = new Query();
+    Map<String, Criteria> criteriaMap = new HashMap<>();
+    Criteria agentListingEnquiryCriteria = Criteria.where("agentId").is(agentId);
+    criteriaMap.put("agentId", agentListingEnquiryCriteria);
     criteriaMap.values().forEach((query::addCriteria));
     return query;
   }
