@@ -22,7 +22,6 @@ public class ListingEnquiryController {
   @PostMapping("/listing-enquiry")
   public ResponseEntity<SuccessDataResponse<ListingEnquiryDTO>> createEnquiry(
           @RequestBody @Validated ListingEnquiry enquiry) {
-    System.out.println("controller layer: " + enquiry);
     SuccessDataResponse<ListingEnquiryDTO> newListingEnquiry = new SuccessDataResponse<>();
     newListingEnquiry.setData(listingEnquiryService.makeEnquiry(enquiry));
     newListingEnquiry.setMessage("Listing enquiry created successfully");
