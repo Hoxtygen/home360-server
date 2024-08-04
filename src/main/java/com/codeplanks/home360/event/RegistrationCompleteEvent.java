@@ -1,6 +1,6 @@
 package com.codeplanks.home360.event;
 
-import com.codeplanks.home360.user.AppUser;
+import com.codeplanks.home360.domain.user.AppUser;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationEvent;

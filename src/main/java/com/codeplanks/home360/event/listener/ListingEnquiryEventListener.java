@@ -1,9 +1,9 @@
 package com.codeplanks.home360.event.listener;
 
-import com.codeplanks.home360.email.EmailServiceImpl;
+import com.codeplanks.home360.service.EmailServiceImpl;
 import com.codeplanks.home360.event.ListingEnquiryEvent;
-import com.codeplanks.home360.listing.ListingService;
-import com.codeplanks.home360.listing.ListingWithAgentInfo;
+import com.codeplanks.home360.service.ListingService;
+import com.codeplanks.home360.domain.listing.ListingWithAgentInfo;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,11 +1,15 @@
 package com.codeplanks.home360.auth;
 
 import com.codeplanks.home360.config.JwtService;
+import com.codeplanks.home360.domain.auth.AuthenticationRequest;
+import com.codeplanks.home360.domain.auth.AuthenticationResponse;
+import com.codeplanks.home360.domain.auth.RegisterRequest;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
-import com.codeplanks.home360.user.AppUser;
-import com.codeplanks.home360.user.Role;
-import com.codeplanks.home360.user.UserRepository;
+import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.domain.user.Role;
+import com.codeplanks.home360.repository.UserRepository;
+import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

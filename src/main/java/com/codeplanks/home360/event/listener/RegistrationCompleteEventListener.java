@@ -1,9 +1,9 @@
 package com.codeplanks.home360.event.listener;
 
-import com.codeplanks.home360.auth.AuthenticationServiceImpl;
-import com.codeplanks.home360.email.EmailServiceImpl;
+import com.codeplanks.home360.service.AuthenticationServiceImpl;
+import com.codeplanks.home360.service.EmailServiceImpl;
 import com.codeplanks.home360.event.RegistrationCompleteEvent;
-import com.codeplanks.home360.user.AppUser;
+import com.codeplanks.home360.domain.user.AppUser;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
