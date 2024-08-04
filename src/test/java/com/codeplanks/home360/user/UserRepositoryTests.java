@@ -1,6 +1,9 @@
 package com.codeplanks.home360.user;
 
 
+import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.domain.user.Role;
+import com.codeplanks.home360.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -2,6 +2,7 @@ package com.codeplanks.home360.listing;
 
 
 import com.codeplanks.home360.config.MongoConfig;
+import com.codeplanks.home360.domain.listing.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

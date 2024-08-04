@@ -1,7 +1,7 @@
 package com.codeplanks.home360.config;
 
 
-import com.codeplanks.home360.user.UserRepository;
+import com.codeplanks.home360.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
