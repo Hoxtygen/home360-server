@@ -71,7 +71,7 @@ public class AuthenticationController {
     SuccessDataResponse<String> response = new SuccessDataResponse<>(
             HttpStatus.OK,
             "Success",
-            authenticationServiceImpl.verify(token));
+            authenticationServiceImpl.verifyAccount(token));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
