@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,6 +67,9 @@ class AuthenticationServiceTests {
 
   private AppUser user;
 
+  @Value("${application.security.token}")
+  private String token;
+
 
   @BeforeEach
   public void setup() {
@@ -92,9 +96,9 @@ class AuthenticationServiceTests {
             .build();
   }
 
-  String token = "eyJhbGciOiJIUzUxMiJ9" +
-          ".eyJzdWIiOiJtaW1vc2FAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTExNjcxNjEsImV4cCI6MTY5MTE2ODYwMX0" +
-          ".J8NrbPaIMw8VZWUz5uxZ_aGGTPJnNnn3bn_h0aNXiKGcKQnbMXDha5XpSvlA2WRVzU55jNf_qx9wyc5xH3z7BQ";
+//  String token = "eyJhbGciOiJIUzUxMiJ9" +
+//          ".eyJzdWIiOiJtaW1vc2FAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTExNjcxNjEsImV4cCI6MTY5MTE2ODYwMX0" +
+//          ".J8NrbPaIMw8VZWUz5uxZ_aGGTPJnNnn3bn_h0aNXiKGcKQnbMXDha5XpSvlA2WRVzU55jNf_qx9wyc5xH3z7BQ";
   LocalDateTime localDateTime = LocalDateTime.now();
   RefreshToken refreshToken = new RefreshToken(1, token, localDateTime.plusMinutes(50), user);
 
