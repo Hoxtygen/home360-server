@@ -4,6 +4,8 @@ import com.codeplanks.home360.domain.auth.AuthenticationRequest;
 import com.codeplanks.home360.domain.auth.AuthenticationResponse;
 import com.codeplanks.home360.domain.auth.RegisterRequest;
 import com.codeplanks.home360.domain.passwordReset.PasswordResetRequest;
+import com.codeplanks.home360.domain.token.TokenRequest;
+import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.domain.user.AppUser;
 
@@ -39,4 +41,10 @@ public interface AuthenticationService {
 
   String resetPassword(PasswordResetRequest passwordResetRequest, String token);
   AppUser getUserByUserId(Integer userId);
+
+  Integer extractUserId();
+
+  String verifyAccount(String token);
+
+  TokenResponse refreshToken(TokenRequest request);
 }

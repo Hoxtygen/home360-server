@@ -108,7 +108,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .accessToken(jwtService.generateToken(user))
                     .refreshToken(refreshToken.getToken())
                     .build();
-            logger.info("User authenticated Successfully: " + user);
             return AuthenticationResponse.builder()
                     .token(tokenResponse)
                     .firstName(user.getFirstName())
@@ -123,8 +122,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-
-    public String verify(String token) {
+@Override
+    public String verifyAccount(String token) {
         VerificationToken verificationToken = tokenRepository.findByToken(token);
         if (verificationToken == null) {
             throw new BadCredentialsException("Invalid verification token");
@@ -141,6 +140,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
+    @Override
     public TokenResponse refreshToken(TokenRequest request) {
         return refreshTokenServiceImpl.findByToken(request.getToken())
                 .map(refreshTokenServiceImpl::verifyRefreshTokenExpirationTime)
@@ -241,11 +241,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return userRepository.findByPhoneNumber(phoneNumber).isPresent();
     }
 
-    public AppUser getUser(String email) throws NotFoundException {
+    private AppUser getUser(String email) throws NotFoundException {
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundException("User does not exist"));
     }
 
+    @Override
     public Integer extractUserId() {
         String authHeader = httpServletRequest.getHeader("Authorization");
         String token = authHeader.substring(7);
@@ -253,6 +254,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return getUser(username).getId();
     }
 
+    @Override
     public AppUser getUserByUserId(Integer userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User does not exist"));
