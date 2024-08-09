@@ -96,9 +96,6 @@ class AuthenticationServiceTests {
             .build();
   }
 
-//  String token = "eyJhbGciOiJIUzUxMiJ9" +
-//          ".eyJzdWIiOiJtaW1vc2FAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTExNjcxNjEsImV4cCI6MTY5MTE2ODYwMX0" +
-//          ".J8NrbPaIMw8VZWUz5uxZ_aGGTPJnNnn3bn_h0aNXiKGcKQnbMXDha5XpSvlA2WRVzU55jNf_qx9wyc5xH3z7BQ";
   LocalDateTime localDateTime = LocalDateTime.now();
   RefreshToken refreshToken = new RefreshToken(1, token, localDateTime.plusMinutes(50), user);
 
