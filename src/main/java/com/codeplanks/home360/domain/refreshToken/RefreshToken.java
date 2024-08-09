@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * @author Wasiu Idowu
@@ -24,7 +24,7 @@ public class RefreshToken {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
   private String token;
-  private Instant expiryDate;
+  private LocalDateTime expiryDate;
 
   @OneToOne
   @JoinColumn(name = "user_id")
