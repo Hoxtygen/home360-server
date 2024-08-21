@@ -4,6 +4,8 @@ import com.codeplanks.home360.domain.listing.PaginatedResponse;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMapper;
+import com.codeplanks.home360.exception.NotFoundException;
+import com.codeplanks.home360.exception.UnauthorizedException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     Integer agentId = authenticationService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<ListingEnquiry> agentListingEnquiries =
-            listingEnquiryRepository.findListingEnquiriesByAgentId(ListingEnquiry.class, agentId, pageable);
+            listingEnquiryRepository.findListingEnquiriesByAgentId(ListingEnquiry.class, agentId,
+                    pageable);
     return PaginatedResponse.<ListingEnquiry>builder()
             .currentPage(agentListingEnquiries.getNumber() + 1)
             .totalItems(agentListingEnquiries.getTotalElements())
@@ -48,6 +51,19 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
             .items(agentListingEnquiries.getContent())
             .hasNext(agentListingEnquiries.hasNext())
             .build();
+  }
+
+  @Override
+  public ListingEnquiry getListingEnquiryById(String enquiryMessageId) {
+    ListingEnquiry listingEnquiry = listingEnquiryRepository.findById(enquiryMessageId).orElseThrow(
+            () -> new NotFoundException("Listing enquiry not found"));
+
+    Integer userId = authenticationService.extractUserId();
+
+    if (!listingEnquiry.getAgentId().equals(userId)) {
+      throw new UnauthorizedException("Forbidden. You're not authorized to get this data");
+    }
+    return listingEnquiry;
   }
 
 }

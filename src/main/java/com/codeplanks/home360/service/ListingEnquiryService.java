@@ -8,4 +8,7 @@ public interface ListingEnquiryService {
   ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest);
 
   PaginatedResponse<ListingEnquiry> getListingEnquiriesByAgentId(int page, int size);
+
+  ListingEnquiry getListingEnquiryById(String enquiryMessageId);
+
 }
