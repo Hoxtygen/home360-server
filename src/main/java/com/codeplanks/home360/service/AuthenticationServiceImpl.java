@@ -151,7 +151,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             .accessToken(accessToken)
                             .refreshToken(request.getToken())
                             .build();
-                }).orElseThrow(() -> new RuntimeException("Refresh token not in Database"));
+                }).orElseThrow(() -> new NotFoundException("Refresh token not in Database"));
     }
 
     @Override
