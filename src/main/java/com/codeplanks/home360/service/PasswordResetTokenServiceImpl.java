@@ -1,7 +1,7 @@
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.exception.UnauthorizedException;
+import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.repository.PasswordResetTokenRepository;
 import com.codeplanks.home360.domain.passwordReset.PasswordResetToken;
@@ -54,7 +54,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
                     .orElseThrow(()->  new NotFoundException("Invalid token"));
     Calendar calendar = Calendar.getInstance();
     if ((passwordToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
-      throw  new UnauthorizedException("Link already expired, request for a new link");
+      throw  new UnAuthorizedException("Link already expired, request for a new link");
     }
     return "valid";
   }

@@ -40,8 +40,8 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<ApiError> unauthorizedException(UnauthorizedException exception) {
+  @ExceptionHandler(UnAuthorizedException.class)
+  public ResponseEntity<ApiError> handleUnAuthorizedException(UnAuthorizedException exception) {
     ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED,
             exception.getMessage());
 
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
     apiError.setMessage(exception.getMessage());
     apiError.setTimestamp(LocalDateTime.now());
 
-    return new ResponseEntity<>(apiError, HttpStatus.NOT_IMPLEMENTED);
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(value = {MailSendException.class, MailConnectException.class})
@@ -116,6 +116,15 @@ public class GlobalExceptionHandler {
     apiError.setMessage(exception.getMessage());
     apiError.setTimestamp(LocalDateTime.now());
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
 
+  @ExceptionHandler(RefreshTokenExpiredException.class)
+  public ResponseEntity<ApiError> handleRefreshTokenExpiredException(
+          RefreshTokenExpiredException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.UNAUTHORIZED);
+    apiError.setMessage(exception.getMessage());
+    apiError.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
   }
 }

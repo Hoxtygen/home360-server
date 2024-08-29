@@ -5,7 +5,7 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMapper;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.exception.UnauthorizedException;
+import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +61,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     Integer userId = authenticationService.extractUserId();
 
     if (!listingEnquiry.getAgentId().equals(userId)) {
-      throw new UnauthorizedException("Forbidden. You're not authorized to get this data");
+      throw new UnAuthorizedException("Forbidden. You're not authorized to get this data");
     }
     return listingEnquiry;
   }

@@ -3,7 +3,7 @@ package com.codeplanks.home360.service;
 import com.codeplanks.home360.domain.listing.*;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.exception.UnauthorizedException;
+import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class ListingService implements ListingServiceRepository {
     Integer userId = authenticationService.extractUserId();
     AppUser user = authenticationService.getUserByUserId(userId);
     if (!user.isEnabled()) {
-      throw new UnauthorizedException("You are not authorized to create a listing." +
+      throw new UnAuthorizedException("You are not authorized to create a listing." +
               " Please confirm your email to proceed.");
     }
     request.setAgentId(userId);
@@ -61,7 +61,7 @@ public class ListingService implements ListingServiceRepository {
     Integer userId = authenticationService.extractUserId();
     Integer agentId = getAgentId(listingId);
     if (!Objects.equals(agentId, userId)) {
-      throw new UnauthorizedException("You do not have the permission to delete this listing");
+      throw new UnAuthorizedException("You do not have the permission to delete this listing");
     }
     Optional<Listing> listing = listingRepository.findById(listingId);
     listingRepository.deleteById(listingId);
