@@ -2,6 +2,7 @@ package com.codeplanks.home360.service;
 
 
 import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.exception.RefreshTokenExpiredException;
 import com.codeplanks.home360.repository.RefreshTokenRepository;
 import com.codeplanks.home360.domain.refreshToken.RefreshToken;
 import lombok.RequiredArgsConstructor;
@@ -42,8 +43,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   public RefreshToken verifyRefreshTokenExpirationTime(RefreshToken refreshToken) {
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
       refreshTokenRepository.delete(refreshToken);
-      throw new RuntimeException(refreshToken.getToken() + "Refresh token has expired, make a new" +
-              " sign in request");
+      throw new RefreshTokenExpiredException(refreshToken.getToken() + "Refresh token has expired, make a new" +
+              " login request");
     }
     return refreshToken;
   }
