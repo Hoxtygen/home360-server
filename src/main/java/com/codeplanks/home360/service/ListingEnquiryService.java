@@ -11,4 +11,5 @@ public interface ListingEnquiryService {
 
   ListingEnquiry getListingEnquiryById(String enquiryMessageId);
 
+  Boolean markMessageAsRead(String enquiryMessageId);
 }

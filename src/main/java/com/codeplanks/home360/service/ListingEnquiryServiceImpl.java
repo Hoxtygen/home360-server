@@ -5,15 +5,20 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMapper;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
+import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,6 +29,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   @Autowired
   private final AuthenticationServiceImpl authenticationService;
   private final ListingEnquiryRepository listingEnquiryRepository;
+  @Autowired
+  private final MongoTemplate mongoTemplate;
 
   @Override
   public ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest) {
@@ -59,11 +66,42 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
             () -> new NotFoundException("Listing enquiry not found"));
 
     Integer userId = authenticationService.extractUserId();
-
-    if (!listingEnquiry.getAgentId().equals(userId)) {
-      throw new UnAuthorizedException("Forbidden. You're not authorized to get this data");
-    }
+    validateUserAuthorization(listingEnquiry);
     return listingEnquiry;
   }
 
+  @Override
+  public Boolean markMessageAsRead(String enquiryMessageId) {
+    Query query = createQuery(enquiryMessageId);
+    validateEnquiryExists(query);
+    ListingEnquiry listingEnquiry = mongoTemplate.findOne(query, ListingEnquiry.class);
+    if (listingEnquiry != null) {
+      validateUserAuthorization(listingEnquiry);
+    }
+    return updateMessageAsRead(query);
+  }
+
+  private Query createQuery(String enquiryMessageId) {
+    return new Query(Criteria.where("_id").is(enquiryMessageId));
+  }
+
+  private void validateEnquiryExists(Query query) {
+    boolean exists = mongoTemplate.exists(query, ListingEnquiry.class);
+    if (!exists) {
+      throw new NotFoundException("Listing enquiry with the given ID was not found");
+    }
+  }
+
+  private void validateUserAuthorization(ListingEnquiry listingEnquiry) {
+    Integer userId = authenticationService.extractUserId();
+    if (!listingEnquiry.getAgentId().equals(userId)) {
+      throw new AccessDeniedException("Forbidden. You're not authorized to modify this data");
+    }
+  }
+
+  private Boolean updateMessageAsRead(Query query) {
+    Update update = new Update().set("read", true);
+    UpdateResult updateResult = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
+    return updateResult.getModifiedCount() > 0;
+  }
 }
