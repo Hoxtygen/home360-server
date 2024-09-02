@@ -14,6 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -92,4 +94,7 @@ public class ListingEnquiry {
 
   @Field(name = "read", targetType = FieldType.BOOLEAN)
   private boolean read = false;
+
+@Field(name = "replies", targetType = FieldType.ARRAY)
+  private List<ListingEnquiryMessageReply> replies = new ArrayList<>();
 }

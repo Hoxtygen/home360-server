@@ -4,6 +4,8 @@ package com.codeplanks.home360.controller;
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
+import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReply;
+import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReplyDTO;
 import com.codeplanks.home360.event.ListingEnquiryEvent;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.ListingEnquiryServiceImpl;
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -187,5 +190,15 @@ public class ListingEnquiryController {
       response.setStatus(HttpStatus.OK);
     }
     return new ResponseEntity<>(response, response.getStatus());
+  }
+
+  @PostMapping("/listing-enquiry/{enquiryId}/message")
+  public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>>sendEnquiryReply(@PathVariable String enquiryId,
+                                                                                         @RequestBody @Valid ListingEnquiryMessageReplyDTO replyMessage){
+    SuccessDataResponse<ListingEnquiryMessageReply> response = new SuccessDataResponse<>();
+    response.setData(listingEnquiryService.addReplyMessage(enquiryId, replyMessage));
+    response.setStatus(HttpStatus.CREATED);
+    response.setMessage("message posted.");
+    return  new ResponseEntity<>(response, response.getStatus());
   }
 }

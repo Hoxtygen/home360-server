@@ -1,9 +1,7 @@
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMapper;
+import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
@@ -22,6 +20,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +80,14 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return updateMessageAsRead(query);
   }
 
+  @Override
+  public ListingEnquiryMessageReply addReplyMessage(String enquiryMessageId,
+                                                    ListingEnquiryMessageReplyDTO reply) {
+    validateUserIds(reply.getSender(), reply.getReceiver());
+    Query query = createQuery(enquiryMessageId);
+    return addEnquiryReply(query, reply);
+  }
+
   private Query createQuery(String enquiryMessageId) {
     return new Query(Criteria.where("_id").is(enquiryMessageId));
   }
@@ -103,5 +110,35 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     Update update = new Update().set("read", true);
     UpdateResult updateResult = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
     return updateResult.getModifiedCount() > 0;
+  }
+
+  private ListingEnquiryMessageReply addEnquiryReply(Query query,
+                                                     ListingEnquiryMessageReplyDTO messageReply) {
+    if (messageReply == null) {
+      throw new IllegalArgumentException("Message reply cannot be null");
+    }
+    ListingEnquiryMessageReply reply = ListingEnquiryMessageReply.builder()
+            .sender(messageReply.getSender())
+            .receiver(messageReply.getReceiver())
+            .content(messageReply.getContent())
+            .id(UUID.randomUUID().toString())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+    Update update = new Update().push("replies", reply);
+    UpdateResult result = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
+    if (result.getMatchedCount() == 0) {
+      throw new NotFoundException("EnquiryId does not exist");
+    }
+    if (result.getModifiedCount() == 0) {
+      throw new RuntimeException("EnquiryId does not exist");
+    }
+
+    return reply;
+  }
+
+  private void validateUserIds(Integer senderId, Integer receiverId) {
+    authenticationService.getUserByUserId(senderId);
+    authenticationService.getUserByUserId(receiverId);
   }
 }

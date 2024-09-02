@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -27,5 +28,7 @@ public class ListingEnquiryDTO {
   private String commercialPurpose;
   private String listingId;
   private Integer agentId;
+  private boolean read;
+  private List<ListingEnquiryMessageReply> replies;
   private LocalDateTime createdAt;
 }
