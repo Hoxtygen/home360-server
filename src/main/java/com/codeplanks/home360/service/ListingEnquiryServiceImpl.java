@@ -131,7 +131,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
       throw new NotFoundException("EnquiryId does not exist");
     }
     if (result.getModifiedCount() == 0) {
-      throw new RuntimeException("EnquiryId does not exist");
+      throw new NotFoundException("EnquiryId does not exist");
     }
 
     return reply;
