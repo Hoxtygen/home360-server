@@ -3,17 +3,24 @@ package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.auth.AuthenticationRequest;
 import com.codeplanks.home360.domain.auth.AuthenticationResponse;
-import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.domain.auth.RegisterRequest;
-import com.codeplanks.home360.event.RegistrationCompleteEvent;
-import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
-import com.codeplanks.home360.exception.NotFoundException;
+import com.codeplanks.home360.domain.passwordReset.PasswordResetRequest;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
-import com.codeplanks.home360.domain.passwordReset.PasswordResetRequest;
-import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.domain.verificationToken.VerificationToken;
+import com.codeplanks.home360.event.RegistrationCompleteEvent;
+import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
+import com.codeplanks.home360.exception.ApiError;
+import com.codeplanks.home360.exception.NotFoundException;
+import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -37,6 +44,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "User authentication management APIs")
 public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
   private final ApplicationEventPublisher publisher;
@@ -46,6 +54,36 @@ public class AuthenticationController {
   @Value("${application.frontend.verify-email.url}")
   private String emailVerificationUrl;
 
+  @Operation(
+          summary = "Register user",
+          description = "Register a new user to use the application",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Created successfully",
+                  content = {
+                          @Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "409",
+                  description = "conflict",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+  })
   @PostMapping("/register")
   public ResponseEntity<SuccessDataResponse<String>> register(
           @RequestBody @Valid RegisterRequest request, final HttpServletRequest servletRequest) {
@@ -59,12 +97,54 @@ public class AuthenticationController {
 
   }
 
+  @Operation(
+          summary = "Login user",
+          description = "Sign in a user to the application",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "Sign in successful",
+                  content = {
+                          @Content(schema = @Schema(implementation = AuthenticationResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+  })
   @PostMapping("/login")
   public ResponseEntity<AuthenticationResponse> login(
           @RequestBody AuthenticationRequest request) {
     return new ResponseEntity<>(authenticationServiceImpl.login(request), HttpStatus.OK);
   }
 
+  @Operation(
+          summary = "Verify user email",
+          description = "Verifies a new user email address",
+          tags = {"GET"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = " Verification successful",
+                  content = {
+                          @Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @GetMapping("/verifyEmail")
   public ResponseEntity<SuccessDataResponse<String>> verifyEmail(
           @RequestParam("token") String token) {
@@ -75,6 +155,32 @@ public class AuthenticationController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Operation(
+          summary = "Resend verification token",
+          description = "Resend  verification token to verify new user email address",
+          tags = {"GET"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = " Verification token sent",
+                  content = {
+                          @Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Token not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @GetMapping("/resend-verification-token")
   public ResponseEntity<SuccessDataResponse<String>> resendVerificationToken(
           @RequestParam("token") String oldToken,
@@ -91,6 +197,32 @@ public class AuthenticationController {
 
   }
 
+  @Operation(
+          summary = "Generate access token",
+          description = "Generates a new access token",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Access token generated Successfully",
+                  content = {
+                          @Content(schema = @Schema(implementation = TokenResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Refresh token not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @PostMapping("/refreshToken")
   public ResponseEntity<SuccessDataResponse<TokenResponse>> getRefreshToken(
           @RequestBody TokenRequest tokenRequest) {
@@ -101,6 +233,34 @@ public class AuthenticationController {
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
+  @Operation(
+          summary = "Request for password reset",
+          description = "User request for password reset",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Successful",
+                  content = {
+                          @Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "User not found",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          )
+  })
   @PostMapping("/password-reset-request")
   public ResponseEntity<SuccessDataResponse<String>> resetPasswordRequest(
           @RequestBody PasswordResetRequest passwordRequest)
@@ -118,16 +278,72 @@ public class AuthenticationController {
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
+  @Operation(
+          summary = "Reset forgotten user password",
+          description = "Resets the password of users that forgot their password",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Password reset successful",
+                  content = {
+                          @Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "User not found",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          )
+  })
   @PostMapping("/reset-password")
   public ResponseEntity<SuccessDataResponse<String>> resetPassword(
           @RequestBody PasswordResetRequest passwordResetRequest,
           @RequestParam("token") String token) {
-    SuccessDataResponse<String> response = new SuccessDataResponse<>(HttpStatus.OK, "Success",
+    SuccessDataResponse<String> response = new SuccessDataResponse<>(HttpStatus.CREATED, "Success",
             authenticationServiceImpl.resetPassword(passwordResetRequest, token));
     return new ResponseEntity<>(response, HttpStatus.OK);
 
   }
 
+  @Operation(
+          summary = "Change user password",
+          description = "Changes the password of users who wants to knowingly change it.",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Password change successful",
+                  content = {
+                          @Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "User not found",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          )
+  })
   @PostMapping("/change-password")
   public String changePassword(@RequestBody PasswordResetRequest requestObject) {
     AppUser appUser = authenticationServiceImpl.findByEmail(requestObject.getEmail()).get();
