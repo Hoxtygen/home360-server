@@ -132,9 +132,10 @@ public class ListingEnquiryController {
           )
   })
   @GetMapping("/listing-enquiries/{listingEnquiryId}")
-  public ResponseEntity<SuccessDataResponse<ListingEnquiry>> getAgentListingEnquiryById
-          (@PathVariable("listingEnquiryId") @Parameter(name = "listingEnquiryId", description =
-                  "Listing enquiry Id", example = "66ac91c8cb3294535d04e0e3") String listingEnquiryId) {
+  public ResponseEntity<SuccessDataResponse<ListingEnquiry>> getAgentListingEnquiryById(
+          @PathVariable("listingEnquiryId") @Parameter(name = "listingEnquiryId",
+                  description = "Listing enquiry Id", example = "66ac91c8cb3294535d04e0e3")
+          String listingEnquiryId) {
     SuccessDataResponse<ListingEnquiry> response = new SuccessDataResponse<>();
     response.setData(listingEnquiryService.getListingEnquiryById(listingEnquiryId));
     response.setMessage("Listing enquiry fetched successfully");
@@ -179,7 +180,8 @@ public class ListingEnquiryController {
           )
   })
   @PutMapping("listing-enquiry/{listingEnquiryId}/read")
-  public ResponseEntity<SuccessDataResponse<Boolean>> markMessageAsRead(@PathVariable String listingEnquiryId) {
+  public ResponseEntity<SuccessDataResponse<Boolean>> markMessageAsRead(
+          @PathVariable String listingEnquiryId) {
     SuccessDataResponse<Boolean> response = new SuccessDataResponse<>();
     response.setData(listingEnquiryService.markMessageAsRead(listingEnquiryId));
     if (!response.getData()) {
@@ -192,13 +194,48 @@ public class ListingEnquiryController {
     return new ResponseEntity<>(response, response.getStatus());
   }
 
+  @Operation(
+          summary = "Sends messages between registered users",
+          description = "Allow registered users to send messages between themselves in response " +
+                  "to listing enquiries",
+          tags = {"POST"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Created successfully",
+                  content = {@Content(schema = @Schema(implementation =
+                          ListingEnquiryMessageReply.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "401",
+                  description = "Authentication required",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Not Found - The listing enquiry ID, sender or receiver was " +
+                          "not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @PostMapping("/listing-enquiry/{enquiryId}/message")
-  public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>>sendEnquiryReply(@PathVariable String enquiryId,
-                                                                                         @RequestBody @Valid ListingEnquiryMessageReplyDTO replyMessage){
+  public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>> sendEnquiryReply(
+          @PathVariable String enquiryId,
+          @RequestBody @Valid ListingEnquiryMessageReplyDTO replyMessage) {
     SuccessDataResponse<ListingEnquiryMessageReply> response = new SuccessDataResponse<>();
     response.setData(listingEnquiryService.addReplyMessage(enquiryId, replyMessage));
     response.setStatus(HttpStatus.CREATED);
     response.setMessage("message posted.");
-    return  new ResponseEntity<>(response, response.getStatus());
+    return new ResponseEntity<>(response, response.getStatus());
   }
 }
