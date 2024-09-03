@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 public class ListingEnquiryMessageReply {
   @Id
   private String id;
-  private  int sender;
-  private int receiver;
+  private  int senderId;
+  private int receiverId;
   private  String content;
   private LocalDateTime createdAt;
 }

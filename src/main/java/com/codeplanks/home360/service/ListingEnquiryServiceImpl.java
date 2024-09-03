@@ -83,7 +83,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   @Override
   public ListingEnquiryMessageReply addReplyMessage(String enquiryMessageId,
                                                     ListingEnquiryMessageReplyDTO reply) {
-    validateUserIds(reply.getSender(), reply.getReceiver());
+    validateUserIds(reply.getSenderId(), reply.getReceiverId());
     Query query = createQuery(enquiryMessageId);
     return addEnquiryReply(query, reply);
   }
@@ -118,8 +118,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
       throw new IllegalArgumentException("Message reply cannot be null");
     }
     ListingEnquiryMessageReply reply = ListingEnquiryMessageReply.builder()
-            .sender(messageReply.getSender())
-            .receiver(messageReply.getReceiver())
+            .senderId(messageReply.getSenderId())
+            .receiverId(messageReply.getReceiverId())
             .content(messageReply.getContent())
             .id(UUID.randomUUID().toString())
             .createdAt(LocalDateTime.now())
