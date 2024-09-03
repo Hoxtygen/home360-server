@@ -146,7 +146,7 @@ public class ListingEnquiryController {
   @Operation(
           summary = "Set listing enquiry to read",
           description = "Set a given listing enquiry to read",
-          tags = {"PUT"}
+          tags = {"PATCH"}
   )
   @ApiResponses({
           @ApiResponse(
@@ -179,7 +179,7 @@ public class ListingEnquiryController {
                           mediaType = "application/json")}
           )
   })
-  @PutMapping("listing-enquiry/{listingEnquiryId}/read")
+  @PatchMapping("listing-enquiry/{listingEnquiryId}/read")
   public ResponseEntity<SuccessDataResponse<Boolean>> markMessageAsRead(
           @PathVariable String listingEnquiryId) {
     SuccessDataResponse<Boolean> response = new SuccessDataResponse<>();
