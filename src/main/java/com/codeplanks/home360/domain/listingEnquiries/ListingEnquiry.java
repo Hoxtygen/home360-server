@@ -89,4 +89,7 @@ public class ListingEnquiry {
 
   @Field(name = "created_at", targetType = FieldType.DATE_TIME)
   private LocalDateTime createdAt;
+
+  @Field(name = "read", targetType = FieldType.BOOLEAN)
+  private boolean read = false;
 }

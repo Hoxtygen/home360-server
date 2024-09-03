@@ -34,7 +34,7 @@ public class ListingEnquiryController {
   @Operation(
           summary = "Create a listing enquiry",
           description = "Create a listing enquiry",
-          tags = {"Listing enquiry", "Post"})
+          tags = {"POST"})
   @ApiResponses({
           @ApiResponse(
                   responseCode = "201",
@@ -69,7 +69,7 @@ public class ListingEnquiryController {
   @Operation(
           summary = "Get all listing enquiries of an agent",
           description = "Returns all listing enquiries of a given agent",
-          tags = {"listing enquires", "Get"}
+          tags = {"GET"}
   )
   @ApiResponses({
           @ApiResponse(
@@ -101,7 +101,7 @@ public class ListingEnquiryController {
   @Operation(
           summary = "Get listing enquiry by Id",
           description = "Returns a listing enquiry by specifying the Id",
-          tags = {"listing enquiry", "Get"}
+          tags = {"GET"}
   )
   @ApiResponses({
           @ApiResponse(
@@ -137,5 +137,55 @@ public class ListingEnquiryController {
     response.setMessage("Listing enquiry fetched successfully");
     response.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @Operation(
+          summary = "Set listing enquiry to read",
+          description = "Set a given listing enquiry to read",
+          tags = {"PUT"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "Successfully set to read",
+                  content = {@Content(schema = @Schema(implementation = ListingEnquiry.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "304",
+                  description = "Not modified. Message already set to read.",
+                  content = {@Content(schema = @Schema(implementation = ListingEnquiry.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "401", description = "Authentication required",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "Forbidden - Not allowed to make update",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Not Found - Listing enquiry with the given ID was not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
+  @PutMapping("listing-enquiry/{listingEnquiryId}/read")
+  public ResponseEntity<SuccessDataResponse<Boolean>> markMessageAsRead(@PathVariable String listingEnquiryId) {
+    SuccessDataResponse<Boolean> response = new SuccessDataResponse<>();
+    response.setData(listingEnquiryService.markMessageAsRead(listingEnquiryId));
+    if (!response.getData()) {
+      response.setMessage("Listing enquiry message already  read");
+      response.setStatus(HttpStatus.NOT_MODIFIED);
+    } else {
+      response.setMessage("Listing enquiry message marked as read");
+      response.setStatus(HttpStatus.OK);
+    }
+    return new ResponseEntity<>(response, response.getStatus());
   }
 }

@@ -9,6 +9,7 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -126,5 +127,13 @@ public class GlobalExceptionHandler {
     apiError.setMessage(exception.getMessage());
     apiError.setTimestamp(LocalDateTime.now());
     return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ApiError> handleForbiddenException(AccessDeniedException exception) {
+    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.FORBIDDEN,
+            exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
   }
 }
