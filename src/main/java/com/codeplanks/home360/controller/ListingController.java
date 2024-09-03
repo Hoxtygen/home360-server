@@ -1,8 +1,15 @@
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listing.*;
+import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.ListingService;
 import com.codeplanks.home360.utils.SuccessDataResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +21,52 @@ import java.util.List;
 
 /**
  * @author Wasiu Idowu
- *
- * */
+ */
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@Tag(name = "Listing", description = "Listings management APIs")
 public class ListingController {
   private final ListingService listingService;
 
+  @Operation(
+          summary = "Create a listing",
+          description = "Creates a new listing",
+          tags = {"POST"})
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "201",
+                  description = "Created successfully",
+                  content = {@Content(schema = @Schema(implementation = Listing.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "Bad request",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json"
+                          )
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "401",
+                  description = "Authentication required",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "Forbidden",
+                  content = {
+                          @Content(schema = @Schema(implementation = ApiError.class),
+                                  mediaType = "application/json")
+                  }
+          )
+  })
   @PostMapping("/listing")
   public ResponseEntity<SuccessDataResponse<ListingDTO>> createListing(
           @RequestBody Listing request) {
@@ -33,6 +77,20 @@ public class ListingController {
     return new ResponseEntity<>(newListing, HttpStatus.CREATED);
   }
 
+  @Operation(
+          summary = "Get all listings",
+          description = "Returns all listings",
+          tags = {"GET"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "Successfully retrieved",
+                  content = {
+                          @Content(mediaType = "application/json")
+                  }
+          ),
+  })
   @GetMapping("/listings")
   public ResponseEntity<SuccessDataResponse<List<Listing>>> getAllListings() {
     SuccessDataResponse<List<Listing>> allListings = new SuccessDataResponse<>();
@@ -43,6 +101,36 @@ public class ListingController {
   }
 
 
+  @Operation(
+          summary = "Delete listing ",
+          description = "Delete a given listing by ID",
+          tags = {"DELETE"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "OK",
+                  content = {@Content(schema = @Schema(implementation = SuccessDataResponse.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "401", description = "Authentication required",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "Forbidden - Not allowed to delete",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Not Found - Listing enquiry with the given ID was not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @DeleteMapping("/listings/{listingId}")
   public ResponseEntity<?> deleteListing(@PathVariable String listingId) {
     SuccessDataResponse<Object> response = new SuccessDataResponse<>();
@@ -52,6 +140,31 @@ public class ListingController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Operation(
+          summary = "Get listing by Id",
+          description = "Returns a listing by specifying the Id",
+          tags = {"GET"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "Successfully retrieved",
+                  content = {@Content(schema = @Schema(implementation = Listing.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "Forbidden.",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Not Found - The listing was not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @GetMapping("/listings/{listingId}")
   public ResponseEntity<SuccessDataResponse<ListingWithAgentInfo>> getListing(@PathVariable String listingId) {
     SuccessDataResponse<ListingWithAgentInfo> response = new SuccessDataResponse<>();
@@ -61,6 +174,19 @@ public class ListingController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Operation(
+          summary = "Get listings by searching",
+          description = "Return listings by specifying search parameters",
+          tags = {"GET"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "Successfully retrieved",
+                  content = {@Content(schema = @Schema(implementation = PaginatedResponse.class),
+                          mediaType = "application/json")}
+          ),
+  })
   @GetMapping("/listings/search")
   public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getFilteredListings(
           @RequestParam(value = "page", defaultValue = "1") int page,
@@ -78,6 +204,33 @@ public class ListingController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Operation(
+          summary = "Get listings by agent ID",
+          description = "Return listings by specifying the agent ID",
+          tags = {"GET"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "Successfully retrieved",
+                  content = {
+                          @Content(schema = @Schema(implementation = PaginatedResponse.class),
+                                  mediaType =
+                                  "application/json")
+                  }
+          ),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "Forbidden.",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "401", description = "Authentication required",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+  })
   @GetMapping("/userListings")
   public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getAgentListings(
           @RequestParam(value = "page", defaultValue = "1") int page,
@@ -89,6 +242,43 @@ public class ListingController {
     agentListings.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(agentListings, HttpStatus.OK);
   }
+
+  @Operation(
+          summary = "Set listing  to taken",
+          description = "Set a given listing to taken",
+          tags = {"PATCH"}
+  )
+  @ApiResponses({
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "OK",
+                  content = {@Content(schema = @Schema(implementation = Listing.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "304",
+                  description = "Not modified. Message already set to rented.",
+                  content = {@Content(schema = @Schema(implementation = Listing.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "401", description = "Authentication required",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "Forbidden - Not allowed to make update",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          ),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "Not Found - Listing enquiry with the given ID was not found",
+                  content = {@Content(schema = @Schema(implementation = ApiError.class),
+                          mediaType = "application/json")}
+          )
+  })
   @PatchMapping("/listing")
   public ResponseEntity<SuccessDataResponse<ListingDTO>> updateTakenListing(@RequestBody @Validated RentUpdate updateRequest) {
     SuccessDataResponse<ListingDTO> updatedListing = new SuccessDataResponse<>();
