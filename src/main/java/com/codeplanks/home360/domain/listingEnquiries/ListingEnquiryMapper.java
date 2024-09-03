@@ -16,6 +16,8 @@ public class ListingEnquiryMapper {
             listingEnquiry.getCommercialPurpose(),
             listingEnquiry.getListingId(),
             listingEnquiry.getAgentId(),
+            listingEnquiry.isRead(),
+            listingEnquiry.getReplies(),
             listingEnquiry.getCreatedAt()
     );
   }
