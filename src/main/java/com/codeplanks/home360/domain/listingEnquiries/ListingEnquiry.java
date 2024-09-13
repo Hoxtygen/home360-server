@@ -1,10 +1,15 @@
+/* (C)2024 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
 import com.codeplanks.home360.validation.ValidEmail;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,19 +18,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "listingEnquiries")
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
+@Schema(description = "Listing Enquiry Model Information")
 public class ListingEnquiry {
-  @Id
-  private String id;
+  @Id private String id;
 
   @Field(name = "firstName", targetType = FieldType.STRING)
   @NotBlank(message = "First name is required")
@@ -45,11 +46,11 @@ public class ListingEnquiry {
 
   @Field(name = "phoneNumber")
   @NotBlank(message = "Phone number is required")
-  @Pattern(regexp = "^([0]{1})([7-9]{1})([0|1]{1})([\\d]{1})([\\d]{7,8})$", message =
-          "Enter a valid Nigerian number E.g 08022345678")
+  @Pattern(
+      regexp = "^([0]{1})([7-9]{1})([0|1]{1})([\\d]{1})([\\d]{7,8})$",
+      message = "Enter a valid Nigerian number E.g 08022345678")
   @Size(min = 11, max = 11, message = "Phone number must be 11 characters long.")
   private String phoneNumber;
-
 
   @Field(name = "location", targetType = FieldType.STRING)
   @NotBlank(message = "Location is required")
@@ -95,6 +96,5 @@ public class ListingEnquiry {
   @Field(name = "read", targetType = FieldType.BOOLEAN)
   private boolean read = false;
 
-@Field(name = "replies", targetType = FieldType.ARRAY)
   private List<ListingEnquiryMessageReply> replies = new ArrayList<>();
 }
