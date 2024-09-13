@@ -1,11 +1,17 @@
+/* (C)2024 */
 package com.codeplanks.home360.exception;
 
 import com.sun.mail.util.MailConnectException;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.NoSuchElementException;
+import org.hibernate.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
@@ -17,22 +23,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.MethodNotAllowedException;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
   private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleMethodArgumentNotValid(
-          MethodArgumentNotValidException exception) {
+      MethodArgumentNotValidException exception) {
     logger.error("Error: {}", exception.getMessage());
-    List<String> errors = exception.getBindingResult()
-            .getFieldErrors()
-            .stream()
+    List<String> errors =
+        exception.getBindingResult().getFieldErrors().stream()
             .map(DefaultMessageSourceResolvable::getDefaultMessage)
             .toList();
 
@@ -43,24 +43,23 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(UnAuthorizedException.class)
   public ResponseEntity<ApiError> handleUnAuthorizedException(UnAuthorizedException exception) {
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED,
-            exception.getMessage());
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ApiError> handleIllegalArgumentException(
-          IllegalArgumentException exception) {
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST,
-            exception.getMessage());
+      IllegalArgumentException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(NoSuchElementException.class)
-  public ResponseEntity<ApiError> handleNoSuchElementException(
-          NoSuchElementException exception) {
+  public ResponseEntity<ApiError> handleNoSuchElementException(NoSuchElementException exception) {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage("Item does not exist: " + exception.getMessage());
@@ -69,19 +68,18 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class,
-          MethodNotAllowedException.class})
+  @ExceptionHandler(
+      value = {HttpRequestMethodNotSupportedException.class, MethodNotAllowedException.class})
   public ResponseEntity<ApiError> handleMethodNotAllowedException(
-          HttpRequestMethodNotSupportedException exception) {
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.METHOD_NOT_ALLOWED,
-            exception.getMessage());
+      HttpRequestMethodNotSupportedException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.METHOD_NOT_ALLOWED, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.METHOD_NOT_ALLOWED);
   }
 
   @ExceptionHandler(DisabledException.class)
-  public ResponseEntity<ApiError> handleUserDisabledException(
-          DisabledException exception) {
+  public ResponseEntity<ApiError> handleUserDisabledException(DisabledException exception) {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage("User is currently disabled: " + exception.getMessage());
@@ -92,7 +90,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AuthenticationFailedException.class)
   public ResponseEntity<ApiError> handleAuthenticationFailedException(
-          AuthenticationFailedException exception) {
+      AuthenticationFailedException exception) {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
@@ -110,8 +108,12 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(value = {ConstraintViolationException.class,})
-  public ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException exception) {
+  @ExceptionHandler(
+      value = {
+        ConstraintViolationException.class,
+      })
+  public ResponseEntity<ApiError> handleConstraintViolationException(
+      ConstraintViolationException exception) {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
@@ -121,7 +123,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(RefreshTokenExpiredException.class)
   public ResponseEntity<ApiError> handleRefreshTokenExpiredException(
-          RefreshTokenExpiredException exception) {
+      RefreshTokenExpiredException exception) {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.UNAUTHORIZED);
     apiError.setMessage(exception.getMessage());
@@ -131,9 +133,26 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiError> handleForbiddenException(AccessDeniedException exception) {
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.FORBIDDEN,
-            exception.getMessage());
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.FORBIDDEN, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
+  }
+
+  @ExceptionHandler(MappingException.class)
+  public ResponseEntity<ApiError> handleMappingException(MappingException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ConversionFailedException.class)
+  public ResponseEntity<ApiError> handleConversionFailedExceptionException(
+      ConversionFailedException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 }

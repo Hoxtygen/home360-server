@@ -6,6 +6,8 @@ import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,17 +21,12 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class ListingEnquiryServiceImpl implements ListingEnquiryService {
-  @Autowired
-  private final AuthenticationServiceImpl authenticationService;
+  @Autowired private final AuthenticationServiceImpl authenticationService;
   private final ListingEnquiryRepository listingEnquiryRepository;
-  @Autowired
-  private final MongoTemplate mongoTemplate;
+  @Autowired private final MongoTemplate mongoTemplate;
 
   @Override
   public ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest) {
@@ -48,21 +45,23 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     Integer agentId = authenticationService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<ListingEnquiry> agentListingEnquiries =
-            listingEnquiryRepository.findListingEnquiriesByAgentId(ListingEnquiry.class, agentId,
-                    pageable);
+        listingEnquiryRepository.findListingEnquiriesByAgentId(
+            ListingEnquiry.class, agentId, pageable);
     return PaginatedResponse.<ListingEnquiry>builder()
-            .currentPage(agentListingEnquiries.getNumber() + 1)
-            .totalItems(agentListingEnquiries.getTotalElements())
-            .totalPages(agentListingEnquiries.getTotalPages())
-            .items(agentListingEnquiries.getContent())
-            .hasNext(agentListingEnquiries.hasNext())
-            .build();
+        .currentPage(agentListingEnquiries.getNumber() + 1)
+        .totalItems(agentListingEnquiries.getTotalElements())
+        .totalPages(agentListingEnquiries.getTotalPages())
+        .items(agentListingEnquiries.getContent())
+        .hasNext(agentListingEnquiries.hasNext())
+        .build();
   }
 
   @Override
   public ListingEnquiry getListingEnquiryById(String enquiryMessageId) {
-    ListingEnquiry listingEnquiry = listingEnquiryRepository.findById(enquiryMessageId).orElseThrow(
-            () -> new NotFoundException("Listing enquiry not found"));
+    ListingEnquiry listingEnquiry =
+        listingEnquiryRepository
+            .findById(enquiryMessageId)
+            .orElseThrow(() -> new NotFoundException("Listing enquiry not found"));
 
     Integer userId = authenticationService.extractUserId();
     validateUserAuthorization(listingEnquiry);
@@ -81,8 +80,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   @Override
-  public ListingEnquiryMessageReply addReplyMessage(String enquiryMessageId,
-                                                    ListingEnquiryMessageReplyDTO reply) {
+  public ListingEnquiryMessageReply addReplyMessage(
+      String enquiryMessageId, ListingEnquiryMessageReplyDTO reply) {
     validateUserIds(reply.getSenderId(), reply.getReceiverId());
     Query query = createQuery(enquiryMessageId);
     return addEnquiryReply(query, reply);
@@ -112,12 +111,13 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return updateResult.getModifiedCount() > 0;
   }
 
-  private ListingEnquiryMessageReply addEnquiryReply(Query query,
-                                                     ListingEnquiryMessageReplyDTO messageReply) {
+  private ListingEnquiryMessageReply addEnquiryReply(
+      Query query, ListingEnquiryMessageReplyDTO messageReply) {
     if (messageReply == null) {
       throw new IllegalArgumentException("Message reply cannot be null");
     }
-    ListingEnquiryMessageReply reply = ListingEnquiryMessageReply.builder()
+    ListingEnquiryMessageReply reply =
+        ListingEnquiryMessageReply.builder()
             .senderId(messageReply.getSenderId())
             .receiverId(messageReply.getReceiverId())
             .content(messageReply.getContent())

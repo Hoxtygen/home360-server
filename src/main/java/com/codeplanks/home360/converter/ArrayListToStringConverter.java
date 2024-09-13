@@ -1,10 +1,10 @@
-package com.codeplanks.home360.utils;
+/* (C)2024 */
+package com.codeplanks.home360.converter;
 
+import java.util.ArrayList;
 import lombok.NonNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
-
-import java.util.ArrayList;
 
 @ReadingConverter
 public class ArrayListToStringConverter implements Converter<ArrayList<String>, String> {
@@ -12,7 +12,4 @@ public class ArrayListToStringConverter implements Converter<ArrayList<String>, 
   public String convert(@NonNull ArrayList<String> source) {
     return String.join(", ", source);
   }
-
 }
-
-
