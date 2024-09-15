@@ -14,8 +14,7 @@ public class MongoConfig {
     return new MongoCustomConversions(
         List.of(
             new ArrayListToStringConverter(),
-            new StringToListingEnquiryMessageReplyArrayListConverter(),
-            new ListingEnquiryMessageReplyArrayListToStringConverter()
+            new StringToListingEnquiryMessageReplyArrayListConverter()
             ));
   }
 }
