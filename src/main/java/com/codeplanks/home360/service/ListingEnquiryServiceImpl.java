@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
@@ -41,12 +42,13 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   @Override
-  public PaginatedResponse<ListingEnquiry> getListingEnquiriesByAgentId(int page, int size) {
+  public PaginatedResponse<ListingEnquiry> getListingEnquiries(
+      int page, int size, Integer senderId) {
     Integer agentId = authenticationService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<ListingEnquiry> agentListingEnquiries =
-        listingEnquiryRepository.findListingEnquiriesByAgentId(
-            ListingEnquiry.class, agentId, pageable);
+        listingEnquiryRepository.findListingEnquiries(
+            ListingEnquiry.class, agentId, senderId, pageable);
     return PaginatedResponse.<ListingEnquiry>builder()
         .currentPage(agentListingEnquiries.getNumber() + 1)
         .totalItems(agentListingEnquiries.getTotalElements())
@@ -100,7 +102,10 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
 
   private void validateUserAuthorization(ListingEnquiry listingEnquiry) {
     Integer userId = authenticationService.extractUserId();
-    if (!listingEnquiry.getAgentId().equals(userId)) {
+    boolean isAgent = listingEnquiry.getAgentId().equals(userId);
+    boolean isInquirer =
+        listingEnquiry.getUserId() != null && listingEnquiry.getUserId().equals(userId);
+    if (!isAgent && !isInquirer) {
       throw new AccessDeniedException("Forbidden. You're not authorized to modify this data");
     }
   }
@@ -131,7 +136,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
       throw new NotFoundException("EnquiryId does not exist");
     }
     if (result.getModifiedCount() == 0) {
-      throw new NotFoundException("EnquiryId does not exist");
+      throw new NotFoundException("EnquiryId");
     }
 
     return reply;

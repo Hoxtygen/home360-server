@@ -96,5 +96,6 @@ public class ListingEnquiry {
   @Field(name = "read", targetType = FieldType.BOOLEAN)
   private boolean read = false;
 
+  @Field(name = "replies")
   private List<ListingEnquiryMessageReply> replies = new ArrayList<>();
 }

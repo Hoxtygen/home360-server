@@ -5,7 +5,6 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReply
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.core.convert.converter.Converter;
@@ -13,7 +12,8 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.lang.NonNull;
 
 @ReadingConverter
-public class StringToListingEnquiryMessageReplyArrayListConverter implements Converter<String, ArrayList<ListingEnquiryMessageReply>> {
+public class StringToListingEnquiryMessageReplyArrayListConverter
+    implements Converter<String, ArrayList<ListingEnquiryMessageReply>> {
   private final ObjectMapper objectMapper;
 
   public StringToListingEnquiryMessageReplyArrayListConverter() {

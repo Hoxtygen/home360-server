@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
@@ -9,7 +10,7 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReply
 public interface ListingEnquiryService {
   ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest);
 
-  PaginatedResponse<ListingEnquiry> getListingEnquiriesByAgentId(int page, int size);
+  PaginatedResponse<ListingEnquiry> getListingEnquiries(int page, int size, Integer senderId);
 
   ListingEnquiry getListingEnquiryById(String enquiryMessageId);
 
