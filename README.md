@@ -72,9 +72,8 @@ SPRING_DOCKER_PORT=8080
 ## Documentation
 
 * Application is available at [http://localhost:8080](http://localhost:8080/)
-  Documentation is available
-  at [http://localhost:8080/swagger-ui/index.html#/](http://localhost:8080/swagger-ui/index.html#/)
-* Frontend can be found at [home360 frontend](https://github.com/Hoxtygen/home360-frontend)
+* Documentation is available at [http://localhost:8080/swagger-ui/index.html#/](http://localhost:8080/swagger-ui/index.html#/)
+* The client can be found at [home360 client](https://github.com/Hoxtygen/home360-frontend)
 
 ## License
 
