@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/listings")
 @Tag(name = "Listing", description = "Listings management APIs")
 public class ListingController {
   private final ListingService listingService;
@@ -66,7 +66,7 @@ public class ListingController {
               mediaType = "application/json")
         })
   })
-  @PostMapping("/listing")
+  @PostMapping
   public ResponseEntity<SuccessDataResponse<ListingDTO>> createListing(
       @RequestBody Listing request) {
     SuccessDataResponse<ListingDTO> newListing = new SuccessDataResponse<>();
@@ -86,7 +86,7 @@ public class ListingController {
         description = "Successfully retrieved",
         content = {@Content(mediaType = "application/json")}),
   })
-  @GetMapping("/listings")
+  @GetMapping
   public ResponseEntity<SuccessDataResponse<List<Listing>>> getAllListings() {
     SuccessDataResponse<List<Listing>> allListings = new SuccessDataResponse<>();
     allListings.setData(listingService.allListings());
@@ -133,7 +133,7 @@ public class ListingController {
               mediaType = "application/json")
         })
   })
-  @DeleteMapping("/listings/{listingId}")
+  @DeleteMapping("/{listingId}")
   public ResponseEntity<?> deleteListing(@PathVariable String listingId) {
     SuccessDataResponse<Object> response = new SuccessDataResponse<>();
     response.setData(listingService.deleteListing(listingId));
@@ -170,7 +170,7 @@ public class ListingController {
               mediaType = "application/json")
         })
   })
-  @GetMapping("/listings/{listingId}")
+  @GetMapping("/{listingId}")
   public ResponseEntity<SuccessDataResponse<ListingWithAgentInfo>> getListing(
       @PathVariable String listingId) {
     SuccessDataResponse<ListingWithAgentInfo> response = new SuccessDataResponse<>();
@@ -201,7 +201,7 @@ public class ListingController {
     @Parameter(name = "annualRent", description = "The minimum annual rent"),
     @Parameter(name = "apartmentType", description = "The type of apartment you want")
   })
-  @GetMapping("/listings/search")
+  @GetMapping("/search")
   public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getFilteredListings(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "size", defaultValue = "25") int size,
@@ -299,7 +299,7 @@ public class ListingController {
               mediaType = "application/json")
         })
   })
-  @PatchMapping("/listing")
+  @PatchMapping
   public ResponseEntity<SuccessDataResponse<ListingDTO>> updateTakenListing(
       @RequestBody @Validated RentUpdate updateRequest) {
     SuccessDataResponse<ListingDTO> updatedListing = new SuccessDataResponse<>();

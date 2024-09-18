@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/listing-enquiries")
 @Tag(name = "Listing Enquiries", description = "Listing enquiries management APIs")
 public class ListingEnquiryController {
   private final ListingEnquiryServiceImpl listingEnquiryService;
@@ -63,7 +63,7 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         })
   })
-  @PostMapping("/listing-enquiry")
+  @PostMapping
   public ResponseEntity<SuccessDataResponse<ListingEnquiryDTO>> createEnquiry(
       @RequestBody @Validated ListingEnquiry enquiry) {
     SuccessDataResponse<ListingEnquiryDTO> newListingEnquiry = new SuccessDataResponse<>();
@@ -97,7 +97,7 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         }),
   })
-  @GetMapping("/listing-enquiries")
+  @GetMapping
   public ResponseEntity<SuccessDataResponse<PaginatedResponse<ListingEnquiry>>> getListingEnquiries(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "size", defaultValue = "25") int size,
@@ -148,7 +148,7 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         })
   })
-  @GetMapping("/listing-enquiries/{listingEnquiryId}")
+  @GetMapping("/{listingEnquiryId}")
   public ResponseEntity<SuccessDataResponse<ListingEnquiry>> getAgentListingEnquiryById(
       @PathVariable("listingEnquiryId")
           @Parameter(
@@ -209,7 +209,7 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         })
   })
-  @PatchMapping("listing-enquiry/{listingEnquiryId}/read")
+  @PatchMapping("/{listingEnquiryId}/read")
   public ResponseEntity<SuccessDataResponse<Boolean>> markMessageAsRead(
       @PathVariable String listingEnquiryId) {
     SuccessDataResponse<Boolean> response = new SuccessDataResponse<>();
@@ -264,7 +264,7 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         })
   })
-  @PostMapping("/listing-enquiry/{enquiryId}/message")
+  @PostMapping("/{enquiryId}/message")
   public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>> sendEnquiryReply(
       @PathVariable String enquiryId,
       @RequestBody @Valid ListingEnquiryMessageReplyDTO replyMessage) {
