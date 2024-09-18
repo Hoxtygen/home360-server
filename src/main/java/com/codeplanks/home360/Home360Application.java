@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
