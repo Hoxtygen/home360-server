@@ -1,16 +1,21 @@
 /* (C)2024 */
 package com.codeplanks.home360.exception;
 
+import com.mongodb.MongoSocketOpenException;
 import com.sun.mail.util.MailConnectException;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
+
+import java.net.ConnectException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -148,10 +153,45 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ConversionFailedException.class)
-  public ResponseEntity<ApiError> handleConversionFailedExceptionException(
+  public ResponseEntity<ApiError> handleConversionFailedException(
       ConversionFailedException exception) {
     ApiError apiError =
         new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(DateTimeParseException.class)
+  public ResponseEntity<ApiError> handleDateTimeParseException(DateTimeParseException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(DataAccessResourceFailureException.class)
+  public ResponseEntity<ApiError> handleDataAccessResourceFailureException(
+      DataAccessResourceFailureException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(MongoSocketOpenException.class)
+  public ResponseEntity<ApiError> handleMongoSocketOpenException(
+      MongoSocketOpenException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ConnectException.class)
+  public ResponseEntity<ApiError> handleConnectException(
+          ConnectException exception) {
+    ApiError apiError =
+            new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
