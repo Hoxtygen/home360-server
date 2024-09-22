@@ -3,8 +3,7 @@
 Home360 is an online real estate web application. It allows users to rent both private and commercially available houses
 and apartment.
 
-### Built with
-
+## Built with
 * [Spring Boot 3.0](https://spring.io/projects/spring-boot)
 * [Spring Security](https://spring.io/projects/spring-security)
 * [JSON Web Token](https://jwt.io/introduction)
@@ -12,9 +11,9 @@ and apartment.
 * [MongoDB](https://www.mongodb.com/)
 * [PostgreSQL](https://www.postgresql.org/)
 * [Mailgun](https://www.mailgun.com/)
+* [Docker](https://www.docker.com/)
 
-### Features
-
+## Features
 * User registration
 * User login with JWT authentication
 * Password reset
@@ -30,7 +29,7 @@ and apartment.
 * Fetch listing enquiries
 * In-app messaging
 
-### Getting Started
+## Getting Started
 
 To get started with this project you'd need to have the following installed on your local computer:
 
@@ -38,6 +37,7 @@ To get started with this project you'd need to have the following installed on y
 * Maven 3+
 * PostgreSQL
 * MongoDB
+* Docker (optional if you only want to run it locally)
 
 To build and run the project follow the steps below
 
@@ -66,11 +66,18 @@ SPRING_DOCKER_PORT=8080
 
 * Create a `application-dev.yml` file and add to the resources' directory. Check the `application-sample-dev.yml` for
   content to fill it up with.
-* Build the project : `mvn clean install`
-* Run the project: `mvn spring-boot:run`
+
+
+There are 2 ways to run the app
+1. Using the docker compose file
+- `docker-compose up --build`
+- This will start the app on port `8000`
+
+2. Running a local version of the Spring boot app
+- Build the project : `mvn clean install`
+- Run the project: `mvn spring-boot:run`
 
 ## Documentation
-
 * Application is available at [http://localhost:8080](http://localhost:8080/api)
 * Documentation is available at [http://localhost:8080/swagger-ui/index.html#/](http://localhost:8080/swagger-ui/index.html#/)
 * The client can be found at [home360 client](https://github.com/Hoxtygen/home360-frontend)

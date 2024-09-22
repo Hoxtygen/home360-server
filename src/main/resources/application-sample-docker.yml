@@ -1,0 +1,80 @@
+server:
+  port: <port>
+
+spring:
+  profiles: dev
+
+  mail:
+    host: <enter host>
+    port: <enter port>
+    username: <enter username>
+    password: <enter password>
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  data:
+    mongodb:
+      host: localhost
+      authentication-database: <authentication database name>
+      database: <enter database name>
+      auto-index-creation: true
+      uri: mongodb://mongo:27017/<database name>
+      embedded:
+        enabled: false
+
+  output:
+    ansi:
+      enabled: DETECT
+  datasource:
+    url: jdbc:postgresql://localhost:<port>/<database name>
+    username: <enter database username>
+    password: <enter database password>
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+      database: postgresql
+    show-sql: true
+  main:
+    web-application-type: servlet
+
+application:
+  security:
+    jwt:
+      secret-key: <jwt secret key>
+      jwtTokenExpirationMs: <jwt expiration time>
+
+  frontend:
+    url: <frontend base url>
+    password-reset-request:
+      url: <frontend password reset request url>
+    reset-password:
+      url: <frontend password reset url>
+    verify-email:
+      url: <frontend email verification page>
+    user-listings-url:
+      url: <frontend listing url>
+
+  mail:
+    mailSenderName: Home360
+    mailSenderAddress: udubit@hotmail.com
+
+logging:
+  file.name: <log file url>
+  pattern:
+    console: "%d{dd-MM-yyyy HH:mm:ss} - %msg%n"
+    file: "%d{dd-MM-yyyy HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: ERROR
+    org.springframework.web: ERROR
+    com.codeplanks: DEBUG
+    org.hibernate: ERROR
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
