@@ -7,8 +7,6 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 @Builder
 @JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)

@@ -5,7 +5,6 @@ import com.mongodb.MongoSocketOpenException;
 import com.sun.mail.util.MailConnectException;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
-
 import java.net.ConnectException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -19,6 +18,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.mail.MailSendException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
@@ -188,10 +188,18 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ConnectException.class)
-  public ResponseEntity<ApiError> handleConnectException(
-          ConnectException exception) {
+  public ResponseEntity<ApiError> handleConnectException(ConnectException exception) {
     ApiError apiError =
-            new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(HttpMessageConversionException.class)
+  public ResponseEntity<ApiError> handleHttpMessageConversionException(
+      HttpMessageConversionException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
