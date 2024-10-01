@@ -1,4 +1,11 @@
+/* (C)2024 */
 package com.codeplanks.home360.auth;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.domain.auth.AuthenticationRequest;
@@ -12,7 +19,10 @@ import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.UserRepository;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.service.RefreshTokenServiceImpl;
-import org.hibernate.annotations.NotFound;
+import com.codeplanks.home360.service.UserServiceImpl;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,39 +38,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Optional;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
-
-
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTests {
-  @InjectMocks
-  private AuthenticationServiceImpl authenticationService;
+  @InjectMocks private AuthenticationServiceImpl authenticationService;
 
-  @Mock
-  private RefreshTokenServiceImpl refreshTokenService;
+  @Mock private RefreshTokenServiceImpl refreshTokenService;
 
-  @Mock
-  private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-  @Mock
-  private JwtService jwtService;
-  @Mock
-  private PasswordEncoder passwordEncoder;
+  @Mock private JwtService jwtService;
+  @Mock private PasswordEncoder passwordEncoder;
 
-  @Mock
-  private AuthenticationManager authenticationManager;
+  @Mock private UserServiceImpl userService;
 
-  @Mock
-  Authentication authentication;
+  @Mock private AuthenticationManager authenticationManager;
+
+  @Mock Authentication authentication;
 
   private RegisterRequest request;
 
@@ -70,10 +63,10 @@ class AuthenticationServiceTests {
   @Value("${application.security.token}")
   private String token;
 
-
   @BeforeEach
   public void setup() {
-    request = RegisterRequest.builder()
+    request =
+        RegisterRequest.builder()
             .firstName("Elaeis")
             .lastName("Guineensis")
             .email("elaeis@example.com")
@@ -82,7 +75,8 @@ class AuthenticationServiceTests {
             .password("Int3rnat!onalization")
             .build();
 
-    user = AppUser.builder()
+    user =
+        AppUser.builder()
             .id(1)
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
@@ -131,8 +125,7 @@ class AuthenticationServiceTests {
   @Test
   public void givenExistingEmailWhenSaveAppUserThenThrowsException() {
     // Given - precondition or setup
-    given(userRepository.findByEmail(request.getEmail())).willReturn(
-            Optional.of(user));
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
 
     // When - action or the behaviour we're testing for
     assertThrows(UserAlreadyExistsException.class, () -> authenticationService.register(request));
@@ -145,8 +138,7 @@ class AuthenticationServiceTests {
   @Test
   public void givenExistingPhoneNumberWhenSaveAppUserThenThrowsException() {
     // Given - precondition or setup
-    given(userRepository.findByPhoneNumber(request.getPhoneNumber())).willReturn(
-            Optional.of(user));
+    given(userRepository.findByPhoneNumber(request.getPhoneNumber())).willReturn(Optional.of(user));
 
     // When - action or the behaviour we're testing for
     assertThrows(UserAlreadyExistsException.class, () -> authenticationService.register(request));
@@ -161,13 +153,14 @@ class AuthenticationServiceTests {
     // Given - precondition or setup
     given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
     given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-            .willReturn(authentication);
+        .willReturn(authentication);
     given(authentication.isAuthenticated()).willReturn(true);
     given(jwtService.generateToken(user)).willReturn(token);
     given(refreshTokenService.generateRefreshToken(user)).willReturn(refreshToken);
 
     // When - action or the behaviour we're testing for
-    AuthenticationRequest authRequest = new AuthenticationRequest("elaeis@example.com","Int3rnat!onalization");
+    AuthenticationRequest authRequest =
+        new AuthenticationRequest("elaeis@example.com", "Int3rnat!onalization");
     AuthenticationResponse response = authenticationService.login(authRequest);
 
     // Then - verify the output
@@ -180,7 +173,8 @@ class AuthenticationServiceTests {
   @DisplayName("incorrect user email login")
   @Test
   public void givenNonExistentAppUser_whenUserLogin_thenThrowsException() {
-    AuthenticationRequest authRequest = new AuthenticationRequest("nonexistent@example.com", "password123");
+    AuthenticationRequest authRequest =
+        new AuthenticationRequest("nonexistent@example.com", "password123");
 
     // Given - precondition or setup
     given(userRepository.findByEmail(authRequest.getEmail())).willReturn(Optional.empty());
@@ -203,7 +197,7 @@ class AuthenticationServiceTests {
     given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.ofNullable(user));
     given(authentication.isAuthenticated()).willReturn(false);
     given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-            .willReturn(authentication);
+        .willReturn(authentication);
 
     // When - action or the behaviour we're testing for
     assertThrows(NotFoundException.class, () -> authenticationService.login(authenticationRequest));
@@ -214,11 +208,11 @@ class AuthenticationServiceTests {
 
   @DisplayName("get user by user ID success")
   @Test
-  public  void GivenUserIdWhenCheckedIfExistsThenReturnAppUser(){
+  public void GivenUserIdWhenCheckedIfExistsThenReturnAppUser() {
     Integer userId = 1;
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
-    AppUser result = authenticationService.getUserByUserId(userId);
+    AppUser result = userService.getUserByUserId(userId);
 
     assertThat(result).isNotNull();
     assertThat(result.getId()).isEqualTo(userId);
@@ -226,32 +220,34 @@ class AuthenticationServiceTests {
 
   @DisplayName("get user by user ID failure")
   @Test
-  public void GivenUserIdWhenCheckedIfExistsThenReturnFalse(){
+  public void GivenUserIdWhenCheckedIfExistsThenReturnFalse() {
     Integer userId = 1;
     given(userRepository.findById(userId)).willReturn(Optional.empty());
 
-    NotFoundException exception =  assertThrows(NotFoundException.class, ()-> {
-      authenticationService.getUserByUserId(userId);
-    });
+    NotFoundException exception =
+        assertThrows(
+            NotFoundException.class,
+            () -> {
+              userService.getUserByUserId(userId);
+            });
     assertEquals("User does not exist", exception.getMessage());
   }
 
   @DisplayName("successfully compare user password")
   @Test
-  public  void GivenUserOldPasswordItMatchesWhenComparedWithSavedPassword(){
+  public void GivenUserOldPasswordItMatchesWhenComparedWithSavedPassword() {
     String oldUserPassword = "Int3rnat!onalization";
     given(passwordEncoder.matches(oldUserPassword, user.getPassword())).willReturn(true);
-    boolean result = authenticationService.oldPasswordIsValid(user, oldUserPassword);
+    boolean result = userService.isOldPasswordValid(user, oldUserPassword);
     assertTrue(result);
   }
 
   @DisplayName("failed user password comparison")
   @Test
-  public  void GivenUserOldPasswordItDoesNotMatchWhenComparedWithSavedPassword(){
+  public void GivenUserOldPasswordItDoesNotMatchWhenComparedWithSavedPassword() {
     String oldUserPassword = "Int3rnat!onaliza";
     given(passwordEncoder.matches(oldUserPassword, user.getPassword())).willReturn(false);
-    boolean result = authenticationService.oldPasswordIsValid(user, oldUserPassword);
+    boolean result = userService.isOldPasswordValid(user, oldUserPassword);
     assertFalse(result);
   }
-
 }

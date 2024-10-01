@@ -1,21 +1,15 @@
+/* (C)2024 */
 package com.codeplanks.home360.service;
 
-import com.codeplanks.home360.domain.auth.AuthenticationRequest;
-import com.codeplanks.home360.domain.auth.AuthenticationResponse;
-import com.codeplanks.home360.domain.auth.RegisterRequest;
-import com.codeplanks.home360.domain.passwordReset.PasswordResetRequest;
+import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
-import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.domain.user.AppUser;
-
-import java.util.Optional;
-
+import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 
 /**
  * @author Wasiu Idowu
  */
-
 public interface AuthenticationService {
   AppUser register(RegisterRequest request);
 
@@ -33,16 +27,7 @@ public interface AuthenticationService {
 
   AppUser findUserByPasswordToken(String token);
 
-  Optional<AppUser> findByEmail(String email);
-
-  void changePassword(AppUser appUser, String newPassword);
-
-  boolean oldPasswordIsValid(AppUser appUser, String oldPassword);
-
-  String resetPassword(PasswordResetRequest passwordResetRequest, String token);
-  AppUser getUserByUserId(Integer userId);
-
-  Integer extractUserId();
+  String resetUserPassword(PasswordResetRequest passwordResetRequest, String token);
 
   String verifyAccount(String token);
 
