@@ -13,9 +13,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.session.DisableEncodeUrlFilter;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -33,23 +32,27 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity
-        .addFilterBefore(jwtAuthFilter, LogoutFilter.class)
-        .addFilterBefore(new TrailingSlashRedirectFilter(), DisableEncodeUrlFilter.class)
+        .addFilterBefore(new TrailingSlashRedirectFilter(), ChannelProcessingFilter.class)
+        .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
         .cors(Customizer.withDefaults())
         .csrf()
         .disable()
         .authorizeHttpRequests()
         .requestMatchers(
-            "/**", "/api", "/api/v1", "/api/v1/auth/**", "/api-docs/**", "/swagger-ui" + "/**")
+            HttpMethod.GET, "/**", "/api", "/api-docs/**", "/swagger-ui/**", "/api" + "/v1")
         .permitAll()
         .and()
         .authorizeHttpRequests()
-        .requestMatchers(HttpMethod.POST, "/api/v1/listing-enquiry")
+        .requestMatchers("/api/v1/auth/**")
         .permitAll()
         .and()
         .authorizeHttpRequests()
         .requestMatchers(
             HttpMethod.GET, "/api/v1/listings", "/api/v1/listings/*", "/api/v1/listings/search/*")
+        .permitAll()
+        .and()
+        .authorizeHttpRequests()
+        .requestMatchers(HttpMethod.POST, "/api/v1/listing-enquiries")
         .permitAll()
         .anyRequest()
         .authenticated()
@@ -61,8 +64,7 @@ public class SecurityConfiguration {
                 exceptions
                     .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                     .accessDeniedHandler(new CustomAccessDeniedHandler()))
-        .authenticationProvider(authenticationProvider)
-        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        .authenticationProvider(authenticationProvider);
     return httpSecurity.build();
   }
 
