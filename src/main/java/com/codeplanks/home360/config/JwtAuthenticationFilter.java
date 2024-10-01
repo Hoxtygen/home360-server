@@ -1,9 +1,13 @@
+/* (C)2024 */
 package com.codeplanks.home360.config;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -19,55 +23,62 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import java.io.IOException;
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-  @Autowired
   private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
+  Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
   @Autowired
   @Qualifier("handlerExceptionResolver")
   private HandlerExceptionResolver resolver;
 
-  Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
   @Override
   protected void doFilterInternal(
-          @NonNull HttpServletRequest request,
-          @NonNull HttpServletResponse response,
-          @NonNull FilterChain filterChain
-  ) throws ServletException, IOException {
-    if (request.getServletPath().contains("/api/v1/auth") ||
-            request.getServletPath().equals("/api/v1")) {
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
+    if (request.getServletPath().contains("/api/v1/auth")
+        || request.getServletPath().equals("/api/v1")) {
       filterChain.doFilter(request, response);
       return;
     }
 
     final String authHeader = request.getHeader("Authorization");
-    String username = null;
-    String jwt = null;
+    String username;
+    String jwt;
+
+    if (authHeader == null || !authHeader.startsWith("Bearer")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     try {
-      if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        jwt = authHeader.substring(7);
-        username = jwtService.extractUsername(jwt);
-      }
+      jwt = authHeader.substring(7);
+      username = jwtService.extractUsername(jwt);
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
         if (jwtService.isTokenValid(jwt, userDetails)) {
           UsernamePasswordAuthenticationToken authenticationToken =
-                  new UsernamePasswordAuthenticationToken(
-                          userDetails, null, userDetails.getAuthorities());
+              new UsernamePasswordAuthenticationToken(
+                  userDetails, null, userDetails.getAuthorities());
           authenticationToken.setDetails(
-                  new WebAuthenticationDetailsSource().buildDetails(request));
+              new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
       }
-      filterChain.doFilter(request, response);
-    } catch (Exception exception) {
-      logger.error("Expired jwt exception" + exception.getMessage());
+
+    } catch (ExpiredJwtException | MalformedJwtException | IllegalArgumentException exception) {
+      logger.error("JWT Error: {}", exception.getMessage());
       resolver.resolveException(request, response, null, exception);
+      return;
+    } catch (Exception exception) {
+      logger.error("Unexpected error: {}", exception.getMessage());
+      resolver.resolveException(request, response, null, exception);
+      return;
     }
+    filterChain.doFilter(request, response);
   }
 }
