@@ -2,6 +2,8 @@
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.auth.PasswordChangeRequest;
+import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.domain.user.AppUserDTO;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.UserServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
@@ -15,10 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -64,5 +63,51 @@ public class UserController {
         new SuccessDataResponse<>(
             HttpStatus.OK, "Success", userService.changeUserPassword(request));
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @Operation(
+      summary = "Gets user details",
+      description = "It retrieves the details of a logged-in user",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successful",
+        content = {
+          @Content(
+              schema = @Schema(implementation = AppUserDTO.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Bad request",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Authentication required",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "404",
+        description = "User not found",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        })
+  })
+  @GetMapping("/user-details")
+  public ResponseEntity<SuccessDataResponse<AppUserDTO>> getUserDetails() {
+    SuccessDataResponse<AppUserDTO> response =
+        new SuccessDataResponse<>(
+            HttpStatus.OK, "User details retrieved successfully", userService.getUserDetails());
+    return new ResponseEntity<>(response, response.getStatus());
   }
 }
