@@ -3,6 +3,7 @@ package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.auth.PasswordChangeRequest;
 import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.domain.user.AppUserDTO;
 import java.util.Optional;
 
 public interface UserService {
@@ -21,4 +22,6 @@ public interface UserService {
   boolean emailExists(String email);
 
   boolean phoneNumberExists(String phoneNumber);
+
+  AppUserDTO getUserDetails();
 }

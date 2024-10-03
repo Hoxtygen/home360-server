@@ -3,6 +3,8 @@ package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.auth.PasswordChangeRequest;
 import com.codeplanks.home360.domain.user.AppUser;
+import com.codeplanks.home360.domain.user.AppUserDTO;
+import com.codeplanks.home360.domain.user.UserMapper;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.UserRepository;
@@ -29,6 +31,13 @@ public class UserServiceImpl implements UserService {
     }
     updatePassword(appUser, request.getNewPassword());
     return "Password changed successfully";
+  }
+
+  @Override
+  public AppUserDTO getUserDetails() {
+    Integer userId = extractUserId();
+    AppUser user = getUserByUserId(userId);
+    return UserMapper.mapAppUserToAppUserDTO(user);
   }
 
   @Override
