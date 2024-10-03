@@ -34,7 +34,6 @@ public class UserServiceImpl implements UserService {
   @Override
   public Integer extractUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    System.out.println("Authentication: " + authentication);
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       throw new UnAuthorizedException("User is not authenticated");
     }
