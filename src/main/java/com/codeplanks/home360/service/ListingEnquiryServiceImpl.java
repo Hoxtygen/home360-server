@@ -10,7 +10,6 @@ import com.mongodb.client.result.UpdateResult;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,14 +24,15 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ListingEnquiryServiceImpl implements ListingEnquiryService {
-  @Autowired private final AuthenticationServiceImpl authenticationService;
+  private final AuthenticationServiceImpl authenticationService;
   private final ListingEnquiryRepository listingEnquiryRepository;
-  @Autowired private final MongoTemplate mongoTemplate;
+  private final MongoTemplate mongoTemplate;
+  private final UserServiceImpl userService;
 
   @Override
   public ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest) {
     if (AuthenticationUtils.isAuthenticated()) {
-      Integer userId = authenticationService.extractUserId();
+      Integer userId = userService.extractUserId();
       enquiryRequest.setUserId(userId);
     }
 
@@ -44,7 +44,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   @Override
   public PaginatedResponse<ListingEnquiry> getListingEnquiries(
       int page, int size, Integer senderId) {
-    Integer agentId = authenticationService.extractUserId();
+    Integer agentId = userService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<ListingEnquiry> agentListingEnquiries =
         listingEnquiryRepository.findListingEnquiries(
@@ -65,7 +65,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
             .findById(enquiryMessageId)
             .orElseThrow(() -> new NotFoundException("Listing enquiry not found"));
 
-    Integer userId = authenticationService.extractUserId();
+    Integer userId = userService.extractUserId();
     validateUserAuthorization(listingEnquiry);
     return listingEnquiry;
   }
@@ -101,7 +101,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   private void validateUserAuthorization(ListingEnquiry listingEnquiry) {
-    Integer userId = authenticationService.extractUserId();
+    Integer userId = userService.extractUserId();
     boolean isAgent = listingEnquiry.getAgentId().equals(userId);
     boolean isInquirer =
         listingEnquiry.getUserId() != null && listingEnquiry.getUserId().equals(userId);
@@ -143,7 +143,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   private void validateUserIds(Integer senderId, Integer receiverId) {
-    authenticationService.getUserByUserId(senderId);
-    authenticationService.getUserByUserId(receiverId);
+    userService.getUserByUserId(senderId);
+    userService.getUserByUserId(receiverId);
   }
 }

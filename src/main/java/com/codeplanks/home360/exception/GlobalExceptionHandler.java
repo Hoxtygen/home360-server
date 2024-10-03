@@ -5,7 +5,6 @@ import com.mongodb.MongoSocketOpenException;
 import com.sun.mail.util.MailConnectException;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
-
 import java.net.ConnectException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -126,14 +125,14 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(RefreshTokenExpiredException.class)
+  @ExceptionHandler(ExpiredTokenException.class)
   public ResponseEntity<ApiError> handleRefreshTokenExpiredException(
-      RefreshTokenExpiredException exception) {
+      ExpiredTokenException exception) {
     ApiError apiError = new ApiError();
-    apiError.setStatus(HttpStatus.UNAUTHORIZED);
+    apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
     apiError.setTimestamp(LocalDateTime.now());
-    return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(AccessDeniedException.class)
@@ -188,10 +187,9 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ConnectException.class)
-  public ResponseEntity<ApiError> handleConnectException(
-          ConnectException exception) {
+  public ResponseEntity<ApiError> handleConnectException(ConnectException exception) {
     ApiError apiError =
-            new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }

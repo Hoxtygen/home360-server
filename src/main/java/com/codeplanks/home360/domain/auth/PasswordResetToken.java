@@ -1,19 +1,16 @@
-package com.codeplanks.home360.domain.passwordReset;
-
+/* (C)2024 */
+package com.codeplanks.home360.domain.auth;
 
 import com.codeplanks.home360.domain.user.AppUser;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Calendar;
-import java.util.Date;
-
 /**
  * @author Wasiu Idowu
  * */
-
 @Data
 @Entity
 @NoArgsConstructor
@@ -22,9 +19,11 @@ public class PasswordResetToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer token_id;
+
   private String token;
-  private Date expirationTime;
-  private static final int EXPIRATION_TIME = 2;
+  private LocalDateTime expirationTime;
+  private LocalDateTime created_time;
+  private static final int EXPIRATION_TIME = 10;
 
   @OneToOne
   @JoinColumn(name = "user_id")
@@ -43,10 +42,7 @@ public class PasswordResetToken {
     this.expirationTime = this.getTokenExpirationTime();
   }
 
-  public Date getTokenExpirationTime() {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(new Date().getTime());
-    calendar.add(Calendar.HOUR, EXPIRATION_TIME);
-    return new Date(calendar.getTime().getTime());
+  public LocalDateTime getTokenExpirationTime() {
+    return LocalDateTime.now().plusMinutes(EXPIRATION_TIME);
   }
 }

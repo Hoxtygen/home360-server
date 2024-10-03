@@ -1,10 +1,7 @@
 /* (C)2024 */
 package com.codeplanks.home360.controller;
 
-import com.codeplanks.home360.domain.auth.AuthenticationRequest;
-import com.codeplanks.home360.domain.auth.AuthenticationResponse;
-import com.codeplanks.home360.domain.auth.RegisterRequest;
-import com.codeplanks.home360.domain.passwordReset.PasswordResetRequest;
+import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.user.AppUser;
@@ -14,6 +11,7 @@ import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
+import com.codeplanks.home360.service.UserServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,6 +45,7 @@ public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
   private final ApplicationEventPublisher publisher;
   private final RegistrationCompleteEventListener eventListener;
+  private final UserServiceImpl userService;
 
   @Value("${application.frontend.reset-password.url}")
   private String resetPasswordUrl;
@@ -277,7 +276,7 @@ public class AuthenticationController {
       throws MessagingException, UnsupportedEncodingException {
     Optional<AppUser> user =
         Optional.of(
-            authenticationServiceImpl
+            userService
                 .findByEmail(passwordRequest.getEmail())
                 .orElseThrow(() -> new NotFoundException("User does not exist")));
     String passwordResetToken = UUID.randomUUID().toString();
@@ -322,53 +321,14 @@ public class AuthenticationController {
   })
   @PostMapping("/reset-password")
   public ResponseEntity<SuccessDataResponse<String>> resetPassword(
-      @RequestBody PasswordResetRequest passwordResetRequest, @RequestParam("token") String token) {
+      @RequestBody @Valid PasswordResetRequest passwordResetRequest,
+      @RequestParam("token") String token) {
     SuccessDataResponse<String> response =
         new SuccessDataResponse<>(
             HttpStatus.CREATED,
             "Success",
-            authenticationServiceImpl.resetPassword(passwordResetRequest, token));
+            authenticationServiceImpl.resetUserPassword(passwordResetRequest, token));
     return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  @Operation(
-      summary = "Change user password",
-      description = "Changes the password of users who wants to knowingly change it.",
-      tags = {"POST"})
-  @ApiResponses({
-    @ApiResponse(
-        responseCode = "201",
-        description = "Password change successful",
-        content = {
-          @Content(
-              schema = @Schema(implementation = SuccessDataResponse.class),
-              mediaType = "application/json")
-        }),
-    @ApiResponse(
-        responseCode = "400",
-        description = "Bad request",
-        content = {
-          @Content(
-              schema = @Schema(implementation = ApiError.class),
-              mediaType = "application/json")
-        }),
-    @ApiResponse(
-        responseCode = "404",
-        description = "User not found",
-        content = {
-          @Content(
-              schema = @Schema(implementation = ApiError.class),
-              mediaType = "application/json")
-        })
-  })
-  @PostMapping("/change-password")
-  public String changePassword(@RequestBody PasswordResetRequest requestObject) {
-    AppUser appUser = authenticationServiceImpl.findByEmail(requestObject.getEmail()).get();
-    if (!authenticationServiceImpl.oldPasswordIsValid(appUser, requestObject.getOldPassword())) {
-      return "Incorrect old password";
-    }
-    authenticationServiceImpl.changePassword(appUser, requestObject.getNewPassword());
-    return "Password changed successfully";
   }
 
   private void passwordResetEmailLink(AppUser user, String passwordToken)
