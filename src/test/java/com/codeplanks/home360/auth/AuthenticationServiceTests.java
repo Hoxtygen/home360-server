@@ -63,6 +63,9 @@ class AuthenticationServiceTests {
   @Value("${application.security.token}")
   private String token;
 
+  @Value("${application.security.password}")
+  private String userPassword;
+
   @BeforeEach
   public void setup() {
     request =
@@ -72,7 +75,7 @@ class AuthenticationServiceTests {
             .email("elaeis@example.com")
             .address("221B, Baker street, London")
             .phoneNumber("08030123456")
-            .password("Int3rnat!onalization")
+            .password(userPassword)
             .build();
 
     user =
@@ -160,7 +163,7 @@ class AuthenticationServiceTests {
 
     // When - action or the behaviour we're testing for
     AuthenticationRequest authRequest =
-        new AuthenticationRequest("elaeis@example.com", "Int3rnat!onalization");
+        new AuthenticationRequest("elaeis@example.com", userPassword);
     AuthenticationResponse response = authenticationService.login(authRequest);
 
     // Then - verify the output
@@ -236,7 +239,7 @@ class AuthenticationServiceTests {
   @DisplayName("successfully compare user password")
   @Test
   public void GivenUserOldPasswordItMatchesWhenComparedWithSavedPassword() {
-    String oldUserPassword = "Int3rnat!onalization";
+    String oldUserPassword = userPassword;
     given(passwordEncoder.matches(oldUserPassword, user.getPassword())).willReturn(true);
     boolean result = userService.isOldPasswordValid(user, oldUserPassword);
     assertTrue(result);
