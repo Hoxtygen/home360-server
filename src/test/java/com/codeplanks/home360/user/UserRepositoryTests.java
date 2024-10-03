@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.Date;
@@ -23,6 +24,9 @@ public class UserRepositoryTests {
 
   private AppUser user;
 
+  @Value("${application.security.password}")
+  private String userPassword;
+
   @BeforeEach
   public void setup() {
     user = AppUser.builder()
@@ -32,7 +36,7 @@ public class UserRepositoryTests {
             .role(Role.USER)
             .phoneNumber("09021234567")
             .address("221B, Baker street, London")
-            .password("Int3rnat!onalization")
+            .password(userPassword)
             .createdAt(new Date())
             .updatedAt(new Date())
             .build();
@@ -118,7 +122,7 @@ public class UserRepositoryTests {
             .firstName("Carica")
             .lastName("Papaya")
             .email("carica@example.com")
-            .address("Ketu Alapere").password("Int3rnat!onalization")
+            .address("Ketu Alapere").password(userPassword)
             .phoneNumber("09087812347")
             .createdAt(new Date())
             .updatedAt(new Date())
