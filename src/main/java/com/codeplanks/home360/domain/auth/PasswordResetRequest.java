@@ -13,8 +13,6 @@ public class PasswordResetRequest {
   @Email(message = "Enter a valid email address")
   private String email;
 
-  //  private String oldPassword;
-
   @Password(message = "Password is required")
   private String newPassword;
 }

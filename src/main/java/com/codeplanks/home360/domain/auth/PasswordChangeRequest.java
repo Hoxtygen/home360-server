@@ -7,10 +7,6 @@ import lombok.Data;
 
 @Data
 public class PasswordChangeRequest {
-  //  @Email(message = "Enter a valid email address")
-  //  @NotNull(message = "Email is required")
-  //  private String email;
-
   @Password(message = "Enter a valid password")
   @NotNull(message = "Password is required")
   private String oldPassword;
