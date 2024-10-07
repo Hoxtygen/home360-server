@@ -3,7 +3,7 @@ package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listing.*;
 import com.codeplanks.home360.exception.ApiError;
-import com.codeplanks.home360.service.ListingService;
+import com.codeplanks.home360.service.ListingServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/listings")
 @Tag(name = "Listing", description = "Listings management APIs")
 public class ListingController {
-  private final ListingService listingService;
+  private final ListingServiceImpl listingService;
 
   @Operation(
       summary = "Create a listing",
@@ -67,9 +67,9 @@ public class ListingController {
         })
   })
   @PostMapping
-  public ResponseEntity<SuccessDataResponse<ListingDTO>> createListing(
-      @RequestBody Listing request) {
-    SuccessDataResponse<ListingDTO> newListing = new SuccessDataResponse<>();
+  public ResponseEntity<SuccessDataResponse<Listing>> createListing(
+      @RequestBody ListingDTO request) {
+    SuccessDataResponse<Listing> newListing = new SuccessDataResponse<>();
     newListing.setData(listingService.createListing(request));
     newListing.setMessage("Listing created successfully");
     newListing.setStatus(HttpStatus.CREATED);

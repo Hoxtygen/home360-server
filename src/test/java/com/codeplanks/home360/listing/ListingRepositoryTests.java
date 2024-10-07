@@ -1,8 +1,14 @@
+/* (C)2024 */
 package com.codeplanks.home360.listing;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.codeplanks.home360.config.MongoConfig;
 import com.codeplanks.home360.domain.listing.*;
+import com.codeplanks.home360.repository.ListingRepository;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,47 +21,40 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-
 @ActiveProfiles("test")
-@DataMongoTest( properties = "de.flapdoodle.mongodb.embedded.version=5.0.5")
+@DataMongoTest(properties = "de.flapdoodle.mongodb.embedded.version=5.0.5")
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(MongoConfig.class)
 public class ListingRepositoryTests {
-  @Autowired
-  private ListingRepository listingRepository;
+  @Autowired private ListingRepository listingRepository;
 
   private Listing listing;
 
   ;
 
-  final List<String> details = Arrays.asList("Very good house with electricity", "Wine cellar",
-          "Personal garden");
-  final List<String> applicationDocs = Arrays.asList("Source of income",
-          "National identity card");
-  final List<String> apartmentImages = Arrays.asList("https://pixabay.com/photos/chinese-dragon" +
-                  "-asian-culture-2949514/",
+  final List<String> details =
+      Arrays.asList("Very good house with electricity", "Wine cellar", "Personal garden");
+  final List<String> applicationDocs = Arrays.asList("Source of income", "National identity card");
+  final List<String> apartmentImages =
+      Arrays.asList(
+          "https://pixabay.com/photos/chinese-dragon" + "-asian-culture-2949514/",
           "https://pixabay.com/photos/fantasy-dragon-mountain-light-sage-3159493/");
 
   @BeforeEach
   public void setup() {
-    listing = Listing.builder()
+    listing =
+        Listing.builder()
             .title("2-bedroom flat at Ilasamaja")
             .description("Lorem ipsum dolor sit amet consectetur adipscing")
-            .furnishing("Full POP, fully tiled, borehole water running, kitchen cabinet, " +
-                    "wardrobe")
+            .furnishing(
+                "Full POP, fully tiled, borehole water running, kitchen cabinet, " + "wardrobe")
             .position("Besides Kwara State House of Assembly Housing complex")
             .miscellaneous("Another lorem ipsum incoming at")
             .address(new Address("Baker street", "221B", "Ikeja", "Lagos", "Ikeja"))
-//            .available(true)
+            //            .available(true)
             .agentId(1)
-//            .availableFrom(new Date())
+            //            .availableFrom(new Date())
             .cost(new ListingCost(500000, 50000, 50000, 30000))
             .details(details)
             .facilityQuality(FacilityQuality.NORMAL)
@@ -66,12 +65,11 @@ public class ListingRepositoryTests {
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())
             .build();
-
   }
 
   @Test
   void example(@Autowired final MongoTemplate mongoTemplate) {
-//    System.out.println("current: " + mongoTemplate);
+    //    System.out.println("current: " + mongoTemplate);
     assertThat(mongoTemplate.getDb()).isNotNull();
   }
 
@@ -96,17 +94,18 @@ public class ListingRepositoryTests {
   @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
   public void givenListOfListings_whenFindAll_thenReturnListingsList() {
     // Given - precondition or setup
-    Listing listing1 = Listing.builder()
+    Listing listing1 =
+        Listing.builder()
             .title("2-bedroom flat at Ilasamaja")
             .description("Lorem ipsum dolor sit amet consectetur adipscing")
-            .furnishing("Full POP, fully tiled, borehole water running, kitchen cabinet, " +
-                    "wardrobe")
+            .furnishing(
+                "Full POP, fully tiled, borehole water running, kitchen cabinet, " + "wardrobe")
             .position("Besides Kwara State House of Assembly Housing complex")
             .miscellaneous("Another lorem ipsum incoming at")
             .address(new Address("Baker street", "221B", "Ikeja", "Lagos", "Ikeja"))
-//            .available(true)
+            //            .available(true)
             .agentId(1)
-//            .availableFrom(new Date())
+            //            .availableFrom(new Date())
             .cost(new ListingCost(500000, 50000, 50000, 30000))
             .details(details)
             .facilityQuality(FacilityQuality.NORMAL)
@@ -132,31 +131,32 @@ public class ListingRepositoryTests {
     assertThat(listings).isNotEmpty();
   }
 
-//   JUnit test for find listing by id
+  //   JUnit test for find listing by id
   @DisplayName("get listing by id")
   @Test
   public void givenListingObject_whenFindById_thenReturnListingObject() {
     // Given - precondition or setup
-    final List<String> details = Arrays.asList("Very good house with electricity", "Wine cellar",
-            "Personal garden");
-    final List<String> applicationDocs = Arrays.asList("Source of income",
-            "National identity card");
-    final List<String> apartmentImages = Arrays.asList("https://pixabay.com/photos/chinese-dragon"
-    +
-                    "-asian-culture-2949514/",
+    final List<String> details =
+        Arrays.asList("Very good house with electricity", "Wine cellar", "Personal garden");
+    final List<String> applicationDocs =
+        Arrays.asList("Source of income", "National identity card");
+    final List<String> apartmentImages =
+        Arrays.asList(
+            "https://pixabay.com/photos/chinese-dragon" + "-asian-culture-2949514/",
             "https://pixabay.com/photos/fantasy-dragon-mountain-light-sage-3159493/");
 
-    Listing newListing = Listing.builder()
+    Listing newListing =
+        Listing.builder()
             .title("2-bedroom flat at Ilasamaja")
             .description("Lorem ipsum dolor sit amet consectetur adipscing")
-            .furnishing("Full POP, fully tiled, borehole water running, kitchen cabinet, " +
-                    "wardrobe")
+            .furnishing(
+                "Full POP, fully tiled, borehole water running, kitchen cabinet, " + "wardrobe")
             .position("Besides Kwara State House of Assembly Housing complex")
             .miscellaneous("Another lorem ipsum incoming at")
             .address(new Address("Baker street", "221B", "Ikeja", "Lagos", "Ikeja"))
-//            .available(true)
+            //            .available(true)
             .agentId(1)
-//            .availableFrom(new Date())
+            //            .availableFrom(new Date())
             .cost(new ListingCost(500000, 50000, 50000, 30000))
             .details(details)
             .facilityQuality(FacilityQuality.NORMAL)
