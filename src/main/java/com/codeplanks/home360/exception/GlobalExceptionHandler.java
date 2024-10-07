@@ -18,6 +18,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mail.MailSendException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
@@ -193,4 +194,36 @@ public class GlobalExceptionHandler {
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ApiError> handleHttpMessageNotReadableException(
+      HttpMessageNotReadableException exception) {
+    String readableMessage = extractEnumErrorMessage(exception.getMessage());
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, readableMessage);
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  private String extractEnumErrorMessage(String message) {
+    if (message.contains("Cannot deserialize value of type")) {
+      try {
+        // Extracting relevant parts of the error message
+        String enumType = message.substring(message.indexOf("type `") + 6, message.indexOf("` from String"));
+        String invalidValue = message.substring(message.indexOf("from String \"") + 13, message.indexOf("\": not"));
+        String acceptedValues = message.substring(message.indexOf("Enum class: [") + 13, message.indexOf("]"));
+
+        // Extract only the simple class name instead of the fully qualified name
+        String fieldName = enumType.substring(enumType.lastIndexOf('.') + 1);
+
+        return String.format("Invalid value '%s' for field '%s'. Accepted values are: %s.", invalidValue, fieldName, acceptedValues);
+      } catch (Exception e) {
+        // Fallback in case of unexpected format
+        return "Invalid value provided. Please check your input.";
+      }
+    }
+    return message;  // Fallback to the original message if it's not a deserialization issue
+  }
+
+
 }
