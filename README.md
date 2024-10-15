@@ -12,6 +12,7 @@ and apartment.
 * [PostgreSQL](https://www.postgresql.org/)
 * [Mailgun](https://www.mailgun.com/)
 * [Docker](https://www.docker.com/)
+* [Bucket4j](https://www.bucket4j.com)
 
 ## Features
 * User registration
@@ -28,6 +29,7 @@ and apartment.
 * Mark listing enquiry as read
 * Fetch listing enquiries
 * In-app messaging
+* Rate limiting
 
 ## Getting Started
 
