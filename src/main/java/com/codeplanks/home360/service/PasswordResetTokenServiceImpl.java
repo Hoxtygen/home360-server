@@ -9,6 +9,8 @@ import com.codeplanks.home360.repository.PasswordResetTokenRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class PasswordResetTokenServiceImpl implements PasswordResetTokenService {
 
   private final PasswordResetTokenRepository passwordResetTokenRepository;
+  Logger logger = LoggerFactory.getLogger(PasswordResetTokenServiceImpl.class);
 
   @Override
   public void createPasswordResetUserToken(AppUser user, String passwordToken) {
@@ -45,12 +48,16 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
   }
 
   @Override
-  public String validatePasswordResetToken(String passwordResetToken) {
+  public AppUser validatePasswordResetToken(String passwordResetToken) {
     PasswordResetToken passwordToken = findPasswordResetToken(passwordResetToken);
-    LocalDateTime currentTime = LocalDateTime.now();
-    if (passwordToken.getExpirationTime().isBefore(currentTime)) {
+    if (passwordToken.getExpirationTime().isBefore(LocalDateTime.now())) {
       throw new ExpiredTokenException("Link already expired, request for a new link");
     }
-    return "valid";
+    return passwordToken.getUser();
+  }
+
+  @Override
+  public void deleteToken(String token) {
+    passwordResetTokenRepository.deleteByToken(token);
   }
 }

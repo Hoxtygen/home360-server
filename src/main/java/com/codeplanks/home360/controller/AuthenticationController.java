@@ -6,12 +6,10 @@ import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
-import com.codeplanks.home360.event.RegistrationCompleteEvent;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.ApiError;
-import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
-import com.codeplanks.home360.service.UserServiceImpl;
+import com.codeplanks.home360.service.RefreshTokenServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,15 +18,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.io.UnsupportedEncodingException;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,15 +36,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "User authentication management APIs")
 public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
-  private final ApplicationEventPublisher publisher;
   private final RegistrationCompleteEventListener eventListener;
-  private final UserServiceImpl userService;
-
-  @Value("${application.frontend.reset-password.url}")
-  private String resetPasswordUrl;
-
-  @Value("${application.frontend.verify-email.url}")
-  private String emailVerificationUrl;
+  private final RefreshTokenServiceImpl refreshTokenService;
 
   @Operation(
       summary = "Register user",
@@ -85,13 +71,12 @@ public class AuthenticationController {
   })
   @PostMapping("/register")
   public ResponseEntity<SuccessDataResponse<String>> register(
-      @RequestBody @Valid RegisterRequest request, final HttpServletRequest servletRequest) {
+      @RequestBody @Valid RegisterRequest request) {
     SuccessDataResponse<String> newUser = new SuccessDataResponse<>();
     AppUser response = authenticationServiceImpl.register(request);
     newUser.setData("Registration Successful. A verification link have been sent to your email.");
     newUser.setMessage("User registration successful");
     newUser.setStatus(HttpStatus.CREATED);
-    publisher.publishEvent(new RegistrationCompleteEvent(response, applicationUrl(servletRequest)));
     return new ResponseEntity<>(newUser, HttpStatus.CREATED);
   }
 
@@ -185,18 +170,11 @@ public class AuthenticationController {
   })
   @GetMapping("/resend-verification-token")
   public ResponseEntity<SuccessDataResponse<String>> resendVerificationToken(
-      @RequestParam("token") String oldToken, final HttpServletRequest request)
+      @RequestParam("token") String oldToken)
       throws MessagingException, UnsupportedEncodingException {
-    VerificationToken verificationToken =
-        authenticationServiceImpl.generateNewVerificationToken(oldToken);
-    AppUser appUser = verificationToken.getUser();
-    resendVerificationTokenEmail(appUser, emailVerificationUrl, verificationToken);
     SuccessDataResponse<String> response =
         new SuccessDataResponse<>(
-            HttpStatus.OK,
-            "Success",
-            "A new verification link has been sent to your email. Check your inbox to activate "
-                + "your account");
+            HttpStatus.OK, "Success", authenticationServiceImpl.resendVerificationToken(oldToken));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -234,7 +212,7 @@ public class AuthenticationController {
   public ResponseEntity<SuccessDataResponse<TokenResponse>> getRefreshToken(
       @RequestBody TokenRequest tokenRequest) {
     SuccessDataResponse<TokenResponse> response = new SuccessDataResponse<>();
-    response.setData(authenticationServiceImpl.refreshToken(tokenRequest));
+    response.setData(refreshTokenService.refreshToken(tokenRequest));
     response.setMessage("Success");
     response.setStatus(HttpStatus.CREATED);
     return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -274,16 +252,8 @@ public class AuthenticationController {
   public ResponseEntity<SuccessDataResponse<String>> resetPasswordRequest(
       @RequestBody PasswordResetRequest passwordRequest)
       throws MessagingException, UnsupportedEncodingException {
-    Optional<AppUser> user =
-        Optional.of(
-            userService
-                .findByEmail(passwordRequest.getEmail())
-                .orElseThrow(() -> new NotFoundException("User does not exist")));
-    String passwordResetToken = UUID.randomUUID().toString();
-    authenticationServiceImpl.createPasswordResetTokenForUser(user.get(), passwordResetToken);
-    passwordResetEmailLink(user.get(), passwordResetToken);
     SuccessDataResponse<String> response = new SuccessDataResponse<>();
-    response.setData("Password reset link has been sent your registered email.");
+    response.setData(authenticationServiceImpl.requestPasswordReset(passwordRequest.getEmail()));
     response.setMessage("Success");
     response.setStatus(HttpStatus.CREATED);
     return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -327,14 +297,8 @@ public class AuthenticationController {
         new SuccessDataResponse<>(
             HttpStatus.CREATED,
             "Success",
-            authenticationServiceImpl.resetUserPassword(passwordResetRequest, token));
+            authenticationServiceImpl.resetForgottenUserPassword(passwordResetRequest, token));
     return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  private void passwordResetEmailLink(AppUser user, String passwordToken)
-      throws MessagingException, UnsupportedEncodingException {
-    String url = resetPasswordUrl + "/?token=" + passwordToken;
-    eventListener.sendPasswordResetEmail(url);
   }
 
   private void resendVerificationTokenEmail(
@@ -342,14 +306,5 @@ public class AuthenticationController {
       throws MessagingException, UnsupportedEncodingException {
     String url = applicationUrl + "?token=" + verificationToken.getToken();
     eventListener.sendVerificationEmail(url);
-  }
-
-  public String applicationUrl(HttpServletRequest request) {
-    return "http://"
-        + request.getServerName()
-        + ":"
-        + request.getServerPort()
-        + "/api/v1/auth"
-        + request.getContextPath();
   }
 }

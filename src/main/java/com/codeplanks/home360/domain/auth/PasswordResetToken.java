@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class PasswordResetToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer token_id;
+  private Integer id;
 
   private String token;
   private LocalDateTime expirationTime;
@@ -30,19 +30,13 @@ public class PasswordResetToken {
   private AppUser user;
 
   public PasswordResetToken(String token, AppUser user) {
-    super();
     this.token = token;
     this.user = user;
-    this.expirationTime = this.getTokenExpirationTime();
-  }
-
-  public PasswordResetToken(String token) {
-    super();
-    this.token = token;
-    this.expirationTime = this.getTokenExpirationTime();
+    this.created_time = LocalDateTime.now();
+    this.expirationTime = getTokenExpirationTime();
   }
 
   public LocalDateTime getTokenExpirationTime() {
-    return LocalDateTime.now().plusMinutes(EXPIRATION_TIME);
+    return created_time.plusMinutes(EXPIRATION_TIME);
   }
 }

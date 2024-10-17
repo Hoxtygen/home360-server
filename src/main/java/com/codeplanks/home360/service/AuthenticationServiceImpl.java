@@ -4,27 +4,34 @@ package com.codeplanks.home360.service;
 import com.codeplanks.home360.config.JwtService;
 import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.refreshToken.RefreshToken;
-import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
+import com.codeplanks.home360.event.RegistrationCompleteEvent;
+import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.UserRepository;
 import com.codeplanks.home360.repository.VerificationTokenRepository;
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Wasiu Idowu
@@ -32,15 +39,24 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+  final HttpServletRequest servletRequest;
   private final UserRepository userRepository;
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
-  private final VerificationTokenRepository tokenRepository;
+  private final VerificationTokenRepository verificationTokenRepository;
   private final RefreshTokenServiceImpl refreshTokenServiceImpl;
   private final PasswordResetTokenServiceImpl passwordResetTokenServiceImpl;
   private final UserServiceImpl userService;
+  private final RegistrationCompleteEventListener eventListener;
+  private final ApplicationEventPublisher publisher;
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+
+  @Value("${application.frontend.reset-password.url}")
+  private String resetPasswordUrl;
+
+  @Value("${application.frontend.verify-email.url}")
+  private String emailVerificationUrl;
 
   @Override
   public AppUser register(RegisterRequest request) throws UserAlreadyExistsException {
@@ -68,8 +84,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             .createdAt(new Date())
             .updatedAt(new Date())
             .build();
-
-    return userRepository.save(user);
+    userRepository.save(user);
+    publisher.publishEvent(new RegistrationCompleteEvent(user, applicationUrl(servletRequest)));
+    return user;
   }
 
   @Override
@@ -113,90 +130,57 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public String verifyAccount(String token) {
-    VerificationToken verificationToken = tokenRepository.findByToken(token);
-    if (verificationToken == null) {
-      throw new BadCredentialsException("Invalid verification token");
-    }
+    VerificationToken verificationToken = validateVerificationToken(token);
     AppUser user = verificationToken.getUser();
     if (user.isEnabled()) {
       return "This account has already been verified. Please login";
     }
-    String verificationTokenResult = validateVerificationToken(token);
-    if (verificationTokenResult.equalsIgnoreCase("valid")) {
-      return "Email verified successfully. Proceed to login to your account";
-    } else {
-      return "Verification failed";
-    }
-  }
-
-  @Override
-  public TokenResponse refreshToken(TokenRequest request) {
-    return refreshTokenServiceImpl
-        .findByToken(request.getToken())
-        .map(refreshTokenServiceImpl::verifyRefreshTokenExpirationTime)
-        .map(RefreshToken::getUser)
-        .map(
-            userInfo -> {
-              String accessToken = jwtService.generateToken(userInfo);
-              return TokenResponse.builder()
-                  .accessToken(accessToken)
-                  .refreshToken(request.getToken())
-                  .build();
-            })
-        .orElseThrow(() -> new NotFoundException("Refresh token not in Database"));
-  }
-
-  @Override
-  public void saveUserVerificationToken(AppUser theUser, String token) {
-    VerificationToken verificationToken = new VerificationToken(token, theUser);
-    tokenRepository.save(verificationToken);
+    user.setEnabled(true);
+    userRepository.save(user);
+    return "Email verified successfully. Proceed to login to your account";
   }
 
   @Override
   public VerificationToken generateNewVerificationToken(String oldVerificationToken) {
-    VerificationToken verificationToken = tokenRepository.findByToken(oldVerificationToken);
-    if (verificationToken == null) {
-      throw new NotFoundException("Invalid User. Please register");
-    }
-    var verificationTokenTime = new VerificationToken();
-    verificationToken.setToken(UUID.randomUUID().toString());
-    verificationToken.setExpirationTime(verificationTokenTime.getTokenExpirationTime());
-    return tokenRepository.save(verificationToken);
+    AppUser user = extractUserFromToken(oldVerificationToken);
+    VerificationToken newVerificationToken = createNewVerificationToken(user);
+    replaceOldToken(oldVerificationToken, newVerificationToken);
+    return newVerificationToken;
   }
 
   @Override
-  public String validateVerificationToken(String token) {
-    VerificationToken verificationToken = tokenRepository.findByToken(token);
-    AppUser user = verificationToken.getUser();
+  public VerificationToken validateVerificationToken(String token) {
+    VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
+    if (verificationToken == null) {
+      throw new BadCredentialsException("Invalid verification token");
+    }
     Calendar calendar = Calendar.getInstance();
     if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
       throw new BadCredentialsException(
           "Token already expired. Click the  link below to request for a new token");
     }
-    user.setEnabled(true);
-    userRepository.save(user);
-    return "valid";
+    return verificationToken;
   }
 
   @Override
-  public String validatePasswordResetToken(String token) {
-    return passwordResetTokenServiceImpl.validatePasswordResetToken(token);
-  }
-
-  @Override
-  public String resetUserPassword(PasswordResetRequest passwordResetRequest, String token) {
-    String tokenVerificationResult = validatePasswordResetToken(token);
-    if (!tokenVerificationResult.equalsIgnoreCase("valid")) {
-      throw new NotFoundException("Invalid password reset token");
+  public String resetForgottenUserPassword(
+      PasswordResetRequest passwordResetRequest, String token) {
+    AppUser user = passwordResetTokenServiceImpl.validatePasswordResetToken(token);
+    if (user == null) {
+      throw new NotFoundException("User not found for the provided password reset token");
     }
-    AppUser appUser = findUserByPasswordToken(token);
-    userService.updatePassword(appUser, passwordResetRequest.getNewPassword());
+    userService.updatePassword(user, passwordResetRequest.getNewPassword());
+    passwordResetTokenServiceImpl.deleteToken(token);
     return "Password has been reset successfully";
   }
 
-  @Override
-  public void createPasswordResetTokenForUser(AppUser user, String passwordResetToken) {
-    passwordResetTokenServiceImpl.createPasswordResetUserToken(user, passwordResetToken);
+  public String requestPasswordReset(String email)
+      throws MessagingException, UnsupportedEncodingException {
+    AppUser user = userService.findUserByEmail(email);
+    String passwordResetToken = UUID.randomUUID().toString();
+    createPasswordResetTokenForUser(user, passwordResetToken);
+    createPasswordResetEmailLink(user, passwordResetToken);
+    return "Password reset link has been sent to your registered email.";
   }
 
   @Override
@@ -206,12 +190,61 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .orElseThrow(() -> new NotFoundException("Invalid password reset token"));
   }
 
-  //  private boolean emailExists(String email) {
-  //    return userRepository.findByEmail(email).isPresent();
-  //  }
-  //
-  //  private boolean phoneNumberExists(String phoneNumber) {
-  //    return userRepository.findByPhoneNumber(phoneNumber).isPresent();
-  //  }
+  @Transactional
+  public String resendVerificationToken(String OldToken)
+      throws MessagingException, UnsupportedEncodingException {
+    validateVerificationToken(OldToken);
+    VerificationToken verificationToken = generateNewVerificationToken(OldToken);
+    AppUser appUser = verificationToken.getUser();
+    resendVerificationTokenEmail(appUser, emailVerificationUrl, verificationToken);
+    return "A new verification link has been sent to your email. Check your inbox to activate your account";
+  }
 
+  private void resendVerificationTokenEmail(
+      AppUser user, String applicationUrl, VerificationToken verificationToken)
+      throws MessagingException, UnsupportedEncodingException {
+    String url = applicationUrl + "?token=" + verificationToken.getToken();
+    eventListener.sendVerificationEmail(url);
+  }
+
+  private void createPasswordResetTokenForUser(AppUser user, String passwordResetToken) {
+    passwordResetTokenServiceImpl.createPasswordResetUserToken(user, passwordResetToken);
+  }
+
+  private VerificationToken createNewVerificationToken(AppUser user) {
+    VerificationToken newToken = new VerificationToken();
+    newToken.setToken(UUID.randomUUID().toString());
+    newToken.setExpirationTime(getTokenExpirationTime());
+    newToken.setUser(user);
+    return newToken;
+  }
+
+  private Date getTokenExpirationTime() {
+    return new VerificationToken().getTokenExpirationTime();
+  }
+
+  private AppUser extractUserFromToken(String token) {
+    VerificationToken verificationToken = validateVerificationToken(token);
+    return verificationToken.getUser();
+  }
+
+  private void createPasswordResetEmailLink(AppUser user, String passwordToken)
+      throws MessagingException, UnsupportedEncodingException {
+    String url = resetPasswordUrl + "/?token=" + passwordToken;
+    eventListener.sendPasswordResetEmail(url);
+  }
+
+  private void replaceOldToken(String oldToken, VerificationToken newToken) {
+    verificationTokenRepository.deleteByToken(oldToken);
+    verificationTokenRepository.save(newToken);
+  }
+
+  private String applicationUrl(HttpServletRequest request) {
+    return "http://"
+        + request.getServerName()
+        + ":"
+        + request.getServerPort()
+        + "/api/v1/auth"
+        + request.getContextPath();
+  }
 }
