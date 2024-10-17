@@ -74,9 +74,16 @@ public class UserServiceImpl implements UserService {
     userRepository.save(appUser);
   }
 
-  @Override
+  //  @Override
   public Optional<AppUser> findByEmail(String email) {
     return userRepository.findByEmail(email);
+  }
+
+  @Override
+  public AppUser findUserByEmail(String email) {
+    return userRepository
+        .findByEmail(email)
+        .orElseThrow(() -> new NotFoundException("User does " + "not exist"));
   }
 
   @Override

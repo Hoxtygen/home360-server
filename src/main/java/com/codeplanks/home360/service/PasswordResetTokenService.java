@@ -11,9 +11,11 @@ import java.util.Optional;
 public interface PasswordResetTokenService {
   void createPasswordResetUserToken(AppUser user, String passwordToken);
 
-  String validatePasswordResetToken(String passwordResetToken);
+  AppUser validatePasswordResetToken(String passwordResetToken);
 
   Optional<AppUser> findUserByPasswordToken(String passwordResetToken);
 
   PasswordResetToken findPasswordResetToken(String token);
+
+  void deleteToken(String token);
 }

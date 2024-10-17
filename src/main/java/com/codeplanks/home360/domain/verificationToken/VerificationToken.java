@@ -1,13 +1,11 @@
+/* (C)2024 */
 package com.codeplanks.home360.domain.verificationToken;
-
 
 import com.codeplanks.home360.domain.user.AppUser;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.Calendar;
 import java.util.Date;
-
+import lombok.*;
 
 /**
  * @author Wasiu Idowu
@@ -17,12 +15,14 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerificationToken {
+  private static final int EXPIRATION_TIME = 48;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
+
   private String token;
   private Date expirationTime;
-  private static final int EXPIRATION_TIME = 48;
 
   @OneToOne
   @JoinColumn(name = "user_id")
@@ -38,6 +38,14 @@ public class VerificationToken {
   public VerificationToken(String token) {
     super();
     this.token = token;
+    this.expirationTime = this.getTokenExpirationTime();
+  }
+
+  public VerificationToken(String token, AppUser user, Integer id) {
+    super();
+    this.token = token;
+    this.user = user;
+    this.id = id;
     this.expirationTime = this.getTokenExpirationTime();
   }
 
