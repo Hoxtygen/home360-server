@@ -18,13 +18,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,12 +36,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "User authentication management APIs")
 public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
-  private final ApplicationEventPublisher publisher;
   private final RegistrationCompleteEventListener eventListener;
   private final RefreshTokenServiceImpl refreshTokenService;
-
-  @Value("${application.frontend.verify-email.url}")
-  private String emailVerificationUrl;
 
   @Operation(
       summary = "Register user",

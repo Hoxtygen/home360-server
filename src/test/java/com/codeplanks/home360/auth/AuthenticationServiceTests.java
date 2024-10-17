@@ -120,8 +120,6 @@ class AuthenticationServiceTests {
   void GivenAppUserObjectWhenRegisterUserThenRegistrationSuccessful() {
     // Given - precondition or setup
     when(userRepository.save(any(AppUser.class))).thenReturn(user);
-//    when(userService.emailExists("elaeis@example.com")).thenReturn(false);
-//    when(userService.phoneNumberExists("08030123456")).thenReturn(false);
     when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
     // When - action or the behaviour we're testing for
