@@ -17,7 +17,6 @@ import com.codeplanks.home360.repository.VerificationTokenRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +49,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final UserServiceImpl userService;
   private final RegistrationCompleteEventListener eventListener;
   private final ApplicationEventPublisher publisher;
+  private final VerificationTokenServiceImpl verificationTokenService;
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
   @Value("${application.frontend.reset-password.url}")
@@ -130,7 +130,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public String verifyAccount(String token) {
-    VerificationToken verificationToken = validateVerificationToken(token);
+    System.out.println("Token verify: "+ token);
+    VerificationToken verificationToken = verificationTokenService.validateVerificationToken(token);
+    System.out.println("verificationToken verify: "+ verificationToken);
+    if (verificationToken.getUser() == null) {
+      throw new NotFoundException("Invalid verification token");
+    }
     AppUser user = verificationToken.getUser();
     if (user.isEnabled()) {
       return "This account has already been verified. Please login";
@@ -138,28 +143,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     user.setEnabled(true);
     userRepository.save(user);
     return "Email verified successfully. Proceed to login to your account";
-  }
-
-  @Override
-  public VerificationToken generateNewVerificationToken(String oldVerificationToken) {
-    AppUser user = extractUserFromToken(oldVerificationToken);
-    VerificationToken newVerificationToken = createNewVerificationToken(user);
-    replaceOldToken(oldVerificationToken, newVerificationToken);
-    return newVerificationToken;
-  }
-
-  @Override
-  public VerificationToken validateVerificationToken(String token) {
-    VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
-    if (verificationToken == null) {
-      throw new BadCredentialsException("Invalid verification token");
-    }
-    Calendar calendar = Calendar.getInstance();
-    if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
-      throw new BadCredentialsException(
-          "Token already expired. Click the  link below to request for a new token");
-    }
-    return verificationToken;
   }
 
   @Override
@@ -189,54 +172,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .findUserByPasswordToken(token)
         .orElseThrow(() -> new NotFoundException("Invalid password reset token"));
   }
-
-  @Transactional
-  public String resendVerificationToken(String OldToken)
-      throws MessagingException, UnsupportedEncodingException {
-    validateVerificationToken(OldToken);
-    VerificationToken verificationToken = generateNewVerificationToken(OldToken);
-    AppUser appUser = verificationToken.getUser();
-    resendVerificationTokenEmail(appUser, emailVerificationUrl, verificationToken);
-    return "A new verification link has been sent to your email. Check your inbox to activate your account";
-  }
-
-  private void resendVerificationTokenEmail(
-      AppUser user, String applicationUrl, VerificationToken verificationToken)
-      throws MessagingException, UnsupportedEncodingException {
-    String url = applicationUrl + "?token=" + verificationToken.getToken();
-    eventListener.sendVerificationEmail(url);
-  }
-
   private void createPasswordResetTokenForUser(AppUser user, String passwordResetToken) {
     passwordResetTokenServiceImpl.createPasswordResetUserToken(user, passwordResetToken);
-  }
-
-  private VerificationToken createNewVerificationToken(AppUser user) {
-    VerificationToken newToken = new VerificationToken();
-    newToken.setToken(UUID.randomUUID().toString());
-    newToken.setExpirationTime(getTokenExpirationTime());
-    newToken.setUser(user);
-    return newToken;
-  }
-
-  private Date getTokenExpirationTime() {
-    return new VerificationToken().getTokenExpirationTime();
-  }
-
-  private AppUser extractUserFromToken(String token) {
-    VerificationToken verificationToken = validateVerificationToken(token);
-    return verificationToken.getUser();
   }
 
   private void createPasswordResetEmailLink(AppUser user, String passwordToken)
       throws MessagingException, UnsupportedEncodingException {
     String url = resetPasswordUrl + "/?token=" + passwordToken;
     eventListener.sendPasswordResetEmail(url);
-  }
-
-  private void replaceOldToken(String oldToken, VerificationToken newToken) {
-    verificationTokenRepository.deleteByToken(oldToken);
-    verificationTokenRepository.save(newToken);
   }
 
   private String applicationUrl(HttpServletRequest request) {

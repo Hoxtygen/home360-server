@@ -1,5 +1,5 @@
 /* (C)2024 */
-package com.codeplanks.home360.auth;
+package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,15 +19,10 @@ import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.PasswordResetTokenRepository;
 import com.codeplanks.home360.repository.UserRepository;
 import com.codeplanks.home360.repository.VerificationTokenRepository;
-import com.codeplanks.home360.service.AuthenticationServiceImpl;
-import com.codeplanks.home360.service.PasswordResetTokenServiceImpl;
-import com.codeplanks.home360.service.RefreshTokenServiceImpl;
-import com.codeplanks.home360.service.UserServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,12 +41,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-class AuthenticationServiceTests {
+class AuthenticationServiceTest {
   @Mock Authentication authentication;
   LocalDateTime localDateTime = LocalDateTime.now();
+  @Mock VerificationTokenServiceImpl verificationTokenService;
   @InjectMocks private AuthenticationServiceImpl authenticationService;
   @Mock private RefreshTokenServiceImpl refreshTokenService;
-
   @Mock private PasswordResetTokenServiceImpl passwordResetTokenService;
   @Mock private UserRepository userRepository;
   @Mock private JwtService jwtService;
@@ -67,7 +62,7 @@ class AuthenticationServiceTests {
 
   private RegisterRequest request;
   private AppUser user;
-  private VerificationToken verificationToken;
+  @Mock private VerificationToken verificationToken;
   private PasswordResetRequest passwordResetRequest;
 
   private PasswordResetToken passwordResetToken;
@@ -85,9 +80,6 @@ class AuthenticationServiceTests {
 
   @Value("${application.security.newPassword}")
   private String newPassword;
-
-  AuthenticationServiceTests() {}
-
   @BeforeEach
   public void setup() {
     request =
@@ -245,8 +237,13 @@ class AuthenticationServiceTests {
   public void givenCorrectVerificationTokenWhenUserVerifyAccountThenUserIsEnabled() {
     // Given - precondition or setup
     String tokenString = UUID.randomUUID().toString();
-    verificationToken = new VerificationToken(tokenString, user);
-    given(verificationTokenRepository.findByToken(tokenString)).willReturn(verificationToken);
+  VerificationToken  verificationToken1 = VerificationToken.builder()
+          .user(user)
+          .id(1)
+          .token(tokenString)
+          .expirationTime(LocalDateTime.now().plusHours(48))
+          .build();
+    given(verificationTokenService.validateVerificationToken(tokenString)).willReturn(verificationToken1);
 
     // When - action or the behaviour we're testing for
     String result = authenticationService.verifyAccount(tokenString);
@@ -254,67 +251,8 @@ class AuthenticationServiceTests {
     // Then - verify the output
     assertThat(user.isEnabled()).isTrue();
     assertThat(result).isEqualTo("Email verified successfully. Proceed to login to your account");
-    verify(verificationTokenRepository, times(1)).findByToken(tokenString);
     verify(userRepository, times(1)).save(user);
-  }
-
-  @DisplayName("Invalid verification token")
-  @Test
-  public void
-      givenInvalidVerificationTokenWhenUserVerifyAccountThenThrowsBadCredentialsException() {
-    // Given - precondition or setup
-    String tokenString = UUID.randomUUID().toString();
-    given(verificationTokenRepository.findByToken(tokenString)).willReturn(null);
-
-    // When - action or the behaviour we're testing for
-    BadCredentialsException exception =
-        assertThrows(
-            BadCredentialsException.class,
-            () -> authenticationService.validateVerificationToken(tokenString));
-
-    // Then - verify the output
-    assertThat(exception.getMessage()).isEqualTo("Invalid verification token");
-    verify(verificationTokenRepository, times(1)).findByToken(tokenString);
-    verify(userRepository, never()).save(any(AppUser.class));
-  }
-
-  @DisplayName("Generate new verification token successfully")
-  @Test
-  public void givenValidRefreshTokenWhenAccessTokenHasExpiredThenNewTokenIsGenerated() {
-    // Given
-    String oldToken = UUID.randomUUID().toString();
-    verificationToken = new VerificationToken(oldToken, user, 1);
-    given(verificationTokenRepository.findByToken(oldToken)).willReturn(verificationToken);
-
-    // When
-    VerificationToken newToken = authenticationService.generateNewVerificationToken(oldToken);
-
-    // Then
-    assertThat(newToken).isNotNull();
-    verify(verificationTokenRepository, times(1)).findByToken(oldToken);
-    assertThat(newToken.getUser()).isEqualTo(user);
-    verify(verificationTokenRepository, times(1)).deleteByToken(oldToken);
-    verify(verificationTokenRepository, times(1)).save(newToken);
-  }
-
-  @DisplayName("Failed new verification token generation")
-  @Test
-  public void givenInvalidRefreshTokenWhenAccessTokenHasExpiredThenNewThrowError() {
-    // Given
-    String oldToken = UUID.randomUUID().toString();
-    verificationToken = new VerificationToken(oldToken, user, 1);
-    given(verificationTokenRepository.findByToken(oldToken)).willReturn(null);
-
-    // When
-    BadCredentialsException exception =
-        assertThrows(
-            BadCredentialsException.class,
-            () -> authenticationService.validateVerificationToken(oldToken));
-
-    // Then
-    assertThat(exception.getMessage()).isEqualTo("Invalid verification token");
-    verify(verificationTokenRepository, times(1)).findByToken(oldToken);
-    verify(userRepository, never()).save(any(AppUser.class));
+    verify(verificationTokenService, times(1)).validateVerificationToken(tokenString);
   }
 
   @DisplayName("Reset forgotten user password")

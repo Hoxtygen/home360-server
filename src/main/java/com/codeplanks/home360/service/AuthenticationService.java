@@ -13,10 +13,6 @@ public interface AuthenticationService {
 
   AuthenticationResponse login(AuthenticationRequest request);
 
-  VerificationToken generateNewVerificationToken(String oldVerificationToken);
-
-  VerificationToken validateVerificationToken(String token);
-
   AppUser findUserByPasswordToken(String token);
 
   String resetForgottenUserPassword(PasswordResetRequest passwordResetRequest, String token);

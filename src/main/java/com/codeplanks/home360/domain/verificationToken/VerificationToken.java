@@ -3,8 +3,7 @@ package com.codeplanks.home360.domain.verificationToken;
 
 import com.codeplanks.home360.domain.user.AppUser;
 import jakarta.persistence.*;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import lombok.*;
 
 /**
@@ -14,6 +13,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class VerificationToken {
   private static final int EXPIRATION_TIME = 48;
 
@@ -22,7 +22,7 @@ public class VerificationToken {
   private Integer id;
 
   private String token;
-  private Date expirationTime;
+  private LocalDateTime expirationTime;
 
   @OneToOne
   @JoinColumn(name = "user_id")
@@ -49,10 +49,7 @@ public class VerificationToken {
     this.expirationTime = this.getTokenExpirationTime();
   }
 
-  public Date getTokenExpirationTime() {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(new Date().getTime());
-    calendar.add(Calendar.HOUR, EXPIRATION_TIME);
-    return new Date(calendar.getTime().getTime());
+  public LocalDateTime getTokenExpirationTime() {
+    return LocalDateTime.now().plusHours(EXPIRATION_TIME);
   }
 }

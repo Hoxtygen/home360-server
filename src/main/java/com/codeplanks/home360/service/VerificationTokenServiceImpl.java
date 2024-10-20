@@ -3,18 +3,18 @@ package com.codeplanks.home360.service;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
+import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.VerificationTokenRepository;
 import jakarta.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +25,7 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
 
   @Value("${application.frontend.verify-email.url}")
   private String emailVerificationUrl;
+
   @Override
   public VerificationToken generateNewVerificationToken(String oldVerificationToken) {
     AppUser user = extractUserFromToken(oldVerificationToken);
@@ -42,20 +43,23 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     if (verificationToken == null) {
       throw new BadCredentialsException("Invalid verification token");
     }
-    Calendar calendar = Calendar.getInstance();
-    if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
+    if ((verificationToken.getExpirationTime().isBefore(LocalDateTime.now()))) {
       throw new BadCredentialsException(
-              "Token already expired. Click the  link below to request for a new token");
+          "Token already expired. Click the  link below to request for a new token");
     }
+    if (verificationToken.getUser() == null) {
+      throw new NotFoundException("Invalid verification token");
+    }
+    System.out.println("verificationToken validate: "+ verificationToken);
     return verificationToken;
   }
 
+  @Transactional
   public String resendVerificationToken(String OldToken)
-          throws MessagingException, UnsupportedEncodingException {
+      throws MessagingException, UnsupportedEncodingException {
     validateVerificationToken(OldToken);
     VerificationToken verificationToken = generateNewVerificationToken(OldToken);
-    AppUser appUser = verificationToken.getUser();
-    resendVerificationTokenEmail(appUser, emailVerificationUrl, verificationToken);
+    resendVerificationTokenEmail(emailVerificationUrl, verificationToken);
     return "A new verification link has been sent to your email. Check your inbox to activate your account";
   }
 
@@ -65,8 +69,8 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
   }
 
   private void resendVerificationTokenEmail(
-          AppUser user, String applicationUrl, VerificationToken verificationToken)
-          throws MessagingException, UnsupportedEncodingException {
+      String applicationUrl, VerificationToken verificationToken)
+      throws MessagingException, UnsupportedEncodingException {
     String url = applicationUrl + "?token=" + verificationToken.getToken();
     eventListener.sendVerificationEmail(url);
   }
@@ -79,7 +83,7 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     return newToken;
   }
 
-  private Date getTokenExpirationTime() {
+  private LocalDateTime getTokenExpirationTime() {
     return new VerificationToken().getTokenExpirationTime();
   }
 }
