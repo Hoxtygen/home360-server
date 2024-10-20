@@ -129,7 +129,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public String verifyAccount(String token) {
-    System.out.println("Token verify: " + token);
     VerificationToken verificationToken = verificationTokenService.validateVerificationToken(token);
     System.out.println("verificationToken verify: " + verificationToken);
     if (verificationToken.getUser() == null) {

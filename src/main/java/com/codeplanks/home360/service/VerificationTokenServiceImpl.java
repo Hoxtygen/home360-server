@@ -51,7 +51,6 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     if (verificationToken.getUser() == null) {
       throw new NotFoundException("Invalid verification token");
     }
-    System.out.println("verificationToken validate: " + verificationToken);
     return verificationToken;
   }
 

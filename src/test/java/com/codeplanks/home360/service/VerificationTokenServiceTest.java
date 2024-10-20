@@ -244,7 +244,6 @@ class VerificationTokenServiceTest {
             });
 
     //  Then
-
     assertThat(exception.getMessage()).isEqualTo("Email sending failed");
   }
 }
