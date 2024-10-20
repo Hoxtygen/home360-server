@@ -3,7 +3,6 @@ package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.user.AppUser;
-import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 
 /**
  * @author Wasiu Idowu
@@ -12,10 +11,6 @@ public interface AuthenticationService {
   AppUser register(RegisterRequest request);
 
   AuthenticationResponse login(AuthenticationRequest request);
-
-  VerificationToken generateNewVerificationToken(String oldVerificationToken);
-
-  VerificationToken validateVerificationToken(String token);
 
   AppUser findUserByPasswordToken(String token);
 

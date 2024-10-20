@@ -5,11 +5,11 @@ import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.user.AppUser;
-import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.service.RefreshTokenServiceImpl;
+import com.codeplanks.home360.service.VerificationTokenServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,6 +38,7 @@ public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
   private final RegistrationCompleteEventListener eventListener;
   private final RefreshTokenServiceImpl refreshTokenService;
+  private final VerificationTokenServiceImpl verificationTokenService;
 
   @Operation(
       summary = "Register user",
@@ -174,7 +175,7 @@ public class AuthenticationController {
       throws MessagingException, UnsupportedEncodingException {
     SuccessDataResponse<String> response =
         new SuccessDataResponse<>(
-            HttpStatus.OK, "Success", authenticationServiceImpl.resendVerificationToken(oldToken));
+            HttpStatus.OK, "Success", verificationTokenService.resendVerificationToken(oldToken));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -299,12 +300,5 @@ public class AuthenticationController {
             "Success",
             authenticationServiceImpl.resetForgottenUserPassword(passwordResetRequest, token));
     return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  private void resendVerificationTokenEmail(
-      AppUser user, String applicationUrl, VerificationToken verificationToken)
-      throws MessagingException, UnsupportedEncodingException {
-    String url = applicationUrl + "?token=" + verificationToken.getToken();
-    eventListener.sendVerificationEmail(url);
   }
 }
