@@ -5,7 +5,6 @@ import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.user.AppUser;
-import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
@@ -39,7 +38,7 @@ public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
   private final RegistrationCompleteEventListener eventListener;
   private final RefreshTokenServiceImpl refreshTokenService;
-  private  final VerificationTokenServiceImpl verificationTokenService;
+  private final VerificationTokenServiceImpl verificationTokenService;
 
   @Operation(
       summary = "Register user",

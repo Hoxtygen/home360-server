@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -61,9 +62,7 @@ class UserRepositoryTest {
         () -> assertThat(result.get().getLastName()).isEqualTo("Indica"),
         () -> assertThat(result.get().getEmail()).isEqualTo(userEmail),
         () -> assertThat(result.get().getAddress()).isEqualTo("221B, Baker street, London"),
-            () -> assertThat(result.get().getPhoneNumber()).isEqualTo("09021234567")
-    );
-
+        () -> assertThat(result.get().getPhoneNumber()).isEqualTo("09021234567"));
   }
 
   @Test
@@ -76,12 +75,11 @@ class UserRepositoryTest {
     Optional<AppUser> result = userRepository.findByPhoneNumber(userPhoneNumber);
     // Then
     assertAll(
-            () -> assertThat(result).isPresent(),
-            () -> assertThat(result.get().getPhoneNumber()).isEqualTo("09021234567"),
-            () -> assertThat(result.get().getEmail()).isEqualTo("magnifera_indica@example.com"),
-            () -> assertThat(result.get().getFirstName()).isEqualTo("Magnifera"),
-            () -> assertThat(result.get().getLastName()).isEqualTo("Indica"),
-            () -> assertThat(result.get().getAddress()).isEqualTo("221B, Baker street, London"));
-
+        () -> assertThat(result).isPresent(),
+        () -> assertThat(result.get().getPhoneNumber()).isEqualTo("09021234567"),
+        () -> assertThat(result.get().getEmail()).isEqualTo("magnifera_indica@example.com"),
+        () -> assertThat(result.get().getFirstName()).isEqualTo("Magnifera"),
+        () -> assertThat(result.get().getLastName()).isEqualTo("Indica"),
+        () -> assertThat(result.get().getAddress()).isEqualTo("221B, Baker street, London"));
   }
 }

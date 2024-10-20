@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.user.AppUser;
@@ -50,7 +51,7 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     if (verificationToken.getUser() == null) {
       throw new NotFoundException("Invalid verification token");
     }
-    System.out.println("verificationToken validate: "+ verificationToken);
+    System.out.println("verificationToken validate: " + verificationToken);
     return verificationToken;
   }
 
@@ -60,7 +61,8 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     validateVerificationToken(OldToken);
     VerificationToken verificationToken = generateNewVerificationToken(OldToken);
     resendVerificationTokenEmail(emailVerificationUrl, verificationToken);
-    return "A new verification link has been sent to your email. Check your inbox to activate your account";
+    return "A new verification link has been sent to your email. Check your inbox to activate your"
+        + " account";
   }
 
   private AppUser extractUserFromToken(String token) {

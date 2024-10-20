@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -93,7 +94,7 @@ class VerificationTokenRepositoryTest {
     verificationTokenRepository.save(token);
     verificationTokenRepository.save(token1);
 
-    //When
+    // When
     verificationTokenRepository.deleteByToken(uuidToken);
     VerificationToken result = verificationTokenRepository.findByToken(uuidToken);
     VerificationToken result1 = verificationTokenRepository.findByToken(uuidToken1);
@@ -101,9 +102,7 @@ class VerificationTokenRepositoryTest {
     // Then
     assertThat(result).isNull();
     assertAll(
-            () -> assertThat(result1).isNotNull(),
-            () -> assertThat(result1.getToken()).isEqualTo(uuidToken1));
-
-
+        () -> assertThat(result1).isNotNull(),
+        () -> assertThat(result1.getToken()).isEqualTo(uuidToken1));
   }
 }

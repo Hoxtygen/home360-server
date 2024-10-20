@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -156,7 +157,8 @@ class VerificationTokenServiceTest {
             .build();
     String oldTokenValue = oldToken.getToken();
     String expectedMessage =
-        "A new verification link has been sent to your email. Check your inbox to activate your account";
+        "A new verification link has been sent to your email. Check your inbox to activate your"
+            + " account";
     when(verificationTokenRepository.findByToken(oldTokenValue)).thenReturn(oldToken);
     when(verificationTokenRepository.save(any(VerificationToken.class))).thenReturn(newToken);
 
@@ -234,12 +236,13 @@ class VerificationTokenServiceTest {
         .sendVerificationEmail(any(String.class));
 
     // When
-    MessagingException exception = assertThrows(
+    MessagingException exception =
+        assertThrows(
             MessagingException.class,
             () -> {
               verificationTokenService.resendVerificationToken(tokenValue);
             });
-    
+
     //  Then
 
     assertThat(exception.getMessage()).isEqualTo("Email sending failed");

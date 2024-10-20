@@ -59,7 +59,6 @@ class AuthenticationServiceTest {
   @Mock private HttpServletRequest servletRequest;
   @Mock private ApplicationEventPublisher publisher;
 
-
   private RegisterRequest request;
   private AppUser user;
   @Mock private VerificationToken verificationToken;
@@ -80,6 +79,7 @@ class AuthenticationServiceTest {
 
   @Value("${application.security.newPassword}")
   private String newPassword;
+
   @BeforeEach
   public void setup() {
     request =
@@ -237,13 +237,15 @@ class AuthenticationServiceTest {
   public void givenCorrectVerificationTokenWhenUserVerifyAccountThenUserIsEnabled() {
     // Given - precondition or setup
     String tokenString = UUID.randomUUID().toString();
-  VerificationToken  verificationToken1 = VerificationToken.builder()
-          .user(user)
-          .id(1)
-          .token(tokenString)
-          .expirationTime(LocalDateTime.now().plusHours(48))
-          .build();
-    given(verificationTokenService.validateVerificationToken(tokenString)).willReturn(verificationToken1);
+    VerificationToken verificationToken1 =
+        VerificationToken.builder()
+            .user(user)
+            .id(1)
+            .token(tokenString)
+            .expirationTime(LocalDateTime.now().plusHours(48))
+            .build();
+    given(verificationTokenService.validateVerificationToken(tokenString))
+        .willReturn(verificationToken1);
 
     // When - action or the behaviour we're testing for
     String result = authenticationService.verifyAccount(tokenString);

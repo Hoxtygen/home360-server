@@ -30,7 +30,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Wasiu Idowu
@@ -130,9 +129,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public String verifyAccount(String token) {
-    System.out.println("Token verify: "+ token);
+    System.out.println("Token verify: " + token);
     VerificationToken verificationToken = verificationTokenService.validateVerificationToken(token);
-    System.out.println("verificationToken verify: "+ verificationToken);
+    System.out.println("verificationToken verify: " + verificationToken);
     if (verificationToken.getUser() == null) {
       throw new NotFoundException("Invalid verification token");
     }
@@ -172,6 +171,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .findUserByPasswordToken(token)
         .orElseThrow(() -> new NotFoundException("Invalid password reset token"));
   }
+
   private void createPasswordResetTokenForUser(AppUser user, String passwordResetToken) {
     passwordResetTokenServiceImpl.createPasswordResetUserToken(user, passwordResetToken);
   }
