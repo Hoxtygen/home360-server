@@ -7,6 +7,7 @@ import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,25 +21,46 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class ListingEnquiryServiceImpl implements ListingEnquiryService {
-  private final AuthenticationServiceImpl authenticationService;
   private final ListingEnquiryRepository listingEnquiryRepository;
   private final MongoTemplate mongoTemplate;
   private final UserServiceImpl userService;
+  private final ListingServiceImpl listingService;
+  private final AuthenticationUtils authenticationUtils;
 
   @Override
-  public ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest) {
-    if (AuthenticationUtils.isAuthenticated()) {
+  public ListingEnquiry makeEnquiry(@Valid ListingEnquiryDTO enquiryRequest) {
+    if (authenticationUtils.isAuthenticated()) {
       Integer userId = userService.extractUserId();
       enquiryRequest.setUserId(userId);
     }
 
+    listingService.findListingById(enquiryRequest.getListingId());
+
     enquiryRequest.setCreatedAt(LocalDateTime.now());
-    ListingEnquiry listingEnquiry = listingEnquiryRepository.save(enquiryRequest);
-    return ListingEnquiryMapper.mapToListingEnquiryDTO(listingEnquiry);
+    ListingEnquiry newListingEnquiry =
+        ListingEnquiry.builder()
+            .firstName(enquiryRequest.getFirstName())
+            .lastName(enquiryRequest.getLastName())
+            .email(enquiryRequest.getEmail())
+            .phoneNumber(enquiryRequest.getPhoneNumber())
+            .location(enquiryRequest.getLocation())
+            .salutation(enquiryRequest.getSalutation())
+            .message(enquiryRequest.getMessage())
+            .employmentStatus(enquiryRequest.getEmploymentStatus())
+            .pets(enquiryRequest.getPets())
+            .commercialPurpose(enquiryRequest.getCommercialPurpose())
+            .listingId(enquiryRequest.getListingId())
+            .agentId(enquiryRequest.getAgentId())
+            .userId(enquiryRequest.getUserId())
+            .createdAt(LocalDateTime.now())
+            .build();
+    return listingEnquiryRepository.save(newListingEnquiry);
   }
 
   @Override
@@ -60,12 +82,14 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
 
   @Override
   public ListingEnquiry getListingEnquiryById(String enquiryMessageId) {
+    if (enquiryMessageId == null) {
+      throw new IllegalArgumentException("Enquiry ID cannot be null or empty");
+    }
     ListingEnquiry listingEnquiry =
         listingEnquiryRepository
             .findById(enquiryMessageId)
             .orElseThrow(() -> new NotFoundException("Listing enquiry not found"));
 
-    Integer userId = userService.extractUserId();
     validateUserAuthorization(listingEnquiry);
     return listingEnquiry;
   }
@@ -84,6 +108,9 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   @Override
   public ListingEnquiryMessageReply addReplyMessage(
       String enquiryMessageId, ListingEnquiryMessageReplyDTO reply) {
+    if (reply == null) {
+      throw new IllegalArgumentException("Message reply cannot be null or blank");
+    }
     validateUserIds(reply.getSenderId(), reply.getReceiverId());
     Query query = createQuery(enquiryMessageId);
     return addEnquiryReply(query, reply);
@@ -102,11 +129,13 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
 
   private void validateUserAuthorization(ListingEnquiry listingEnquiry) {
     Integer userId = userService.extractUserId();
-    boolean isAgent = listingEnquiry.getAgentId().equals(userId);
+    boolean isAgent = userId != null && userId.equals(listingEnquiry.getAgentId());
     boolean isInquirer =
-        listingEnquiry.getUserId() != null && listingEnquiry.getUserId().equals(userId);
+        userId != null
+            && listingEnquiry.getUserId() != null
+            && userId.equals(listingEnquiry.getUserId());
     if (!isAgent && !isInquirer) {
-      throw new AccessDeniedException("Forbidden. You're not authorized to modify this data");
+      throw new AccessDeniedException("Forbidden. You're not authorized to access this data");
     }
   }
 

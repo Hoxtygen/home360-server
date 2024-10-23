@@ -11,7 +11,7 @@ COPY . /project
 WORKDIR /project
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN mvn clean package
 
 # Stage 2: Run
 FROM eclipse-temurin:17-jdk-alpine

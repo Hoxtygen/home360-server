@@ -8,7 +8,7 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReply
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReplyDTO;
 
 public interface ListingEnquiryService {
-  ListingEnquiryDTO makeEnquiry(ListingEnquiry enquiryRequest);
+  ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest);
 
   PaginatedResponse<ListingEnquiry> getListingEnquiries(int page, int size, Integer senderId);
 

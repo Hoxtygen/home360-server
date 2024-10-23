@@ -87,14 +87,18 @@ public class ListingServiceImpl implements ListingService {
   @Override
   public ListingWithAgentInfo getListingById(String listingId) {
 
-    Listing listing =
-        listingRepository
-            .findById(listingId)
-            .orElseThrow(() -> new NotFoundException("Listing not found"));
+    Listing listing = findListingById(listingId);
     int agentId = listing.getAgentId();
     AppUser listingAgent = userService.getUserByUserId(agentId);
     ListingAgentInfo agentInfo = ListingMapper.mapToListingAgentInfo(listingAgent);
     return ListingWithAgentInfo.builder().agentInfo(agentInfo).listing(listing).build();
+  }
+
+  @Override
+  public Listing findListingById(String listingId) {
+    return listingRepository
+        .findById(listingId)
+        .orElseThrow(() -> new NotFoundException("Listing not found"));
   }
 
   @Override
