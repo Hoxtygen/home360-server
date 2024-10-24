@@ -26,6 +26,7 @@ jobs:
       # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
+
       # Step 2: Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -33,7 +34,11 @@ jobs:
           distribution: "adopt"
           java-version: "17"
 
-      # Step 3: Cache Maven dependencies to speed up builds
+        # Step 3: Grant execute permission to Maven wrapper
+      - name: Grant execute permission to Maven wrapper
+        run: chmod +x ./mvnw
+
+      # Step 4: Cache Maven dependencies to speed up builds
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
@@ -42,12 +47,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Step 4: Build and run tests with Maven
+      # Step 5: Build and run tests with Maven
       - name: Build and Test with Maven
         run: |
           ./mvnw clean test -Dspring.profiles.active=test
 
-      # Step 5: Upload test results (optional but recommended for reporting)
+      # Step 6: Upload test results (optional but recommended for reporting)
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
