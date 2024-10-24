@@ -1,0 +1,36 @@
+name: Auto Merge Develop to Staging
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  merge_to_staging:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Configure Git (to authorize the merge commit)
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Step 3: Fetch all branches and history
+      - name: Fetch All Branches
+        run: git fetch --all
+
+      # Step 4: Merge develop into staging
+      - name: Merge Develop into Staging
+        run: |
+          git checkout staging
+          git merge develop --no-ff --commit -m "Auto-merged develop into staging"
+
+      # Step 5: Push the changes to the staging branch
+      - name: Push to Staging
+        run: |
+          git push origin staging
