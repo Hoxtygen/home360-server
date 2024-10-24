@@ -33,7 +33,7 @@ jobs:
           distribution: "adopt"
           java-version: "17"
 
-          # Step 3: Cache Maven dependencies to speed up builds
+      # Step 3: Cache Maven dependencies to speed up builds
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
@@ -42,15 +42,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Step 4: Build and run tests
-      - name: Build with Maven
-        run: mvn clean install -DskipTests=false
+      # Step 4: Build and run tests with Maven
+      - name: Build and Test with Maven
+        run: |
+          ./mvnw clean test -Dspring.profiles.active=test
 
-        # Step 5: Run Tests
-      - name: Run Tests
-        run: mvn test
-
-          # Step 6: Upload test results (optional but recommended for reporting)
+      # Step 5: Upload test results (optional but recommended for reporting)
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
