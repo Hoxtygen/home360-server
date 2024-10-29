@@ -300,9 +300,9 @@ public class ListingController {
         })
   })
   @PatchMapping
-  public ResponseEntity<SuccessDataResponse<ListingDTO>> updateTakenListing(
+  public ResponseEntity<SuccessDataResponse<Listing>> updateTakenListing(
       @RequestBody @Validated RentUpdate updateRequest) {
-    SuccessDataResponse<ListingDTO> updatedListing = new SuccessDataResponse<>();
+    SuccessDataResponse<Listing> updatedListing = new SuccessDataResponse<>();
     updatedListing.setData(listingService.updateRentedListing(updateRequest));
     updatedListing.setMessage("Listing updated successfully");
     updatedListing.setStatus(HttpStatus.OK);
