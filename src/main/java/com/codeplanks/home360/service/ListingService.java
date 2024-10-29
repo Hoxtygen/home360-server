@@ -22,7 +22,7 @@ public interface ListingService {
 
   PaginatedResponse<Listing> getListingsByAgentId(int page, int size);
 
-  ListingDTO updateRentedListing(RentUpdate update);
+  Listing updateRentedListing(RentUpdate update);
 
   Listing findListingById(String listingId);
 }
