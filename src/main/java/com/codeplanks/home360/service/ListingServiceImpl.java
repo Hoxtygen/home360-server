@@ -9,7 +9,6 @@ import com.codeplanks.home360.repository.ListingRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -74,12 +74,13 @@ public class ListingServiceImpl implements ListingService {
 
   public Object deleteListing(String listingId) {
     Integer userId = userService.extractUserId();
-    Integer agentId = getAgentId(listingId);
+    Listing listing = findListingById(listingId);
+    Integer agentId = listing.getAgentId();
     if (!Objects.equals(agentId, userId)) {
       throw new UnAuthorizedException("You do not have the permission to delete this listing");
     }
-    Optional<Listing> listing = listingRepository.findById(listingId);
-    listingRepository.deleteById(listingId);
+
+    listingRepository.deleteById(listing.getId());
 
     return null;
   }
@@ -133,22 +134,25 @@ public class ListingServiceImpl implements ListingService {
   }
 
   @Override
-  public ListingDTO updateRentedListing(RentUpdate rentUpdate) {
-    Optional<Listing> listing = listingRepository.findById(rentUpdate.listingId);
-    if (listing.isEmpty()) {
-      throw new NotFoundException("listing not found");
+  public Listing updateRentedListing(RentUpdate rentUpdate) {
+    Integer userId = userService.extractUserId();
+    Listing listingToUpdate =
+        listingRepository
+            .findById(rentUpdate.listingId)
+            .orElseThrow(() -> new NotFoundException("Listing not found"));
+    if (!Objects.equals(listingToUpdate.getAgentId(), userId)) {
+      throw new AccessDeniedException("You are not authorized to update this listing.");
     }
-    Listing listingToUpdate = listing.get();
     listingToUpdate.setRented(rentUpdate.isRented);
-    listingToUpdate.setRentDate(LocalDateTime.now());
+    if (rentUpdate.isRented) {
+      listingToUpdate.setRentDate(LocalDateTime.now());
+    } else {
+      listingToUpdate.setRentDate(null);
+    }
+
     Listing savedListing = listingRepository.save(listingToUpdate);
     logger.info("Listing rent status updated successfully: " + savedListing);
 
-    return ListingMapper.mapToListingDTO(savedListing);
-  }
-
-  private Integer getAgentId(String listingId) {
-    Listing listing = listingRepository.findById(listingId).orElseThrow();
-    return listing.getAgentId();
+    return savedListing;
   }
 }
