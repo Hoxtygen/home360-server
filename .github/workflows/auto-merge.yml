@@ -10,31 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository with all history
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch full history to avoid merge conflicts
+          fetch-depth: 0
 
-      # Step 2: Set up Git to authorize the merge commit
       - name: Set up Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Step 3: Fetch all branches
       - name: Fetch All Branches
         run: git fetch origin +refs/heads/*:refs/remotes/origin/*
 
-      # Step 4: Check out the staging branch
       - name: Check out Staging Branch
-        run: git checkout origin/staging -B staging  # Ensure correct tracking
+        run: git checkout origin/staging -B staging
 
-      # Step 5: Merge develop into staging
       - name: Merge Develop into Staging
         run: |
           git merge origin/develop --no-ff --commit -m "Auto-merged develop into staging"
 
-      # Step 6: Push the merged changes to the staging branch
       - name: Push to Staging
-        run: git push origin staging
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/Hoxtygen/home360-server.git
+          git push origin staging
