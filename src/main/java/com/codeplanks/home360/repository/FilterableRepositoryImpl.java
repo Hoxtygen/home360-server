@@ -23,9 +23,8 @@ public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
       int annualRent,
       String apartmentType,
       Pageable pageable) {
-    Collation collation = Collation.of("en").strength(2);
     Query query =
-        constructFilterQuery(city, annualRent, apartmentType).with(pageable).collation(collation);
+        constructFilterQuery(city, annualRent, apartmentType).with(pageable).collation(getEnglishCollation());
     List<T> listings = mongoTemplate.find(query, typeParameterClass, "listings");
 
     return PageableExecutionUtils.getPage(
@@ -36,8 +35,7 @@ public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
 
   @Override
   public Page<T> findListingsByAgentId(Class<T> typeParameter, Integer agentId, Pageable pageable) {
-    Collation collation = Collation.of("en").strength(2);
-    Query query = fetchAgentListings(agentId).with(pageable).collation(collation);
+    Query query = fetchAgentListings(agentId).with(pageable).collation(getEnglishCollation());
     List<T> listings = mongoTemplate.find(query, typeParameter, "listings");
 
     return PageableExecutionUtils.getPage(
@@ -47,8 +45,7 @@ public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
   @Override
   public Page<T> findListingEnquiries(
       Class<T> typeParameter, Integer agentId, Integer senderId, Pageable pageable) {
-    Collation collation = Collation.of("en").strength(2);
-    Query query = fetchListingEnquiries(agentId, senderId).with(pageable).collation(collation);
+    Query query = fetchListingEnquiries(agentId, senderId).with(pageable).collation(getEnglishCollation());
     List<T> listingEnquiries = mongoTemplate.find(query, typeParameter, "listingEnquiries");
 
     return PageableExecutionUtils.getPage(
@@ -56,4 +53,9 @@ public class FilterableRepositoryImpl<T> implements FilterableRepository<T> {
         pageable,
         () -> mongoTemplate.count(query.limit(-1).skip(-1), typeParameter));
   }
+
+  private Collation getEnglishCollation(){
+    return Collation.of("en").strength(2);
+  }
+
 }
