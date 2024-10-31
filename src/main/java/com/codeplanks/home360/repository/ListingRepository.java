@@ -9,4 +9,4 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * */
 public interface ListingRepository
-    extends MongoRepository<Listing, String>, FilterableRepository<Listing> {}
+    extends MongoRepository<Listing, String>, CustomListingRepository {}

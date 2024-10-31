@@ -307,9 +307,7 @@ class ListingServiceTest {
     List<Listing> listings = List.of(listing1, listing2);
     Page<Listing> mockPage = new PageImpl<>(listings, PageRequest.of(page, size), 2);
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
-    given(
-            listingRepository.findAllWithFilter(
-                Listing.class, city, annualRent, apartmentType, pageable))
+    given(listingRepository.findAllWithFilter(city, annualRent, apartmentType, pageable))
         .willReturn(mockPage);
 
     // When
@@ -326,7 +324,7 @@ class ListingServiceTest {
         () -> assertThat(result.getItems()).hasSize(2),
         () -> assertThat(result.isHasNext()).isFalse());
     verify(listingRepository, times(1))
-        .findAllWithFilter(Listing.class, city, annualRent, apartmentType, pageable);
+        .findAllWithFilter(city, annualRent, apartmentType, pageable);
   }
 
   @Test
@@ -339,9 +337,7 @@ class ListingServiceTest {
     int annualRent = 200000;
     String apartmentType = "DUPLEX";
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
-    given(
-            listingRepository.findAllWithFilter(
-                Listing.class, city, annualRent, apartmentType, pageable))
+    given(listingRepository.findAllWithFilter(city, annualRent, apartmentType, pageable))
         .willReturn(Page.empty());
 
     // When
@@ -356,7 +352,7 @@ class ListingServiceTest {
         () -> assertThat(response.getTotalPages()).isOne(),
         () -> assertThat(response.isHasNext()).isFalse());
     verify(listingRepository, times(1))
-        .findAllWithFilter(Listing.class, city, annualRent, apartmentType, pageable);
+        .findAllWithFilter(city, annualRent, apartmentType, pageable);
   }
 
   @Test
@@ -400,8 +396,7 @@ class ListingServiceTest {
     List<Listing> listings = List.of(listing1, listing2);
     Page<Listing> mockPage = new PageImpl<>(listings, PageRequest.of(page, size), 2);
     given(userService.extractUserId()).willReturn(userId);
-    given(listingRepository.findListingsByAgentId(Listing.class, userId, pageable))
-        .willReturn(mockPage);
+    given(listingRepository.findListingsByAgentId(userId, pageable)).willReturn(mockPage);
 
     // When
     PaginatedResponse<Listing> result = listingService.getListingsByAgentId(page, size);
@@ -415,7 +410,7 @@ class ListingServiceTest {
         () -> assertThat(result.getTotalPages()).isEqualTo(1),
         () -> assertThat(result.getItems()).hasSize(2),
         () -> assertThat(result.isHasNext()).isFalse());
-    verify(listingRepository, times(1)).findListingsByAgentId(Listing.class, userId, pageable);
+    verify(listingRepository, times(1)).findListingsByAgentId(userId, pageable);
   }
 
   @Test
@@ -429,8 +424,7 @@ class ListingServiceTest {
     Page<Listing> emptyPage = Page.empty(pageable);
 
     given(userService.extractUserId()).willReturn(userId);
-    given(listingRepository.findListingsByAgentId(Listing.class, userId, pageable))
-        .willReturn(emptyPage);
+    given(listingRepository.findListingsByAgentId(userId, pageable)).willReturn(emptyPage);
 
     // When
     PaginatedResponse<Listing> response = listingService.getListingsByAgentId(page, size);
@@ -442,7 +436,7 @@ class ListingServiceTest {
         () -> assertThat(response.getTotalPages()).isEqualTo(0),
         () -> assertThat(response.isHasNext()).isFalse());
 
-    verify(listingRepository).findListingsByAgentId(Listing.class, userId, pageable);
+    verify(listingRepository).findListingsByAgentId(userId, pageable);
   }
 
   @Test
@@ -517,15 +511,11 @@ class ListingServiceTest {
     given(listingRepository.findById("invalid-id")).willReturn(Optional.empty());
 
     // When
-    NotFoundException exception =  assertThrows(
-            NotFoundException.class,
-            () -> listingService.updateRentedListing(rentUpdate)
-    );
-     // Then
+    NotFoundException exception =
+        assertThrows(NotFoundException.class, () -> listingService.updateRentedListing(rentUpdate));
+    // Then
     assertThat(exception.getMessage()).isEqualTo("Listing not found");
   }
-
-
 
   @Test
   void updateRentedListing() {}
