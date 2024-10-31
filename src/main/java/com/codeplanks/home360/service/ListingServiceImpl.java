@@ -106,8 +106,7 @@ public class ListingServiceImpl implements ListingService {
   public PaginatedResponse<Listing> getListingsByAgentId(int page, int size) {
     Integer userId = userService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
-    Page<Listing> agentListings =
-        listingRepository.findListingsByAgentId(Listing.class, userId, pageable);
+    Page<Listing> agentListings = listingRepository.findListingsByAgentId(userId, pageable);
     return PaginatedResponse.<Listing>builder()
         .currentPage(agentListings.getNumber() + 1)
         .totalItems(agentListings.getTotalElements())
@@ -122,8 +121,7 @@ public class ListingServiceImpl implements ListingService {
       int page, int size, String city, int annualRent, String apartmentType) {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<Listing> filteredListings =
-        listingRepository.findAllWithFilter(
-            Listing.class, city, annualRent, apartmentType, pageable);
+        listingRepository.findAllWithFilter(city, annualRent, apartmentType, pageable);
     return PaginatedResponse.<Listing>builder()
         .currentPage(filteredListings.getNumber() + 1)
         .totalItems(filteredListings.getTotalElements())

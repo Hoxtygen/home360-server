@@ -69,8 +69,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     Integer agentId = userService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<ListingEnquiry> agentListingEnquiries =
-        listingEnquiryRepository.findListingEnquiries(
-            ListingEnquiry.class, agentId, senderId, pageable);
+        listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable);
     return PaginatedResponse.<ListingEnquiry>builder()
         .currentPage(agentListingEnquiries.getNumber() + 1)
         .totalItems(agentListingEnquiries.getTotalElements())

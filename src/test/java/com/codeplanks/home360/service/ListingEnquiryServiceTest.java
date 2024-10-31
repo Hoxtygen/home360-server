@@ -229,13 +229,9 @@ class ListingEnquiryServiceTest {
     Page<ListingEnquiry> mockPage = new PageImpl<>(enquiries, PageRequest.of(page, size), 2);
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     given(userService.extractUserId()).willReturn(agentId);
-    given(
-            listingEnquiryRepository.findListingEnquiries(
-                ListingEnquiry.class, agentId, senderId, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable))
         .willReturn(mockPage);
-    given(
-            listingEnquiryRepository.findListingEnquiries(
-                ListingEnquiry.class, agentId, senderId, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable))
         .willReturn(mockPage);
 
     // When
@@ -251,8 +247,7 @@ class ListingEnquiryServiceTest {
         () -> assertThat(result.getItems()).hasSize(2),
         () -> assertThat(result.isHasNext()).isFalse());
 
-    verify(listingEnquiryRepository, times(1))
-        .findListingEnquiries(ListingEnquiry.class, agentId, senderId, pageable);
+    verify(listingEnquiryRepository, times(1)).findListingEnquiries(agentId, senderId, pageable);
   }
 
   @Test
@@ -268,7 +263,7 @@ class ListingEnquiryServiceTest {
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("User not authenticated");
-    verify(listingEnquiryRepository, never()).findListingEnquiries(any(), anyInt(), any(), any());
+    verify(listingEnquiryRepository, never()).findListingEnquiries(anyInt(), any(), any());
   }
 
   @Test
@@ -279,9 +274,7 @@ class ListingEnquiryServiceTest {
     Integer agentId = 1;
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     given(userService.extractUserId()).willReturn(agentId);
-    given(
-            listingEnquiryRepository.findListingEnquiries(
-                ListingEnquiry.class, agentId, null, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, null, pageable))
         .willReturn(Page.empty());
 
     // When
@@ -311,7 +304,7 @@ class ListingEnquiryServiceTest {
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Page index must not be less than zero");
-    verify(listingEnquiryRepository, never()).findListingEnquiries(any(), anyInt(), any(), any());
+    verify(listingEnquiryRepository, never()).findListingEnquiries(anyInt(), any(), any());
   }
 
   @Test
@@ -322,7 +315,7 @@ class ListingEnquiryServiceTest {
     Integer agentId = 1;
 
     given(userService.extractUserId()).willReturn(agentId);
-    given(listingEnquiryRepository.findListingEnquiries(any(), anyInt(), any(), any()))
+    given(listingEnquiryRepository.findListingEnquiries(anyInt(), any(), any()))
         .willThrow(new RuntimeException("Database error"));
 
     // When
@@ -345,9 +338,7 @@ class ListingEnquiryServiceTest {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
 
     given(userService.extractUserId()).willReturn(agentId);
-    given(
-            listingEnquiryRepository.findListingEnquiries(
-                ListingEnquiry.class, agentId, invalidSenderId, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, invalidSenderId, pageable))
         .willReturn(Page.empty());
 
     // When
