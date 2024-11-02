@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
@@ -21,7 +21,6 @@ import org.thymeleaf.context.Context;
 @Slf4j
 @RequiredArgsConstructor
 public class ListingEnquiryEventListener implements ApplicationListener<ListingEnquiryEvent> {
-  private final JavaMailSender mailSender;
   private final ListingServiceImpl listingService;
   private final EmailServiceImpl emailService;
 
@@ -30,8 +29,7 @@ public class ListingEnquiryEventListener implements ApplicationListener<ListingE
 
   @Override
   @Async
-  public void onApplicationEvent(ListingEnquiryEvent event) {
-    String enquirerEmail = event.getEnquirerEmail();
+  public void onApplicationEvent(@NonNull ListingEnquiryEvent event) {
     String url = userListingUrl + "/" + event.getListingId();
     ListingWithAgentInfo listing = listingService.getListingById(event.getListingId());
     String agentEmail = listing.getAgentInfo().getEmail();

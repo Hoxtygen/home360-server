@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.lang.NonNullApi;
+import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -18,7 +18,7 @@ public class TrailingSlashRedirectFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        @NonNull  HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain)
       throws ServletException, IOException {
     /* We want to obtain the complete request URL including the query string */
     String url = ServletUriComponentsBuilder.fromRequest(request).build().toUriString();

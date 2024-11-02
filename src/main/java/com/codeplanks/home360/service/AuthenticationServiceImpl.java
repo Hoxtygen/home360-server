@@ -13,7 +13,6 @@ import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.UserRepository;
-import com.codeplanks.home360.repository.VerificationTokenRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -42,7 +41,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
-  private final VerificationTokenRepository verificationTokenRepository;
   private final RefreshTokenServiceImpl refreshTokenServiceImpl;
   private final PasswordResetTokenServiceImpl passwordResetTokenServiceImpl;
   private final UserServiceImpl userService;

@@ -24,5 +24,6 @@ public class AppUserDTO {
   private Date createdAt;
   private Date updatedAt;
   private Role role;
+  @Builder.Default
   private boolean isEnabled = false;
 }

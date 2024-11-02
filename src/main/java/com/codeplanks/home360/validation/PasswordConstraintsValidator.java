@@ -1,6 +1,5 @@
 package com.codeplanks.home360.validation;
 
-import com.codeplanks.home360.validation.Password;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.passay.*;

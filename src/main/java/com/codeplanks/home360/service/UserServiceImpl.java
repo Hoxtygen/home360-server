@@ -8,7 +8,6 @@ import com.codeplanks.home360.domain.user.UserMapper;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.UserRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
