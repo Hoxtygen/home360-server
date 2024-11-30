@@ -34,7 +34,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   private final AuthenticationUtils authenticationUtils;
 
   @Override
-  public ListingEnquiry makeEnquiry(@Valid ListingEnquiryDTO enquiryRequest) {
+  public ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest) {
     if (authenticationUtils.isAuthenticated()) {
       Integer userId = userService.extractUserId();
       enquiryRequest.setUserId(userId);
