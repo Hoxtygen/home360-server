@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -307,5 +308,14 @@ public class ListingController {
     updatedListing.setMessage("Listing updated successfully");
     updatedListing.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(updatedListing, HttpStatus.OK);
+  }
+
+  @GetMapping("/listing-statistics")
+  public ResponseEntity<SuccessDataResponse<Document>> getListingStatistics() {
+    SuccessDataResponse<Document> response = new SuccessDataResponse<>();
+    response.setData(listingService.getAggregateListingStats());
+    response.setMessage("Statistics data retrieved successfully");
+    response.setStatus(HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
