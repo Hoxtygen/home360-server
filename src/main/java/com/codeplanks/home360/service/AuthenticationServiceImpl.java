@@ -16,7 +16,6 @@ import com.codeplanks.home360.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -78,8 +77,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             .phoneNumber(request.getPhoneNumber())
             .password(passwordEncoder.encode(request.getPassword()))
             .role(Role.USER)
-            .createdAt(new Date())
-            .updatedAt(new Date())
             .build();
     userRepository.save(user);
     publisher.publishEvent(new RegistrationCompleteEvent(user, applicationUrl(servletRequest)));
@@ -127,8 +124,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public String verifyAccount(String token) {
-    VerificationToken verificationToken = verificationTokenService.validateVerificationToken(token);
-    System.out.println("verificationToken verify: " + verificationToken);
+    VerificationToken verificationToken =
+            verificationTokenService.validateVerificationToken(token.trim());
     if (verificationToken.getUser() == null) {
       throw new NotFoundException("Invalid verification token");
     }
