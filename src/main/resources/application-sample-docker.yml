@@ -2,7 +2,18 @@ server:
   port: <port>
 
 spring:
-  profiles: dev
+  application:
+    name: Home360
+  config:
+    activate:
+      on-profile: docker
+
+  cache:
+    type: redis
+    host: localhost
+    port: 6379
+    redis:
+      time-to-live: 60000
 
   mail:
     host: <enter host>
@@ -17,12 +28,11 @@ spring:
             enable: true
 
   data:
-    mongodb:
-      host: localhost
-      authentication-database: <authentication database name>
-      database: <enter database name>
+     mongodb:
+      authentication-database: admin
+      database: home360dev
       auto-index-creation: true
-      uri: mongodb://mongo:27017/<database name>
+      uri: mongodb://mongo:27017/home360dev
       embedded:
         enabled: false
 
@@ -78,3 +88,49 @@ logging:
     com.codeplanks: DEBUG
     org.hibernate: ERROR
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.orm: DEBUG
+    org.springframework.cache: DEBUG
+
+management:
+  info:
+    git:
+      mode: full
+    env:
+      enabled: true
+    java:
+      enabled: true
+  app:
+    name: Home360
+    description: "Home360 Application"
+    version: 1.0.0
+  env:
+    enabled: true
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    db:
+      enabled: true
+    redis:
+      enabled: true
+    metrics:
+      enabled: true
+      prometheus:
+        enabled: true
+    info:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Application for real estate agents
+    version: '@project.version@'
+    spring-boot-version: '@project.parent.version@'
