@@ -4,8 +4,6 @@ package com.codeplanks.home360.controller;
 import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
-import com.codeplanks.home360.domain.user.AppUser;
-import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.service.RefreshTokenServiceImpl;
@@ -36,7 +34,6 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "User authentication management APIs")
 public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
-  private final RegistrationCompleteEventListener eventListener;
   private final RefreshTokenServiceImpl refreshTokenService;
   private final VerificationTokenServiceImpl verificationTokenService;
 
@@ -74,7 +71,7 @@ public class AuthenticationController {
   public ResponseEntity<SuccessDataResponse<String>> register(
       @RequestBody @Valid RegisterRequest request) {
     SuccessDataResponse<String> newUser = new SuccessDataResponse<>();
-    AppUser response = authenticationServiceImpl.register(request);
+    authenticationServiceImpl.register(request);
     newUser.setData("Registration Successful. A verification link have been sent to your email.");
     newUser.setMessage("User registration successful");
     newUser.setStatus(HttpStatus.CREATED);

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
+import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
@@ -35,7 +36,7 @@ public class RegistrationCompleteEventListener
 
   @Override
   @Async
-  public void onApplicationEvent(RegistrationCompleteEvent event) {
+  public void onApplicationEvent(@NonNull RegistrationCompleteEvent event) {
     appUser = event.getUser();
     String verificationToken = UUID.randomUUID().toString();
     saveUserVerificationToken(appUser, verificationToken);

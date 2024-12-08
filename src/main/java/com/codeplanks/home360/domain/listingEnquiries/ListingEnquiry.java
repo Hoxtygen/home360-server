@@ -4,7 +4,6 @@ package com.codeplanks.home360.domain.listingEnquiries;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,8 +68,10 @@ public class ListingEnquiry {
   private LocalDateTime createdAt;
 
   @Field(name = "read", targetType = FieldType.BOOLEAN)
+  @Builder.Default
   private boolean read = false;
 
+  @Builder.Default
   @Field(name = "replies")
   private List<ListingEnquiryMessageReply> replies = new ArrayList<>();
 }

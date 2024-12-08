@@ -2,9 +2,9 @@
 package com.codeplanks.home360.converter;
 
 import java.util.ArrayList;
-import lombok.NonNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
+import org.springframework.lang.NonNull;
 
 @ReadingConverter
 public class ArrayListToStringConverter implements Converter<ArrayList<String>, String> {

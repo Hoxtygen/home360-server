@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class VerificationTokenServiceImpl implements VerificationTokenService {
   private final VerificationTokenRepository verificationTokenRepository;
   private final RegistrationCompleteEventListener eventListener;
-  private final ApplicationEventPublisher publisher;
 
   @Value("${application.frontend.verify-email.url}")
   private String emailVerificationUrl;
