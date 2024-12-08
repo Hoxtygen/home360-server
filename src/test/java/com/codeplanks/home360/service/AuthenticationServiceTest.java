@@ -102,8 +102,8 @@ class AuthenticationServiceTest {
             .phoneNumber(request.getPhoneNumber())
             .password(passwordEncoder.encode(request.getPassword()))
             .role(Role.USER)
-            .createdAt(new Date())
-            .updatedAt(new Date())
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
             .build();
   }
 
