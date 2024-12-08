@@ -1,9 +1,8 @@
 /* (C)2024 */
 package com.codeplanks.home360.domain.user;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +23,5 @@ public class AppUserDTO {
   private Date createdAt;
   private Date updatedAt;
   private Role role;
-  @Builder.Default
-  private boolean isEnabled = false;
+  @Builder.Default private boolean isEnabled = false;
 }

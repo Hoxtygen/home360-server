@@ -4,7 +4,6 @@ package com.codeplanks.home360.controller;
 import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
-import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.service.RefreshTokenServiceImpl;

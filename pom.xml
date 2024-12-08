@@ -161,9 +161,10 @@
                     <layout>JAR</layout>
                 </configuration>
                 <executions>
-                    <execution><id>build-info</id>
+                    <execution>
+                        <id>build-info</id>
                         <goals>
-                        <goal>build-info</goal>
+                            <goal>build-info</goal>
                             <goal>repackage</goal>
                         </goals>
                     </execution>
@@ -209,40 +210,42 @@
                           optionally, Spotless can set copyright years by digging
                           through git history (see "license" section below) -->
                         <licenseHeader>
-                            <content>/* (C)$YEAR */</content>  <!-- or <file>${project.basedir}/license-header</file> -->
+                            <content>/* (C)$YEAR */
+                            </content>  <!-- or <file>${project.basedir}/license-header</file> -->
                         </licenseHeader>
                     </java>
                 </configuration>
             </plugin>
             <plugin>
-    <groupId>io.github.git-commit-id</groupId>
-    <artifactId>git-commit-id-maven-plugin</artifactId>
-    <version>5.0.0</version>
-    <executions>
-        <execution>
-            <id>get-the-git-infos</id>
-            <goals>
-                <goal>revision</goal>
-            </goals>
-            <phase>initialize</phase>
-        </execution>
-    </executions>
-    <configuration>
-        <failOnNoGitDirectory>false</failOnNoGitDirectory>
-        <generateGitPropertiesFile>true</generateGitPropertiesFile>
-        <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-        <includeOnlyProperties>
-            <includeOnlyProperty>^git.build.user.(name|email)$</includeOnlyProperty>
-            <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
-            <includeOnlyProperty>^git.commit.user.name$</includeOnlyProperty>
-            <includeOnlyProperty>^git.commit.time.(abbrev|full)$</includeOnlyProperty>
-            <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
-            <includeOnlyProperty>^git.branch$</includeOnlyProperty>
-            <includeOnlyProperty>^git.build.version$</includeOnlyProperty>
-        </includeOnlyProperties>
-        <commitIdGenerationMode>full</commitIdGenerationMode>
-    </configuration>
-</plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>5.0.0</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
+                    </generateGitPropertiesFilename>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git.build.user.(name|email)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.user.name$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.time.(abbrev|full)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.build.version$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <commitIdGenerationMode>full</commitIdGenerationMode>
+                </configuration>
+            </plugin>
         </plugins>
 
     </build>

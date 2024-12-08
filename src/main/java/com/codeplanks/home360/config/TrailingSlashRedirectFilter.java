@@ -18,7 +18,9 @@ public class TrailingSlashRedirectFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-        @NonNull  HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain)
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain)
       throws ServletException, IOException {
     /* We want to obtain the complete request URL including the query string */
     String url = ServletUriComponentsBuilder.fromRequest(request).build().toUriString();

@@ -1,17 +1,17 @@
+/* (C)2024 */
 package com.codeplanks.home360.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
   /**
@@ -20,8 +20,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
    * @param authException that caused the invocation
    */
   @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response,
-                       AuthenticationException authException) throws IOException, ServletException {
+  public void commence(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      AuthenticationException authException)
+      throws IOException, ServletException {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     HttpStatus status = HttpStatus.UNAUTHORIZED;
