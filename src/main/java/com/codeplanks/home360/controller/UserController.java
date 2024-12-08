@@ -2,7 +2,6 @@
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.auth.PasswordChangeRequest;
-import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.AppUserDTO;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.UserServiceImpl;
