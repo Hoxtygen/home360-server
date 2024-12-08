@@ -30,7 +30,7 @@ spring:
   data:
      mongodb:
       authentication-database: admin
-      database: home360dev
+      database: <enter database name>
       auto-index-creation: true
       uri: mongodb://mongo:27017/<database name>
       embedded:
