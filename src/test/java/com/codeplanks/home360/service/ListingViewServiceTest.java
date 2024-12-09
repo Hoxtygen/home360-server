@@ -12,9 +12,11 @@ import com.codeplanks.home360.domain.listing.Listing;
 import com.codeplanks.home360.domain.listingView.ListingView;
 import com.codeplanks.home360.domain.listingView.ListingViewDTO;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.repository.ListingRepository;
 import com.codeplanks.home360.repository.ListingViewRepository;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,6 @@ class ListingViewServiceTest {
   @Mock ListingViewRepository listingViewRepository;
 
   @Mock ListingServiceImpl listingService;
-  @Mock ListingRepository listingRepository;
 
   @BeforeEach
   void setUp() {}
@@ -93,5 +94,39 @@ class ListingViewServiceTest {
         assertThrows(NotFoundException.class, () -> listingViewService.saveListingView(request));
     // Then
     assertEquals("Listing not found", exception.getMessage());
+  }
+
+  @Test
+  @DisplayName("Get all listing views")
+  void givenListingViewsExistWhenGetAllListingViewsThenReturnListOfListingViews() {
+    // Given
+    ListingView listingView1 = new ListingView();
+    ListingView listingView2 = new ListingView();
+    ListingView listingView3 = new ListingView();
+    ListingView listingView4 = new ListingView();
+    List<ListingView> listingViews =
+        Arrays.asList(listingView1, listingView2, listingView3, listingView4);
+    given(listingViewRepository.findAll()).willReturn(listingViews);
+    // When
+    List<ListingView> result = listingViewService.getAllListingViews();
+    // Then
+    assertNotNull(result);
+    assertEquals(4, result.size());
+    verify(listingViewRepository, times(1)).findAll();
+  }
+
+  @Test
+  @DisplayName("Empty listing views")
+  void givenNoListingViewsExistWhenAllListingViewsThenReturnEmptyList() {
+    // Given
+    given(listingViewRepository.findAll()).willReturn(Collections.emptyList());
+
+    // When
+    List<ListingView> result = listingViewService.getAllListingViews();
+
+    // Then
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+    verify(listingViewRepository, times(1)).findAll();
   }
 }
