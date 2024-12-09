@@ -58,6 +58,16 @@ public class ListingViewController {
     return new ResponseEntity<>(response, response.getStatus());
   }
 
+  @Operation(
+      summary = "Get all listing views",
+      description = "Returns all listing views",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Listing views retrieved successfully",
+        content = {@Content(mediaType = "application/json")}),
+  })
   @GetMapping()
   public ResponseEntity<SuccessDataResponse<List<ListingView>>> getAllViews() {
     SuccessDataResponse<List<ListingView>> response = new SuccessDataResponse<>();
