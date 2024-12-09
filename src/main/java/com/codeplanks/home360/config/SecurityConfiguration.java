@@ -52,7 +52,7 @@ public class SecurityConfiguration {
         .permitAll()
         .and()
         .authorizeHttpRequests()
-        .requestMatchers(HttpMethod.POST, "/api/v1/listing-enquiries")
+        .requestMatchers(HttpMethod.POST, "/api/v1/listing-enquiries", "/api/v1/listing-views")
         .permitAll()
         .and()
         .authorizeHttpRequests()
