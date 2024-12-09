@@ -75,7 +75,7 @@ class ListingEnquiryServiceTest {
             "1245678",
             "221B Baker street",
             "080212345678",
-           LocalDateTime.now(),
+            LocalDateTime.now(),
             LocalDateTime.now(),
             Role.USER,
             true);
@@ -88,7 +88,7 @@ class ListingEnquiryServiceTest {
             "1245678",
             "221C Butler street",
             "080212345687",
-           LocalDateTime.now(),
+            LocalDateTime.now(),
             LocalDateTime.now(),
             Role.USER,
             true);

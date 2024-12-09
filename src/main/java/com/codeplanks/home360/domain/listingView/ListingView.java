@@ -1,14 +1,14 @@
+/* (C)2024 */
 package com.codeplanks.home360.domain.listingView;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.LocalDateTime;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
-
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor

@@ -17,7 +17,6 @@ import com.codeplanks.home360.repository.VerificationTokenRepository;
 import jakarta.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

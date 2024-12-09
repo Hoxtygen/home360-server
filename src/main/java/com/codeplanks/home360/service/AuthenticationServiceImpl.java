@@ -125,7 +125,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public String verifyAccount(String token) {
     VerificationToken verificationToken =
-            verificationTokenService.validateVerificationToken(token.trim());
+        verificationTokenService.validateVerificationToken(token.trim());
     if (verificationToken.getUser() == null) {
       throw new NotFoundException("Invalid verification token");
     }

@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
-
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

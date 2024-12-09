@@ -1,3 +1,4 @@
+/* (C)2024 */
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listingView.ListingView;
@@ -59,4 +60,3 @@ public class ListingViewController {
     return new ResponseEntity<>(response, response.getStatus());
   }
 }
-
