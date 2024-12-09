@@ -5,6 +5,7 @@ import com.codeplanks.home360.domain.listingView.ListingView;
 import com.codeplanks.home360.domain.listingView.ListingViewDTO;
 import com.codeplanks.home360.repository.ListingViewRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,5 +25,10 @@ public class ListingViewServiceImpl implements ListingViewService {
             .createdAt(LocalDateTime.now())
             .build();
     return viewRepository.save(listingView);
+  }
+
+  @Override
+  public List<ListingView> getAllListingViews() {
+    return viewRepository.findAll();
   }
 }

@@ -12,14 +12,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,6 +55,25 @@ public class ListingViewController {
     response.setData(listingViewService.saveListingView(request));
     response.setMessage("Views created");
     response.setStatus(HttpStatus.CREATED);
+    return new ResponseEntity<>(response, response.getStatus());
+  }
+
+  @Operation(
+      summary = "Get all listing views",
+      description = "Returns all listing views",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Listing views retrieved successfully",
+        content = {@Content(mediaType = "application/json")}),
+  })
+  @GetMapping()
+  public ResponseEntity<SuccessDataResponse<List<ListingView>>> getAllViews() {
+    SuccessDataResponse<List<ListingView>> response = new SuccessDataResponse<>();
+    response.setData(listingViewService.getAllListingViews());
+    response.setMessage("Listing views retrieved successfully");
+    response.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(response, response.getStatus());
   }
 }
