@@ -2,7 +2,7 @@
 package com.codeplanks.home360.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Date;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +20,8 @@ public class AppUserDTO {
   private String email;
   private String address;
   private String phoneNumber;
-  private Date createdAt;
-  private Date updatedAt;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
   private Role role;
   @Builder.Default private boolean isEnabled = false;
 }

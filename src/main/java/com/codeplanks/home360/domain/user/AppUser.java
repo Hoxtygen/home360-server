@@ -2,11 +2,13 @@
 package com.codeplanks.home360.domain.user;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -55,18 +57,22 @@ public class AppUser implements UserDetails {
   @Column(name = "phoneNumber", length = 11, nullable = false, unique = true)
   private String phoneNumber;
 
-  @Column(name = "createdAt", nullable = false)
-  private Date createdAt;
+  @Column(
+      name = "createdAt",
+      nullable = false,
+      columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
+  @CreationTimestamp
+  private LocalDateTime createdAt;
 
   @Column(name = "updatedAt", nullable = false)
-  private Date updatedAt;
+  @UpdateTimestamp
+  private LocalDateTime updatedAt;
 
   @Column(name = "role", length = 50, nullable = false)
   @Enumerated(EnumType.STRING)
   private Role role;
 
-  @Column(name = "isEnabled")
-  @Builder.Default
+  @Column(name = "isEnabled", columnDefinition = "boolean default false")
   private boolean isEnabled = false;
 
   public AppUser(
@@ -76,8 +82,8 @@ public class AppUser implements UserDetails {
       String password,
       String address,
       String phoneNumber,
-      Date createdAt,
-      Date updatedAt,
+      LocalDateTime createdAt,
+      LocalDateTime updatedAt,
       Role role) {
     this.firstName = firstName;
     this.lastName = lastName;

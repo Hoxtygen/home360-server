@@ -53,8 +53,8 @@ class ListingServiceTest {
             .password("1245678")
             .role(Role.USER)
             .isEnabled(true)
-            .createdAt(new Date())
-            .updatedAt(new Date())
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
             .build();
 
     listingDTO =
