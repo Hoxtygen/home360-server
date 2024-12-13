@@ -50,9 +50,11 @@ public class SecurityConfiguration {
                         "/api",
                         "/api-docs/**",
                         "/swagger-ui/**",
+                        "/swagger-ui.html/**",
+                        "/v3/api/docs/**",
                         "/api/v1",
                         "/api/v1/listings",
-                        "/api/v1" + "/listings/*",
+                        "/api/v1/listings/*",
                         "/api/v1/listings/search/*")
                     .permitAll()
                     .anyRequest()
