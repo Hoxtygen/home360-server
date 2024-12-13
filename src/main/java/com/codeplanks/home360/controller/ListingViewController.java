@@ -68,12 +68,60 @@ public class ListingViewController {
         description = "Listing views retrieved successfully",
         content = {@Content(mediaType = "application/json")}),
   })
-  @GetMapping()
+  @GetMapping
   public ResponseEntity<SuccessDataResponse<List<ListingView>>> getAllViews() {
     SuccessDataResponse<List<ListingView>> response = new SuccessDataResponse<>();
     response.setData(listingViewService.getAllListingViews());
     response.setMessage("Listing views retrieved successfully");
     response.setStatus(HttpStatus.OK);
+    return new ResponseEntity<>(response, response.getStatus());
+  }
+
+  @Operation(
+      summary = "Listing views by listingId",
+      description = "Get all the views of any given listingId",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ListingView.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Not authorized",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "403",
+        description = "Forbidden",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Not Found - The views with the listingId were not found",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        })
+  })
+  @GetMapping("/{listingId}")
+  public ResponseEntity<SuccessDataResponse<List<ListingView>>> getViewsByListingId(
+      @PathVariable String listingId) {
+    SuccessDataResponse<List<ListingView>> response = new SuccessDataResponse<>();
+    response.setData(listingViewService.getViewsByListingId(listingId));
+    response.setStatus(HttpStatus.OK);
+    response.setMessage("Listing views retrieved successfully");
     return new ResponseEntity<>(response, response.getStatus());
   }
 }
