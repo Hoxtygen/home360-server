@@ -37,30 +37,28 @@ public class SecurityConfiguration {
         .cors(Customizer.withDefaults())
         .csrf()
         .disable()
-        .authorizeHttpRequests()
-        .requestMatchers(
-            HttpMethod.GET, "/**", "/api", "/api-docs/**", "/swagger-ui/**", "/api" + "/v1")
-        .permitAll()
-        .and()
-        .authorizeHttpRequests()
-        .requestMatchers("/api/v1/auth/**")
-        .permitAll()
-        .and()
-        .authorizeHttpRequests()
-        .requestMatchers(
-            HttpMethod.GET, "/api/v1/listings", "/api/v1/listings/*", "/api/v1/listings/search/*")
-        .permitAll()
-        .and()
-        .authorizeHttpRequests()
-        .requestMatchers(HttpMethod.POST, "/api/v1/listing-enquiries", "/api/v1/listing-views")
-        .permitAll()
-        .and()
-        .authorizeHttpRequests()
-        .requestMatchers("/actuator/**")
-        .permitAll()
-        .anyRequest()
-        .authenticated()
-        .and()
+        .authorizeHttpRequests(
+            (requests) ->
+                requests
+                    .requestMatchers(
+                        HttpMethod.POST, "/api/v1/listing-enquiries", "/api/v1/listing-views")
+                    .permitAll()
+                    .requestMatchers("/api/v1/auth/**", "/actuator/**")
+                    .permitAll()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api",
+                        "/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html/**",
+                        "/v3/api/docs/**",
+                        "/api/v1",
+                        "/api/v1/listings",
+                        "/api/v1/listings/*",
+                        "/api/v1/listings/search/*")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .sessionManagement(
             (session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(

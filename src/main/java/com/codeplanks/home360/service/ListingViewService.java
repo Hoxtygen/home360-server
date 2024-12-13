@@ -9,4 +9,6 @@ public interface ListingViewService {
   ListingView saveListingView(ListingViewDTO request);
 
   List<ListingView> getAllListingViews();
+
+  List<ListingView> getViewsByListingId(String listingId);
 }
