@@ -5,9 +5,11 @@ import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.exception.ApiError;
+import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.service.RefreshTokenServiceImpl;
 import com.codeplanks.home360.service.VerificationTokenServiceImpl;
+import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +18,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +41,7 @@ public class AuthenticationController {
   private final AuthenticationServiceImpl authenticationServiceImpl;
   private final RefreshTokenServiceImpl refreshTokenService;
   private final VerificationTokenServiceImpl verificationTokenService;
+  private final AuthenticationUtils authenticationUtils;
 
   @Operation(
       summary = "Register user",
@@ -101,8 +107,25 @@ public class AuthenticationController {
         }),
   })
   @PostMapping("/login")
-  public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
-    return new ResponseEntity<>(authenticationServiceImpl.login(request), HttpStatus.OK);
+  public ResponseEntity<SuccessDataResponse<AuthenticationResponse>> login(
+      @RequestBody AuthenticationRequest request, HttpServletResponse response) {
+    SuccessDataResponse<AuthenticationResponse> result = new SuccessDataResponse<>();
+    AuthenticationResponse authResponse = authenticationServiceImpl.login(request);
+
+    Cookie refreshTokenCookie =
+        new Cookie("refreshToken", authResponse.getToken().getRefreshToken());
+    refreshTokenCookie.setHttpOnly(true);
+    refreshTokenCookie.setSecure(!authenticationUtils.isLocalEnvironment());
+    refreshTokenCookie.setPath("/");
+    refreshTokenCookie.setMaxAge(60 * 60 * 24 * 3);
+
+    response.addCookie(refreshTokenCookie);
+
+    result.setData(authResponse);
+    result.setMessage("Login successful");
+    result.setStatus(HttpStatus.OK);
+
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   @Operation(
@@ -208,12 +231,41 @@ public class AuthenticationController {
   })
   @PostMapping("/refreshToken")
   public ResponseEntity<SuccessDataResponse<TokenResponse>> getRefreshToken(
-      @RequestBody TokenRequest tokenRequest) {
-    SuccessDataResponse<TokenResponse> response = new SuccessDataResponse<>();
-    response.setData(refreshTokenService.refreshToken(tokenRequest));
-    response.setMessage("Success");
-    response.setStatus(HttpStatus.CREATED);
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
+      HttpServletRequest request, HttpServletResponse response) {
+    SuccessDataResponse<TokenResponse> result = new SuccessDataResponse<>();
+
+    String refreshToken = null;
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("refreshToken".equals(cookie.getName())) {
+          refreshToken = cookie.getValue();
+          break;
+        }
+      }
+    }
+
+    if (refreshToken == null) {
+      throw new UnAuthorizedException("Refresh token is missing");
+    }
+
+    TokenRequest tokenRequest = new TokenRequest();
+    tokenRequest.setToken(refreshToken);
+    TokenResponse tokenResponse = refreshTokenService.refreshToken(tokenRequest);
+
+    Cookie refreshTokenCookie = new Cookie("refreshToken", tokenRequest.getToken());
+    refreshTokenCookie.setHttpOnly(true);
+    refreshTokenCookie.setSecure(!authenticationUtils.isLocalEnvironment());
+    refreshTokenCookie.setPath("/");
+    refreshTokenCookie.setMaxAge(60 * 60 * 24 * 3);
+
+    response.addCookie(refreshTokenCookie);
+
+    result.setData(tokenResponse);
+    result.setMessage("Success");
+    result.setStatus(HttpStatus.CREATED);
+
+    return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 
   @Operation(

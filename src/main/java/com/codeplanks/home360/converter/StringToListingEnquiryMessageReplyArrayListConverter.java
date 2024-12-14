@@ -25,7 +25,6 @@ public class StringToListingEnquiryMessageReplyArrayListConverter
   public ArrayList<ListingEnquiryMessageReply> convert(@NonNull String source) {
 
     try {
-      System.out.println("Converting Json string to List " + source);
       return objectMapper.readValue(
           source,
           objectMapper

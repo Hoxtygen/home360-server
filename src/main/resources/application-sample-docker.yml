@@ -1,6 +1,15 @@
 server:
   port: <port>
 
+springdoc:
+  api-docs:
+    path: /v3/api/docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+cors:
+  allowed-origins: "http://localhost:3000"
+
 spring:
   application:
     name: Home360
