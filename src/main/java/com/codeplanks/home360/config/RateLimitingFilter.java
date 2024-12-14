@@ -36,7 +36,6 @@ public class RateLimitingFilter implements Filter {
     boolean isAuthenticated = httpServletRequest.getUserPrincipal() != null;
 
     String path = httpServletRequest.getRequestURI();
-    System.out.println("Path: " + path);
 
     if (path.startsWith("/swagger") || path.startsWith("/v1/api-docs")) {
       chain.doFilter(request, response);
