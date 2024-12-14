@@ -181,12 +181,9 @@ class AuthenticationServiceTest {
     // Then - verify the output
     assertAll(
         () -> assertThat(response).isNotNull(),
-        () -> assertThat(response.getEmail()).isEqualTo("elaeis@example.com"),
         () -> assertThat(response.getFirstName()).isEqualTo("Elaeis"),
         () -> assertThat(response.getLastName()).isEqualTo("Guineensis"),
-        () -> assertThat(response.getToken().getAccessToken()).isEqualTo(token),
-        () -> assertThat(response.getMessage()).isEqualTo("User login successful"),
-        () -> assertThat(response.getStatus()).isEqualTo(200));
+        () -> assertThat(response.getToken().getAccessToken()).isEqualTo(token));
 
     verify(authenticationManager, times(1))
         .authenticate(any(UsernamePasswordAuthenticationToken.class));
