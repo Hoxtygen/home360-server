@@ -7,6 +7,9 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+cors:
+  allowed-origins: "http://localhost:3000"
+
 spring:
   application:
     name: Home360

@@ -109,12 +109,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               .build();
       return AuthenticationResponse.builder()
           .token(tokenResponse)
-          .id(user.getId())
           .firstName(user.getFirstName())
           .lastName(user.getLastName())
-          .email(user.getEmail())
-          .message("User login successful")
-          .status(200)
           .build();
 
     } catch (BadCredentialsException exception) {
