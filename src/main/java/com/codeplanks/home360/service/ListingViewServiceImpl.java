@@ -6,6 +6,8 @@ import com.codeplanks.home360.domain.listingView.ListingView;
 import com.codeplanks.home360.domain.listingView.ListingViewDTO;
 import com.codeplanks.home360.repository.ListingViewRepository;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,10 +23,13 @@ public class ListingViewServiceImpl implements ListingViewService {
   @Override
   public ListingView saveListingView(ListingViewDTO request) {
     listingService.findListingById(request.getListingId());
+    ZonedDateTime utcTimestamp = request.getTimestamp().atZone(ZoneId.of("UTC"));
+    LocalDateTime localTimestamp =
+        utcTimestamp.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
     ListingView listingView =
         ListingView.builder()
             .listingId(request.getListingId())
-            .timestamp(request.getTimestamp())
+            .timestamp(localTimestamp)
             .createdAt(LocalDateTime.now())
             .build();
     return viewRepository.save(listingView);

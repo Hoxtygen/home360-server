@@ -14,8 +14,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class ListingViewDTO {
-  private String id;
-
   @NotBlank(message = "Listing ID is required")
   private String listingId;
 
