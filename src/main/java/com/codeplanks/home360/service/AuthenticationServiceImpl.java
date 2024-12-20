@@ -135,20 +135,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public String resetForgottenUserPassword(
-      PasswordResetRequest passwordResetRequest, String token) {
+  public String resetForgottenUserPassword(PasswordUpdateDTO passwordUpdateDTO, String token) {
     AppUser user = passwordResetTokenServiceImpl.validatePasswordResetToken(token);
     if (user == null) {
       throw new NotFoundException("User not found for the provided password reset token");
     }
-    userService.updatePassword(user, passwordResetRequest.getNewPassword());
+    userService.updatePassword(user, passwordUpdateDTO.getNewPassword());
     passwordResetTokenServiceImpl.deleteToken(token);
     return "Password has been reset successfully";
   }
 
-  public String requestPasswordReset(String email)
+  @Override
+  public String requestPasswordReset(PasswordResetRequestDTO request)
       throws MessagingException, UnsupportedEncodingException {
-    AppUser user = userService.findUserByEmail(email);
+    AppUser user = userService.findUserByEmail(request.getUserEmail());
     String passwordResetToken = UUID.randomUUID().toString();
     createPasswordResetTokenForUser(user, passwordResetToken);
     createPasswordResetEmailLink(user, passwordResetToken);
