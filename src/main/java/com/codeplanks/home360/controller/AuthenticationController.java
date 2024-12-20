@@ -300,10 +300,10 @@ public class AuthenticationController {
   })
   @PostMapping("/password-reset-request")
   public ResponseEntity<SuccessDataResponse<String>> resetPasswordRequest(
-      @RequestBody PasswordResetRequest passwordRequest)
+      @RequestBody @Valid PasswordResetRequestDTO passwordResetRequest)
       throws MessagingException, UnsupportedEncodingException {
     SuccessDataResponse<String> response = new SuccessDataResponse<>();
-    response.setData(authenticationServiceImpl.requestPasswordReset(passwordRequest.getEmail()));
+    response.setData(authenticationServiceImpl.requestPasswordReset(passwordResetRequest));
     response.setMessage("Success");
     response.setStatus(HttpStatus.CREATED);
     return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -341,13 +341,13 @@ public class AuthenticationController {
   })
   @PostMapping("/reset-password")
   public ResponseEntity<SuccessDataResponse<String>> resetPassword(
-      @RequestBody @Valid PasswordResetRequest passwordResetRequest,
+      @RequestBody @Valid PasswordUpdateDTO passwordUpdateDTO,
       @RequestParam("token") String token) {
     SuccessDataResponse<String> response =
         new SuccessDataResponse<>(
             HttpStatus.CREATED,
             "Success",
-            authenticationServiceImpl.resetForgottenUserPassword(passwordResetRequest, token));
+            authenticationServiceImpl.resetForgottenUserPassword(passwordUpdateDTO, token));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

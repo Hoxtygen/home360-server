@@ -19,7 +19,9 @@ import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.PasswordResetTokenRepository;
 import com.codeplanks.home360.repository.UserRepository;
 import com.codeplanks.home360.repository.VerificationTokenRepository;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +63,7 @@ class AuthenticationServiceTest {
   private RegisterRequest request;
   private AppUser user;
   @Mock private VerificationToken verificationToken;
-  private PasswordResetRequest passwordResetRequest;
+  private PasswordUpdateDTO passwordUpdateDTO;
 
   private PasswordResetToken passwordResetToken;
 
@@ -258,13 +260,13 @@ class AuthenticationServiceTest {
   public void givenValidPasswordRequestDataWhenUserRequestPasswordResetThenPasswordIsReset() {
     // Given
     String resetTokenString = UUID.randomUUID().toString();
-    passwordResetRequest = new PasswordResetRequest("elaeis@example.com", newPassword);
+    passwordUpdateDTO = new PasswordUpdateDTO(newPassword);
     passwordResetToken = new PasswordResetToken(resetTokenString, user);
     given(passwordResetTokenService.validatePasswordResetToken(resetTokenString)).willReturn(user);
 
     // When
     String result =
-        authenticationService.resetForgottenUserPassword(passwordResetRequest, resetTokenString);
+        authenticationService.resetForgottenUserPassword(passwordUpdateDTO, resetTokenString);
 
     // Then
     assertThat(result).isNotNull();
@@ -278,7 +280,7 @@ class AuthenticationServiceTest {
   public void givenInvalidPasswordRequestDataWhenUserRequestPasswordResetThenThrowException() {
     // Given
     String resetTokenString = UUID.randomUUID().toString();
-    passwordResetRequest = new PasswordResetRequest(newPassword);
+    passwordUpdateDTO = new PasswordUpdateDTO(newPassword);
 
     given(passwordResetTokenService.validatePasswordResetToken(resetTokenString)).willReturn(null);
 
@@ -288,11 +290,50 @@ class AuthenticationServiceTest {
             NotFoundException.class,
             () ->
                 authenticationService.resetForgottenUserPassword(
-                    passwordResetRequest, resetTokenString));
+                    passwordUpdateDTO, resetTokenString));
 
     // Then
     assertThat(exception.getMessage())
         .isEqualTo("User not found for the provided password reset token");
     verifyNoMoreInteractions(passwordResetTokenRepository);
+  }
+
+  @Test
+  @DisplayName("Send password reset link")
+  void givenValidUserEmailWhenRequestForPasswordResetThenSendUserLinkForReset()
+      throws MessagingException, UnsupportedEncodingException {
+    // Given
+    PasswordResetRequestDTO passwordResetRequestDTO =
+        new PasswordResetRequestDTO("carica_papaya@example.com");
+    AppUser user = new AppUser();
+    user.setEmail("carica_papaya@example.com");
+    given(userService.findUserByEmail(passwordResetRequestDTO.getUserEmail())).willReturn(user);
+
+    // When
+    String response = authenticationService.requestPasswordReset(passwordResetRequestDTO);
+
+    // Then
+    assertThat(response).isNotNull();
+    assertThat(response).isEqualTo("Password reset link has been sent to your registered email.");
+    verify(userService, times(1)).findUserByEmail(passwordResetRequestDTO.getUserEmail());
+  }
+
+  @Test
+  @DisplayName("Invalid email for password reset")
+  void GivenUnregisteredEmailWhenRequestForPasswordResetThenThrowNotFoundException() {
+    // Given
+    PasswordResetRequestDTO passwordResetRequestDTO =
+        new PasswordResetRequestDTO("carica_papaya@example.com");
+    given(userService.findUserByEmail(passwordResetRequestDTO.getUserEmail()))
+        .willThrow(new NotFoundException("User does not exist"));
+
+    // When
+    NotFoundException exception =
+        assertThrows(
+            NotFoundException.class,
+            () -> authenticationService.requestPasswordReset(passwordResetRequestDTO));
+
+    // Then
+    assertThat(exception.getMessage()).isEqualTo("User does not exist");
   }
 }
