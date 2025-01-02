@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -26,7 +26,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-  private final JwtService jwtService;
+  @Autowired private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
   Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 

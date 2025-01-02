@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -164,7 +164,7 @@ class ListingServiceTest {
     given(listingRepository.findAll()).willReturn(listings);
 
     // When
-    List<Listing> result = listingService.allListings();
+    List<ListingWithViewCountDTO> result = listingService.allListings();
 
     // Assert
     assertNotNull(result);
@@ -179,7 +179,7 @@ class ListingServiceTest {
     given(listingRepository.findAll()).willReturn(Collections.emptyList());
 
     // When
-    List<Listing> result = listingService.allListings();
+    List<ListingWithViewCountDTO> result = listingService.allListings();
 
     // Then
     assertNotNull(result);
@@ -267,7 +267,7 @@ class ListingServiceTest {
 
     // Then
     assertNotNull(result);
-    assertEquals(1, result.getListing().getAgentId());
+    assertEquals(1, result.getListing().getAgent_id());
     verify(listingRepository, times(1)).findById(listingId);
   }
 

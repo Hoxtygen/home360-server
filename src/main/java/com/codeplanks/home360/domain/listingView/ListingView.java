@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.domain.listingView;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

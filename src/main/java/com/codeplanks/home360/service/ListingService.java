@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listing.*;
@@ -18,7 +18,7 @@ public interface ListingService {
 
   ListingWithAgentInfo getListingById(String listingId);
 
-  List<Listing> allListings();
+  List<ListingWithViewCountDTO> allListings();
 
   PaginatedResponse<Listing> getListingsByAgentId(int page, int size);
 
