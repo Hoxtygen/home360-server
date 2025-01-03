@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listing.*;
@@ -88,8 +88,8 @@ public class ListingController {
         content = {@Content(mediaType = "application/json")}),
   })
   @GetMapping
-  public ResponseEntity<SuccessDataResponse<List<Listing>>> getAllListings() {
-    SuccessDataResponse<List<Listing>> allListings = new SuccessDataResponse<>();
+  public ResponseEntity<SuccessDataResponse<List<ListingWithViewCountDTO>>> getAllListings() {
+    SuccessDataResponse<List<ListingWithViewCountDTO>> allListings = new SuccessDataResponse<>();
     allListings.setData(listingService.allListings());
     allListings.setMessage("Listings retrieved successfully");
     allListings.setStatus(HttpStatus.OK);

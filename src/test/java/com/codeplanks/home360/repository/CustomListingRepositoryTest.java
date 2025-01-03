@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import com.codeplanks.home360.domain.listing.Listing;
 import java.util.List;
 import org.bson.Document;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -32,9 +31,6 @@ class CustomListingRepositoryTest {
   @Mock private MongoTemplate mongoTemplate;
 
   @Mock private Pageable pageable;
-
-  @BeforeEach
-  void setUp() {}
 
   @Test
   void findAllWithFilter() {
@@ -97,5 +93,14 @@ class CustomListingRepositoryTest {
 
     assertThat(capturedQuery.getQueryObject().get("agentId")).isEqualTo(agentId);
     assertThat(capturedQuery.getSortObject().get("created_at")).isEqualTo(-1);
+  }
+
+  @Test
+  void findListingWithViewCountById() {
+    // Given
+
+    // When
+
+    // Then
   }
 }
