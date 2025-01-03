@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360;
 
 import org.springframework.boot.SpringApplication;
@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.codeplanks.home360")
 @RestController
 @EnableAsync(proxyTargetClass = true)
 @EnableTransactionManagement

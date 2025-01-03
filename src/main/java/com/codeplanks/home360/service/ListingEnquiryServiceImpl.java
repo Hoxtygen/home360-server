@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
@@ -7,7 +7,6 @@ import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
-import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

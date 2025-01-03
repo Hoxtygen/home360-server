@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,8 +50,11 @@ class ListingViewServiceTest {
   @DisplayName("save listing view")
   void givenValidListingViewRequestWhenSavedThenNewListingViewIsCreated() {
     // Given
+    String listingId = "663b268e5512f1692718c3ec";
     Listing listing = new Listing();
-    listing.setId("663b268e5512f1692718c3ec");
+    listing.setId(listingId);
+    ObjectId listingObjectId = new ObjectId(listing.getId());
+
     ListingViewDTO request =
         ListingViewDTO.builder()
             .listingId(listing.getId())
@@ -59,7 +63,7 @@ class ListingViewServiceTest {
             .build();
     ListingView listingView =
         ListingView.builder()
-            .listingId(listing.getId())
+            .listingId(listingId)
             .timestamp(LocalDateTime.now())
             .createdAt(LocalDateTime.now())
             .build();

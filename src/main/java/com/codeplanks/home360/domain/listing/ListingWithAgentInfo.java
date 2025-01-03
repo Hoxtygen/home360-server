@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.codeplanks.home360.domain.listing;
 
 import lombok.*;
@@ -7,6 +8,6 @@ import lombok.*;
 @Setter
 @Builder
 public class ListingWithAgentInfo {
-  private Listing listing;
+  private ListingWithViewCountDTO listing;
   private ListingAgentInfo agentInfo;
 }
