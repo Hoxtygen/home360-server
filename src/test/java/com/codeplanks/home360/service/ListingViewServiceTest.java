@@ -63,7 +63,7 @@ class ListingViewServiceTest {
             .build();
     ListingView listingView =
         ListingView.builder()
-            .listingId(listingObjectId)
+            .listingId(listingId)
             .timestamp(LocalDateTime.now())
             .createdAt(LocalDateTime.now())
             .build();
@@ -75,7 +75,7 @@ class ListingViewServiceTest {
         () -> assertThat(result).isNotNull(),
         () -> {
           assert result != null;
-          assertThat(result.getListingId()).isEqualTo(new ObjectId("663b268e5512f1692718c3ec"));
+          assertThat(result.getListingId()).isEqualTo("663b268e5512f1692718c3ec");
         },
         () -> assertThat(result.getTimestamp()).isNotNull(),
         () -> assertThat(result.getTimestamp()).isInstanceOf(LocalDateTime.class));

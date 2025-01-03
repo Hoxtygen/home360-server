@@ -157,11 +157,11 @@ class ListingServiceTest {
   @DisplayName("Get all listings")
   void givenListingsExistWhenAllListingsThenReturnListOfListings() {
     // Given
-    Listing listing1 = new Listing();
-    Listing listing2 = new Listing();
-    List<Listing> listings = Arrays.asList(listing1, listing2);
+    ListingWithViewCountDTO listing1 = new ListingWithViewCountDTO();
+    ListingWithViewCountDTO listing2 = new ListingWithViewCountDTO();
+    List<ListingWithViewCountDTO> listings = Arrays.asList(listing1, listing2);
 
-    given(listingRepository.findAll()).willReturn(listings);
+    given(listingRepository.getAllListingsWithViewCount()).willReturn(listings);
 
     // When
     List<ListingWithViewCountDTO> result = listingService.allListings();
@@ -169,14 +169,14 @@ class ListingServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(2, result.size());
-    verify(listingRepository, times(1)).findAll();
+    verify(listingRepository, times(1)).getAllListingsWithViewCount();
   }
 
   @Test
   @DisplayName("Empty listings")
   void givenNoListingsExistWhenAllListingsThenReturnEmptyList() {
     // Given
-    given(listingRepository.findAll()).willReturn(Collections.emptyList());
+    given(listingRepository.getAllListingsWithViewCount()).willReturn(Collections.emptyList());
 
     // When
     List<ListingWithViewCountDTO> result = listingService.allListings();
@@ -184,7 +184,7 @@ class ListingServiceTest {
     // Then
     assertNotNull(result);
     assertTrue(result.isEmpty());
-    verify(listingRepository, times(1)).findAll();
+    verify(listingRepository, times(1)).getAllListingsWithViewCount();
   }
 
   @Test
@@ -253,13 +253,22 @@ class ListingServiceTest {
   void givenValidListingIdWhenRequestForListingThenReturnListingWithAgentInfo() {
     // Given
     Integer userId = 1;
+
     String listingId = "12345";
     Listing listing = new Listing();
+
+    ListingWithViewCountDTO listingWithViewCountDTO = new ListingWithViewCountDTO();
+    listingWithViewCountDTO.setId(listingId);
+    listingWithViewCountDTO.setAgent_id(userId);
+
     listing.setId(listingId);
     listing.setAgentId(userId);
     AppUser user = new AppUser();
     user.setId(userId);
-    given(listingRepository.findById(listingId)).willReturn(Optional.of(listing));
+
+    given(listingRepository.findListingWithViewCountById(listingId))
+        .willReturn(listingWithViewCountDTO);
+
     given(userService.getUserByUserId(userId)).willReturn(user);
 
     // When
@@ -268,7 +277,7 @@ class ListingServiceTest {
     // Then
     assertNotNull(result);
     assertEquals(1, result.getListing().getAgent_id());
-    verify(listingRepository, times(1)).findById(listingId);
+    verify(listingRepository, times(1)).findListingWithViewCountById(listingId);
   }
 
   @Test
@@ -276,7 +285,9 @@ class ListingServiceTest {
   void givenNonExistentListingIdWhenUserRequestForListingThenThrowNotFoundExceptions() {
     // Given
     String listingId = "1234";
-    given(listingRepository.findById(listingId)).willReturn(Optional.empty());
+    given(listingRepository.findListingWithViewCountById(listingId))
+        .willThrow(new NotFoundException("Listing not found"));
+
     // When
     NotFoundException exception =
         assertThrows(NotFoundException.class, () -> listingService.getListingById(listingId));
