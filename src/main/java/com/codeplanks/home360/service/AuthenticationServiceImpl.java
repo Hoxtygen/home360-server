@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.config.JwtService;
@@ -109,6 +109,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               .build();
       return AuthenticationResponse.builder()
           .token(tokenResponse)
+          .id(user.getId())
           .firstName(user.getFirstName())
           .lastName(user.getLastName())
           .build();
