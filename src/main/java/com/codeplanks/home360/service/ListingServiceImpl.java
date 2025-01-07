@@ -164,7 +164,7 @@ public class ListingServiceImpl implements ListingService {
     Integer userId = userService.extractUserId();
     List<Document> pipeline =
         Arrays.asList(
-            new Document("$match", new Document("agent_id", userId)),
+            new Document("$match", new Document("agent_id", 1L)),
             new Document(
                 "$addFields", new Document("listingIdStr", new Document("$toString", "$_id"))),
             new Document(
@@ -212,8 +212,8 @@ public class ListingServiceImpl implements ListingService {
                                 "$group",
                                 new Document(
                                         "_id",
-                                        new Document("year", new Document("$year", "$created_at"))
-                                            .append("month", new Document("$month", "$created_at")))
+                                        new Document("year", new Document("$year", "$rentDate"))
+                                            .append("month", new Document("$month", "$rentDate")))
                                     .append("total_income", new Document("$sum", "$total_income"))),
                             new Document(
                                 "$group",
@@ -300,7 +300,8 @@ public class ListingServiceImpl implements ListingService {
                                 "$project",
                                 new Document("_id", 0L)
                                     .append("year", "$_id")
-                                    .append("months", 1L))))
+                                    .append("months", 1L)),
+                            new Document("$sort", new Document("year", 1L))))
                     .append(
                         "listings",
                         Arrays.asList(
@@ -396,7 +397,8 @@ public class ListingServiceImpl implements ListingService {
                                 "$project",
                                 new Document("_id", 0L)
                                     .append("year", "$_id")
-                                    .append("months", 1L))))
+                                    .append("months", 1L)),
+                            new Document("$sort", new Document("year", 1L))))
                     .append(
                         "totalViews",
                         Arrays.asList(
@@ -532,12 +534,8 @@ public class ListingServiceImpl implements ListingService {
                                 "$addFields",
                                 new Document("viewCount", new Document("$size", "$views"))),
                             new Document("$sort", new Document("viewCount", -1L)),
-                            new Document("$limit", 10L),
-                            new Document(
-                                "$project",
-                                new Document("listingId", 1L)
-                                    .append("title", 1L)
-                                    .append("viewCount", 1L))))),
+                            new Document("$limit", 5L),
+                            new Document("$unset", Arrays.asList("views", "_class"))))),
             new Document(
                 "$project",
                 new Document(
