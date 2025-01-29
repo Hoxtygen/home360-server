@@ -164,7 +164,7 @@ public class ListingServiceImpl implements ListingService {
     Integer userId = userService.extractUserId();
     List<Document> pipeline =
         Arrays.asList(
-            new Document("$match", new Document("agent_id", 1L)),
+            new Document("$match", new Document("agent_id", userId)),
             new Document(
                 "$addFields", new Document("listingIdStr", new Document("$toString", "$_id"))),
             new Document(

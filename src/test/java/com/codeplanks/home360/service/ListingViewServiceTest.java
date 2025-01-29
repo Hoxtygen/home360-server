@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,7 +52,6 @@ class ListingViewServiceTest {
     String listingId = "663b268e5512f1692718c3ec";
     Listing listing = new Listing();
     listing.setId(listingId);
-    ObjectId listingObjectId = new ObjectId(listing.getId());
 
     ListingViewDTO request =
         ListingViewDTO.builder()

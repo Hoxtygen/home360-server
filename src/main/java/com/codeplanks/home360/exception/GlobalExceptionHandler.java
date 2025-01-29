@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.exception;
 
 import com.mongodb.MongoSocketOpenException;
@@ -199,31 +199,38 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleHttpMessageNotReadableException(
       HttpMessageNotReadableException exception) {
     String readableMessage = extractEnumErrorMessage(exception.getMessage());
-    ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, readableMessage);
+    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, readableMessage);
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ServiceException.class)
+  public ResponseEntity<ApiError> handleServiceException(ServiceException exception) {
+
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   private String extractEnumErrorMessage(String message) {
     if (message.contains("Cannot deserialize value of type")) {
       try {
-        // Extracting relevant parts of the error message
-        String enumType = message.substring(message.indexOf("type `") + 6, message.indexOf("` from String"));
-        String invalidValue = message.substring(message.indexOf("from String \"") + 13, message.indexOf("\": not"));
-        String acceptedValues = message.substring(message.indexOf("Enum class: [") + 13, message.indexOf("]"));
+        String enumType =
+            message.substring(message.indexOf("type `") + 6, message.indexOf("` from String"));
+        String invalidValue =
+            message.substring(message.indexOf("from String \"") + 13, message.indexOf("\": not"));
+        String acceptedValues =
+            message.substring(message.indexOf("Enum class: [") + 13, message.indexOf("]"));
 
-        // Extract only the simple class name instead of the fully qualified name
         String fieldName = enumType.substring(enumType.lastIndexOf('.') + 1);
 
-        return String.format("Invalid value '%s' for field '%s'. Accepted values are: %s.", invalidValue, fieldName, acceptedValues);
+        return String.format(
+            "Invalid value '%s' for field '%s'. Accepted values are: %s.",
+            invalidValue, fieldName, acceptedValues);
       } catch (Exception e) {
-        // Fallback in case of unexpected format
         return "Invalid value provided. Please check your input.";
       }
     }
-    return message;  // Fallback to the original message if it's not a deserialization issue
+    return message;
   }
-
-
 }
