@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -273,5 +274,15 @@ public class ListingEnquiryController {
     response.setStatus(HttpStatus.CREATED);
     response.setMessage("message posted.");
     return new ResponseEntity<>(response, response.getStatus());
+  }
+
+  @GetMapping("/listing/{listingId}")
+  public ResponseEntity<SuccessDataResponse<List<ListingEnquiry>>> getEnquiriesByListingId(
+      @PathVariable String listingId) {
+    SuccessDataResponse<List<ListingEnquiry>> response = new SuccessDataResponse<>();
+    response.setData(listingEnquiryService.getEnquiriesByListingId(listingId));
+    response.setStatus(HttpStatus.OK);
+    response.setMessage("Enquiries fetched successfully");
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
