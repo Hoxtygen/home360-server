@@ -48,3 +48,6 @@ src/test/resources/application-test.yml
 
 ### Qodana ###
 qodana.yaml
+
+# note
+notes.md

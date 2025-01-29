@@ -10,7 +10,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +26,6 @@ public class ListingViewServiceImpl implements ListingViewService {
     ZonedDateTime utcTimestamp = request.getTimestamp().atZone(ZoneId.of("UTC"));
     LocalDateTime localTimestamp =
         utcTimestamp.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-    ObjectId listingObjectId = new ObjectId(request.getListingId());
     ListingView listingView =
         ListingView.builder()
             .listingId(request.getListingId())
