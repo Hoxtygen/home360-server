@@ -1,6 +1,7 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
+import com.codeplanks.home360.domain.listing.Listing;
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.exception.NotFoundException;
@@ -8,6 +9,8 @@ import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -112,6 +115,16 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     validateUserIds(reply.getSenderId(), reply.getReceiverId());
     Query query = createQuery(enquiryMessageId);
     return addEnquiryReply(query, reply);
+  }
+
+  @Override
+  public List<ListingEnquiry> getEnquiriesByListingId(String listingId) {
+    Integer userId = userService.extractUserId();
+    Listing listing = listingService.findListingById(listingId);
+    if (!Objects.equals(userId, listing.getAgentId())) {
+      throw new AccessDeniedException("You are not authorized to view these enquiries.");
+    }
+    return listingEnquiryRepository.findByListingId(listingId);
   }
 
   private Query createQuery(String enquiryMessageId) {

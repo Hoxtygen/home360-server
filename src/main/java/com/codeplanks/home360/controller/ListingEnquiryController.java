@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -273,5 +274,53 @@ public class ListingEnquiryController {
     response.setStatus(HttpStatus.CREATED);
     response.setMessage("message posted.");
     return new ResponseEntity<>(response, response.getStatus());
+  }
+
+  @Operation(
+      summary = "Get enquiries by listing ID",
+      description = "Gets all listing enquiries made to a given listing",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successful",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ListingEnquiry.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Authentication required",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "403",
+        description = "Not authorized to perform this operation",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Listing not found",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+  })
+  @GetMapping("/listing/{listingId}")
+  public ResponseEntity<SuccessDataResponse<List<ListingEnquiry>>> getEnquiriesByListingId(
+      @PathVariable String listingId) {
+    SuccessDataResponse<List<ListingEnquiry>> response = new SuccessDataResponse<>();
+    response.setData(listingEnquiryService.getEnquiriesByListingId(listingId));
+    response.setStatus(HttpStatus.OK);
+    response.setMessage("Enquiries fetched successfully");
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
