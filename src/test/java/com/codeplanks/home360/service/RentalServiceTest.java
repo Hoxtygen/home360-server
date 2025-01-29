@@ -153,7 +153,7 @@ class RentalServiceTest {
   }
 
   @Test
-  @DisplayName("Non-existent listing ID")
+  @DisplayName("Invalid agent ID")
   void givenInvalidAgentIdWhenSavedThenThrowAccessDeniedException() {
     // Given
     String userEmail = "john_doe@yopmail.com";

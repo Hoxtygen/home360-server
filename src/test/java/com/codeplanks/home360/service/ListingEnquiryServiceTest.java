@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+import com.codeplanks.home360.domain.listing.Listing;
 import com.codeplanks.home360.domain.listing.PaginatedResponse;
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
-import com.codeplanks.home360.repository.ListingRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
 import jakarta.validation.*;
@@ -37,7 +37,6 @@ import org.springframework.test.context.ActiveProfiles;
 @ExtendWith(MockitoExtension.class)
 class ListingEnquiryServiceTest {
   @InjectMocks ListingEnquiryServiceImpl listingEnquiryService;
-  @Mock ListingRepository listingRepository;
   @Mock AuthenticationUtils authenticationUtils;
   @Mock ListingServiceImpl listingService;
   @Mock private ListingEnquiryRepository listingEnquiryRepository;
@@ -718,5 +717,78 @@ class ListingEnquiryServiceTest {
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("EnquiryId");
+  }
+
+  @Test
+  @DisplayName("Get enquiries by listing ID")
+  void givenValidListingIdWhenFetchEnquiriesThenReturnResult() {
+    // Given
+    String listingId = "64c44cbf6aff9f2ae7df6a8a";
+    int agentId = 1;
+    Listing listing = new Listing();
+    listing.setId(listingId);
+    listing.setAgentId(agentId);
+    ListingEnquiry enquiry1 = new ListingEnquiry();
+    enquiry1.setListingId(listingId);
+    ListingEnquiry enquiry2 = new ListingEnquiry();
+    enquiry2.setListingId(listingId);
+    ListingEnquiry enquiry3 = new ListingEnquiry();
+    enquiry3.setListingId(listingId);
+    List<ListingEnquiry> enquiries = List.of(enquiry1, enquiry2, enquiry3);
+    given(userService.extractUserId()).willReturn(agentId);
+    given(listingService.findListingById(listingId)).willReturn(listing);
+    given(listingEnquiryRepository.findByListingId(listingId)).willReturn(enquiries);
+    // When
+    List<ListingEnquiry> result = listingEnquiryService.getEnquiriesByListingId(listingId);
+    // Then
+    assertThat(result).isNotNull();
+    assertThat(result.size()).isEqualTo(3);
+    verify(listingEnquiryRepository, times(1)).findByListingId(listingId);
+    verify(userService, times(1)).extractUserId();
+    verify(listingService, times(1)).findListingById(listingId);
+  }
+
+  @Test
+  @DisplayName("Invalid listing ID")
+  void givenInValidListingIdWhenFetchEnquiriesThenThrowNotFoundException() {
+    // Given
+    String listingId = "64c44cbf6aff9f2ae7df6a8a";
+    int agentId = 1;
+    Listing listing = new Listing();
+    listing.setId(listingId);
+    listing.setAgentId(agentId);
+
+    given(listingService.findListingById(listingId))
+        .willThrow(new NotFoundException("Listing not found"));
+    // When
+    NotFoundException exception =
+        assertThrows(
+            NotFoundException.class,
+            () -> listingEnquiryService.getEnquiriesByListingId(listingId));
+    // Then
+    assertThat(exception.getMessage()).isEqualTo("Listing not found");
+    verify(listingEnquiryRepository, times(0)).findByListingId(listingId);
+  }
+
+  @Test
+  @DisplayName("Invalid agent ID")
+  void givenInValidAgentIdWhenFetchEnquiriesThenThrowNotAccessDeniedException() {
+    // Given
+    String listingId = "64c44cbf6aff9f2ae7df6a8a";
+    int agentId = 1;
+    Listing listing = new Listing();
+    listing.setId(listingId);
+    listing.setAgentId(agentId);
+
+    given(userService.extractUserId()).willReturn(100);
+    given(listingService.findListingById(listingId)).willReturn(listing);
+    // When
+    AccessDeniedException exception =
+        assertThrows(
+            AccessDeniedException.class,
+            () -> listingEnquiryService.getEnquiriesByListingId(listingId));
+    // Then
+    assertThat(exception.getMessage()).isEqualTo("You are not authorized to view these enquiries.");
+    verify(listingEnquiryRepository, times(0)).findByListingId(listingId);
   }
 }
