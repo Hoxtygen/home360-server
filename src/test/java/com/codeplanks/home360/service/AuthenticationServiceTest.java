@@ -111,14 +111,14 @@ class AuthenticationServiceTest {
   @Test
   @DisplayName("register new user successfully")
   void GivenAppUserObjectWhenRegisterUserThenRegistrationSuccessful() {
-    // Given - precondition or setup
+    // Given
     when(userRepository.save(any(AppUser.class))).thenReturn(user);
     when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
-    // When - action or the behaviour we're testing for
+    // When
     AppUser response = authenticationService.register(request);
 
-    // Then - verify the output
+    // Then
     assertAll(
         () -> assertThat(response.getFirstName()).isEqualTo("Elaeis"),
         () -> assertThat(response.getRole().toString()).isEqualTo("USER"),
@@ -136,37 +136,39 @@ class AuthenticationServiceTest {
   @DisplayName("register duplicate email throws UserAlreadyExistException")
   @Test
   public void givenExistingEmailWhenSaveAppUserThenThrowsException() {
-    // Given - precondition or setup
-    given(userService.emailExists(request.getEmail())).willReturn(true);
+    // Given
+    given(userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber())).willReturn(true);
 
-    // When - action or the behaviour we're testing for
+    // When
     UserAlreadyExistsException exception =
         assertThrows(
             UserAlreadyExistsException.class, () -> authenticationService.register(request));
 
-    // Then - verify the output
+    // Then
     verify(userRepository, never()).save(any(AppUser.class));
+    assertEquals("User with email or phone number already exists", exception.getMessage());
   }
 
   @DisplayName("register duplicate phone number throws UserAlreadyExistException")
   @Test
   public void givenExistingPhoneNumberWhenSaveAppUserThenThrowsException() {
-    // Given - precondition or setup
-    given(userService.phoneNumberExists(request.getPhoneNumber())).willReturn(true);
+    // Given -
+    given(userService.userExists(request.getEmail().toLowerCase(),request.getPhoneNumber())).willReturn(true);
 
-    // When - action or the behaviour we're testing for
+    // When
     UserAlreadyExistsException exception =
         assertThrows(
             UserAlreadyExistsException.class, () -> authenticationService.register(request));
 
-    // Then - verify the output
+    // Then
     verify(userRepository, never()).save(any(AppUser.class));
+    assertEquals("User with email or phone number already exists", exception.getMessage());
   }
 
   @DisplayName("user login successfully")
   @Test
   public void givenAppUserCredentials_whenLoginUser_thenReturnAppUser() {
-    // Given - precondition or setup
+    // Given
     AuthenticationRequest authRequest =
         new AuthenticationRequest("elaeis@example.com", userPassword);
     given(userService.emailExists(authRequest.getEmail())).willReturn(true);
@@ -177,10 +179,10 @@ class AuthenticationServiceTest {
     given(jwtService.generateToken(user)).willReturn(token);
     given(refreshTokenService.generateRefreshToken(user)).willReturn(refreshToken);
 
-    // When - action or the behaviour we're testing for
+    // When
     AuthenticationResponse response = authenticationService.login(authRequest);
 
-    // Then - verify the output
+    // Then
     assertAll(
         () -> assertThat(response).isNotNull(),
         () -> assertThat(response.getFirstName()).isEqualTo("Elaeis"),
@@ -196,15 +198,15 @@ class AuthenticationServiceTest {
   @DisplayName("incorrect user email login")
   @Test
   public void givenNonExistentAppUser_whenUserLogin_thenThrowsException() {
-    // Given - precondition or setup
+    // Given
     AuthenticationRequest authRequest =
         new AuthenticationRequest("nonexistent@example.com", "password123");
     given(userService.emailExists(authRequest.getEmail())).willReturn(false);
 
-    // When - action or the behaviour we're testing for
+    // When
     assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
 
-    // Then - verify the output
+    // Then
     verify(authenticationManager, never())
         .authenticate(any(UsernamePasswordAuthenticationToken.class));
   }
@@ -215,16 +217,16 @@ class AuthenticationServiceTest {
     AuthenticationRequest authenticationRequest =
         new AuthenticationRequest("elaeis@example.com", "password123");
 
-    // Given - precondition or setup
+    // Given
     given(userService.emailExists(authenticationRequest.getEmail())).willReturn(true);
     given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .willThrow(new BadCredentialsException("Incorrect username/password"));
 
-    // When - action or the behaviour we're testing for
+    // When
     assertThrows(
         BadCredentialsException.class, () -> authenticationService.login(authenticationRequest));
 
-    // Then - verify the output
+    // Then
     verify(authenticationManager, times(1))
         .authenticate(any(UsernamePasswordAuthenticationToken.class));
     verify(userService, times(1)).emailExists(authenticationRequest.getEmail());
@@ -233,7 +235,7 @@ class AuthenticationServiceTest {
   @DisplayName("verify user successfully")
   @Test
   public void givenCorrectVerificationTokenWhenUserVerifyAccountThenUserIsEnabled() {
-    // Given - precondition or setup
+    // Given
     String tokenString = UUID.randomUUID().toString();
     VerificationToken verificationToken1 =
         VerificationToken.builder()
@@ -245,10 +247,10 @@ class AuthenticationServiceTest {
     given(verificationTokenService.validateVerificationToken(tokenString))
         .willReturn(verificationToken1);
 
-    // When - action or the behaviour we're testing for
+    // When
     String result = authenticationService.verifyAccount(tokenString);
 
-    // Then - verify the output
+    // Then
     assertThat(user.isEnabled()).isTrue();
     assertThat(result).isEqualTo("Email verified successfully. Proceed to login to your account");
     verify(userRepository, times(1)).save(user);
