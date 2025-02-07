@@ -28,11 +28,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Wasiu Idowu
  */
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
   final HttpServletRequest servletRequest;
@@ -56,16 +58,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public AppUser register(RegisterRequest request) throws UserAlreadyExistsException {
-    boolean newUserEmail = userService.emailExists(request.getEmail());
-    boolean newUserPhoneNumber = userService.phoneNumberExists(request.getPhoneNumber());
-    if (newUserEmail) {
+    if (userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber())){
       throw new UserAlreadyExistsException(
-          "User with email " + request.getEmail() + " " + "already exists");
-    }
-
-    if (newUserPhoneNumber) {
-      throw new UserAlreadyExistsException(
-          "User with phone number " + request.getPhoneNumber() + " already exists");
+              "User with email or phone number already exists");
     }
 
     AppUser user =
