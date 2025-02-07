@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.auth.*;
@@ -124,6 +124,42 @@ public class AuthenticationController {
     result.setData(authResponse);
     result.setMessage("Login successful");
     result.setStatus(HttpStatus.OK);
+
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  @Operation(
+      summary = "Log user out",
+      description = "Sign a user out of the application",
+      tags = {"POST"})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Logout successful",
+        content = {
+          @Content(schema = @Schema(implementation = String.class), mediaType = "application/json")
+        }),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized",
+        content = {
+          @Content(
+              schema = @Schema(implementation = ApiError.class),
+              mediaType = "application/json")
+        }),
+  })
+  @PostMapping("/logout")
+  public ResponseEntity<SuccessDataResponse<String>> logout(
+      @RequestHeader("Authorization") String authToken,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+    String token = authToken.substring(7);
+
+    SuccessDataResponse<String> result = new SuccessDataResponse<>();
+
+    result.setData(authenticationServiceImpl.logout(token, request, response));
+    result.setStatus(HttpStatus.OK);
+    result.setMessage("Logout successful");
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }

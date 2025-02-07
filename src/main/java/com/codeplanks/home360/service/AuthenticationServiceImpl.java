@@ -12,9 +12,13 @@ import com.codeplanks.home360.event.RegistrationCompleteEvent;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
+import com.codeplanks.home360.repository.RefreshTokenRepository;
 import com.codeplanks.home360.repository.UserRepository;
+import com.codeplanks.home360.utils.JwtUtils;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Wasiu Idowu
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
   final HttpServletRequest servletRequest;
@@ -48,6 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final RegistrationCompleteEventListener eventListener;
   private final ApplicationEventPublisher publisher;
   private final VerificationTokenServiceImpl verificationTokenService;
+  private final JwtUtils jwtUtils;
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
   @Value("${application.frontend.reset-password.url}")
@@ -56,11 +60,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Value("${application.frontend.verify-email.url}")
   private String emailVerificationUrl;
 
+  private final RefreshTokenRepository refreshTokenRepository;
+
   @Override
   public AppUser register(RegisterRequest request) throws UserAlreadyExistsException {
-    if (userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber())){
-      throw new UserAlreadyExistsException(
-              "User with email or phone number already exists");
+    if (userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber())) {
+      throw new UserAlreadyExistsException("User with email or phone number already exists");
     }
 
     AppUser user =
@@ -156,6 +161,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     return passwordResetTokenServiceImpl
         .findUserByPasswordToken(token)
         .orElseThrow(() -> new NotFoundException("Invalid password reset token"));
+  }
+
+  @Transactional
+  @Override
+  public String logout(String token, HttpServletRequest request, HttpServletResponse response) {
+    jwtUtils.invalidateToken(token);
+
+    String refreshToken = jwtUtils.extractRefreshTokenFromRequest(request);
+    if (refreshToken != null) {
+      refreshTokenRepository.deleteByToken(refreshToken);
+    }
+    Cookie cookie = new Cookie("refreshToken", null);
+    cookie.setPath("/");
+    cookie.setHttpOnly(true);
+    cookie.setMaxAge(0);
+    response.addCookie(cookie);
+
+    return "User successfully logged out";
   }
 
   private void createPasswordResetTokenForUser(AppUser user, String passwordResetToken) {
