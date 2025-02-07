@@ -1,6 +1,7 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.config;
 
+import com.codeplanks.home360.utils.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -27,6 +28,8 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Autowired private final JwtService jwtService;
+  @Autowired private JwtUtils jwtUtils;
+
   private final UserDetailsService userDetailsService;
   Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
@@ -57,19 +60,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     try {
       jwt = authHeader.substring(7);
-      username = jwtService.extractUsername(jwt);
-      if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-        if (jwtService.isTokenValid(jwt, userDetails)) {
-          UsernamePasswordAuthenticationToken authenticationToken =
-              new UsernamePasswordAuthenticationToken(
-                  userDetails, null, userDetails.getAuthorities());
-          authenticationToken.setDetails(
-              new WebAuthenticationDetailsSource().buildDetails(request));
-          SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+      if (jwtUtils.validateToken(jwt)) {
+        username = jwtService.extractUsername(jwt);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+          UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+          if (jwtService.isTokenValid(jwt, userDetails)) {
+            UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            authenticationToken.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+          }
         }
       }
-
     } catch (ExpiredJwtException | MalformedJwtException | IllegalArgumentException exception) {
       logger.error("JWT Error: {}", exception.getMessage());
       resolver.resolveException(request, response, null, exception);
