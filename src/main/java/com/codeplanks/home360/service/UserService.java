@@ -23,4 +23,6 @@ public interface UserService {
   boolean phoneNumberExists(String phoneNumber);
 
   AppUserDTO getUserDetails();
+
+  boolean userExists(String email, String phoneNumber);
 }
