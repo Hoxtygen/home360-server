@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -16,11 +16,12 @@ import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
-import com.codeplanks.home360.repository.PasswordResetTokenRepository;
-import com.codeplanks.home360.repository.UserRepository;
-import com.codeplanks.home360.repository.VerificationTokenRepository;
+import com.codeplanks.home360.repository.*;
+import com.codeplanks.home360.utils.JwtUtils;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,6 +61,11 @@ class AuthenticationServiceTest {
   @Mock private RegistrationCompleteEventListener eventListener;
   @Mock private HttpServletRequest servletRequest;
   @Mock private ApplicationEventPublisher publisher;
+  @Mock private JwtUtils jwtUtils;
+  @Mock private RefreshTokenRepository refreshTokenRepository;
+  @Mock private BlacklistedTokenRepository blacklistedTokenRepository;
+  @Mock private HttpServletResponse response;
+  @Mock private Cookie cookie;
 
   private RegisterRequest request;
   private AppUser user;
@@ -137,7 +144,8 @@ class AuthenticationServiceTest {
   @Test
   public void givenExistingEmailWhenSaveAppUserThenThrowsException() {
     // Given
-    given(userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber())).willReturn(true);
+    given(userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber()))
+        .willReturn(true);
 
     // When
     UserAlreadyExistsException exception =
@@ -153,7 +161,8 @@ class AuthenticationServiceTest {
   @Test
   public void givenExistingPhoneNumberWhenSaveAppUserThenThrowsException() {
     // Given -
-    given(userService.userExists(request.getEmail().toLowerCase(),request.getPhoneNumber())).willReturn(true);
+    given(userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber()))
+        .willReturn(true);
 
     // When
     UserAlreadyExistsException exception =
@@ -337,5 +346,52 @@ class AuthenticationServiceTest {
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("User does not exist");
+  }
+
+  @Test
+  @DisplayName("Successful logout")
+  void givenValidTokenWhenLogoutThenInvalidateTokenAndRemoveRefreshTokenAndClearCookie() {
+    // Given
+    String token = "valid_access_token";
+    String refreshToken = "valid_refresh_token";
+    LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+
+    given(jwtUtils.extractRefreshTokenFromRequest(servletRequest)).willReturn(refreshToken);
+
+    doNothing().when(refreshTokenRepository).deleteByToken(refreshToken);
+
+    // When
+    String result = authenticationService.logout(token, servletRequest, response);
+
+    // Then
+    assertThat(result).isEqualTo("User successfully logged out");
+    verify(refreshTokenRepository, times(1)).deleteByToken(refreshToken);
+
+    // Verify that cookie was cleared
+    ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
+    verify(response, times(1)).addCookie(cookieCaptor.capture());
+
+    Cookie clearedCookie = cookieCaptor.getValue();
+    assertThat(clearedCookie.getName()).isEqualTo("refreshToken");
+    assertThat(clearedCookie.getValue()).isNull();
+    assertThat(clearedCookie.getMaxAge()).isEqualTo(0);
+  }
+
+  @Test
+  @DisplayName("Logout should work even when no refresh token is present")
+  void givenNoRefreshToken_whenLogout_thenInvalidateTokenAndClearCookie() {
+    // Given
+    String token = "valid-access-token";
+    LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+
+    given(jwtUtils.extractRefreshTokenFromRequest(servletRequest)).willReturn(null);
+
+    // When
+    String result = authenticationService.logout(token, servletRequest, response);
+
+    // Then
+    assertThat(result).isEqualTo("User successfully logged out");
+    verify(refreshTokenRepository, never()).deleteByToken(anyString());
+    verify(response, times(1)).addCookie(any(Cookie.class));
   }
 }

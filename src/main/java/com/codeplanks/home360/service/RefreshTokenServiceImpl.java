@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.config.JwtService;
@@ -54,14 +54,14 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
       refreshTokenRepository.delete(refreshToken);
       throw new ExpiredTokenException(
-          refreshToken.getToken() + "Refresh token has expired, make a new" + " login request");
+          refreshToken.getToken() + "Refresh token has expired, make a new login request");
     }
     return refreshToken;
   }
 
   private RefreshToken getRefreshToken(String token) {
     return findByToken(token)
-        .orElseThrow(() -> new NotFoundException("Refresh token not in " + "database"));
+        .orElseThrow(() -> new NotFoundException("Refresh token not in database"));
   }
 
   private AppUser getUserIfRefreshTokenValid(RefreshToken refreshToken) {
