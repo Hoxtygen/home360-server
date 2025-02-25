@@ -619,7 +619,8 @@ class ListingEnquiryServiceTest {
   void givenValidInputWhenAddReplyMessageThenSuccess() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
-    ListingEnquiryMessageReplyDTO replyDTO = new ListingEnquiryMessageReplyDTO(1, 2, "Hello");
+    ListingEnquiryMessageReplyDTO replyDTO =
+        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId);
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
     // Mock the dependencies
     given(userService.getUserByUserId(1)).willReturn(john);
@@ -643,7 +644,8 @@ class ListingEnquiryServiceTest {
   void givenInvalidEnquiryIdWhenAddReplyMessageThenThrowNotFoundException() {
     // Given
     String invalidEnquiryMessageId = "invalid-id";
-    ListingEnquiryMessageReplyDTO replyDTO = new ListingEnquiryMessageReplyDTO(1, 2, "Hello");
+    ListingEnquiryMessageReplyDTO replyDTO =
+        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", invalidEnquiryMessageId);
     Query query = new Query(Criteria.where("_id").is(invalidEnquiryMessageId));
 
     given(userService.getUserByUserId(1)).willReturn(john);
@@ -682,7 +684,8 @@ class ListingEnquiryServiceTest {
   void givenInvalidUserId_whenAddReplyMessage_thenThrowNotFoundException() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
-    ListingEnquiryMessageReplyDTO replyDTO = new ListingEnquiryMessageReplyDTO(99, 2, "Hello");
+    ListingEnquiryMessageReplyDTO replyDTO =
+        new ListingEnquiryMessageReplyDTO(99, 2, "Hello", enquiryMessageId);
 
     given(userService.getUserByUserId(99)).willThrow(new NotFoundException("User not found"));
 
@@ -701,7 +704,8 @@ class ListingEnquiryServiceTest {
   void givenValidEnquiryIdButNoModification_whenAddReplyMessage_thenThrowNotFoundException() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
-    ListingEnquiryMessageReplyDTO replyDTO = new ListingEnquiryMessageReplyDTO(1, 2, "Hello");
+    ListingEnquiryMessageReplyDTO replyDTO =
+        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId);
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
 
     given(userService.getUserByUserId(1)).willReturn(john);

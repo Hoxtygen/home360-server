@@ -1,10 +1,14 @@
+/* (C)2025 */
 package com.codeplanks.home360.service;
 
-
+import com.codeplanks.home360.config.JwtAuthenticationFilter;
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,27 +18,29 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 @Service
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
   private final JavaMailSender mailSender;
   private final TemplateEngine templateEngine;
 
-  @Autowired
   @Value("${application.mail.mailSenderName}")
   private String mailSenderName;
 
-  @Autowired
   @Value("${application.mail.mailSenderAddress}")
   private String mailSenderAddress;
 
-  @Autowired
-  public EmailServiceImpl(JavaMailSender mailSender, TemplateEngine templateEngine) {
-    this.mailSender = mailSender;
-    this.templateEngine = templateEngine;
+  Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
+  @PostConstruct
+  public void init() {
+    logger.debug("Mail Sender Name: {}", mailSenderName);
+    logger.debug("Mail Sender Address: {}", mailSenderAddress);
   }
-@Override
-@Async
-  public void sendMail(String to, String subject, String template,
-                       Context context) throws MessagingException, UnsupportedEncodingException {
+
+  @Override
+  @Async
+  public void sendMail(String to, String subject, String template, Context context)
+      throws MessagingException, UnsupportedEncodingException {
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
@@ -50,5 +56,8 @@ public class EmailServiceImpl implements EmailService {
     // Send the mail
     mailSender.send(message);
   }
-
 }
+
+//  "application.frontend.user-listings-url.url":"$SPRING_USER_LISTINGS_URL",
+//          "application.mail.mailSenderName": "$SPRING_EMAIL_SENDER_NAME",
+//          "application.mail.mailSenderAddress": "$SPRING_EMAIL_SENDER_ADDRESS"

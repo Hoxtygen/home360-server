@@ -15,7 +15,6 @@ import org.bson.BsonNull;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +29,10 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ListingServiceImpl implements ListingService {
+
   private final ListingRepository listingRepository;
   private final UserServiceImpl userService;
-  @Autowired MongoTemplate mongoTemplate;
+  private final MongoTemplate mongoTemplate;
 
   Logger logger = LoggerFactory.getLogger(ListingServiceImpl.class);
 
