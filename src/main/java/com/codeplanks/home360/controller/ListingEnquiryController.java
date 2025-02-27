@@ -17,12 +17,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -265,10 +268,12 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         })
   })
-  @PostMapping("/{enquiryId}/message")
+
+  //  @PostMapping("/{enquiryId}/message")
+  @MessageMapping("/chat/{enquiryId}/sendMessage")
+  @SendTo("/topic/public/{enquiryId}")
   public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>> sendEnquiryReply(
-      @PathVariable String enquiryId,
-      @RequestBody @Valid ListingEnquiryMessageReplyDTO replyMessage) {
+      @DestinationVariable String enquiryId, @Payload ListingEnquiryMessageReplyDTO replyMessage) {
     SuccessDataResponse<ListingEnquiryMessageReply> response = new SuccessDataResponse<>();
     response.setData(listingEnquiryService.addReplyMessage(enquiryId, replyMessage));
     response.setStatus(HttpStatus.CREATED);

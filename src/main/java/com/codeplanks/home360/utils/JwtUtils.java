@@ -35,7 +35,7 @@ public class JwtUtils {
     BlacklistedToken blacklistedToken = new BlacklistedToken();
     blacklistedToken.setToken(token);
     blacklistedToken.setExpiryDate(expiryDate);
-
+    System.out.println("blacklisted token " + blacklistedToken.toString());
     blacklistedTokenRepository.save(blacklistedToken);
   }
 
