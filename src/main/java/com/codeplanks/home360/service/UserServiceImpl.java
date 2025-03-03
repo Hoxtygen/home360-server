@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.auth.PasswordChangeRequest;
@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,13 @@ public class UserServiceImpl implements UserService {
       throw new UnAuthorizedException("User is not authenticated");
     }
     String usernames = authentication.getName();
-    return getUser(usernames).getId();
+    try {
+      return getUser(usernames).getId();
+    } catch (UsernameNotFoundException exception) {
+      throw new UsernameNotFoundException("User not found " + usernames, exception);
+    } catch (Exception exception) {
+      throw new UnAuthorizedException("Failed to retrieve user ID;", exception);
+    }
   }
 
   @Override

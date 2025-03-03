@@ -2,7 +2,6 @@
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.config.JwtAuthenticationFilter;
-import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
@@ -31,12 +30,6 @@ public class EmailServiceImpl implements EmailService {
 
   Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-  @PostConstruct
-  public void init() {
-    logger.debug("Mail Sender Name: {}", mailSenderName);
-    logger.debug("Mail Sender Address: {}", mailSenderAddress);
-  }
-
   @Override
   @Async
   public void sendMail(String to, String subject, String template, Context context)
@@ -57,7 +50,3 @@ public class EmailServiceImpl implements EmailService {
     mailSender.send(message);
   }
 }
-
-//  "application.frontend.user-listings-url.url":"$SPRING_USER_LISTINGS_URL",
-//          "application.mail.mailSenderName": "$SPRING_EMAIL_SENDER_NAME",
-//          "application.mail.mailSenderAddress": "$SPRING_EMAIL_SENDER_ADDRESS"
