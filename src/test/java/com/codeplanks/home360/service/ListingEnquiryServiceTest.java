@@ -619,8 +619,9 @@ class ListingEnquiryServiceTest {
   void givenValidInputWhenAddReplyMessageThenSuccess() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
+    int senderId = 1;
     ListingEnquiryMessageReplyDTO replyDTO =
-        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId);
+        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId, senderId);
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
     // Mock the dependencies
     given(userService.getUserByUserId(1)).willReturn(john);
@@ -630,12 +631,12 @@ class ListingEnquiryServiceTest {
 
     // When
     ListingEnquiryMessageReply result =
-        listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO);
+        listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO, 1);
 
     // Then
     assertThat(result).isNotNull();
     assertThat(result.getSenderId()).isEqualTo(1);
-    assertThat(result.getReceiverId()).isEqualTo(2);
+    assertThat(result.getEnquirerId()).isEqualTo(2);
     assertThat(result.getContent()).isEqualTo("Hello");
   }
 
@@ -644,8 +645,9 @@ class ListingEnquiryServiceTest {
   void givenInvalidEnquiryIdWhenAddReplyMessageThenThrowNotFoundException() {
     // Given
     String invalidEnquiryMessageId = "invalid-id";
+    int senderId = 1;
     ListingEnquiryMessageReplyDTO replyDTO =
-        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", invalidEnquiryMessageId);
+        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", invalidEnquiryMessageId, senderId);
     Query query = new Query(Criteria.where("_id").is(invalidEnquiryMessageId));
 
     given(userService.getUserByUserId(1)).willReturn(john);
@@ -657,7 +659,8 @@ class ListingEnquiryServiceTest {
     NotFoundException exception =
         assertThrows(
             NotFoundException.class,
-            () -> listingEnquiryService.addReplyMessage(invalidEnquiryMessageId, replyDTO));
+            () ->
+                listingEnquiryService.addReplyMessage(invalidEnquiryMessageId, replyDTO, senderId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("EnquiryId does not exist");
@@ -668,12 +671,13 @@ class ListingEnquiryServiceTest {
   void givenNullReplyDTOWhenAddReplyMessageThenThrowIllegalArgumentException() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
+    int senderId = 1;
 
     // When
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> listingEnquiryService.addReplyMessage(enquiryMessageId, null));
+            () -> listingEnquiryService.addReplyMessage(enquiryMessageId, null, senderId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Message reply cannot be null or blank");
@@ -684,8 +688,9 @@ class ListingEnquiryServiceTest {
   void givenInvalidUserId_whenAddReplyMessage_thenThrowNotFoundException() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
+    int senderId = 1;
     ListingEnquiryMessageReplyDTO replyDTO =
-        new ListingEnquiryMessageReplyDTO(99, 2, "Hello", enquiryMessageId);
+        new ListingEnquiryMessageReplyDTO(99, 100, "Hello", enquiryMessageId, senderId);
 
     given(userService.getUserByUserId(99)).willThrow(new NotFoundException("User not found"));
 
@@ -693,7 +698,7 @@ class ListingEnquiryServiceTest {
     NotFoundException exception =
         assertThrows(
             NotFoundException.class,
-            () -> listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO));
+            () -> listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO, senderId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("User not found");
@@ -704,8 +709,9 @@ class ListingEnquiryServiceTest {
   void givenValidEnquiryIdButNoModification_whenAddReplyMessage_thenThrowNotFoundException() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
+    int senderId = 1;
     ListingEnquiryMessageReplyDTO replyDTO =
-        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId);
+        new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId, senderId);
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
 
     given(userService.getUserByUserId(1)).willReturn(john);
@@ -717,7 +723,7 @@ class ListingEnquiryServiceTest {
     NotFoundException exception =
         assertThrows(
             NotFoundException.class,
-            () -> listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO));
+            () -> listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO, senderId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("EnquiryId");
