@@ -1,13 +1,10 @@
 /* (C)2025 */
 package com.codeplanks.home360.service;
 
-import com.codeplanks.home360.config.JwtAuthenticationFilter;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -27,8 +24,6 @@ public class EmailServiceImpl implements EmailService {
 
   @Value("${application.mail.mailSenderAddress}")
   private String mailSenderAddress;
-
-  Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
   @Override
   @Async
