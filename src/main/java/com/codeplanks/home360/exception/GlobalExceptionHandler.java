@@ -3,6 +3,7 @@ package com.codeplanks.home360.exception;
 
 import com.mongodb.MongoSocketOpenException;
 import com.sun.mail.util.MailConnectException;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
 import java.net.ConnectException;
@@ -129,6 +130,15 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ExpiredTokenException.class)
   public ResponseEntity<ApiError> handleRefreshTokenExpiredException(
       ExpiredTokenException exception) {
+    ApiError apiError = new ApiError();
+    apiError.setStatus(HttpStatus.BAD_REQUEST);
+    apiError.setMessage(exception.getMessage());
+    apiError.setTimestamp(LocalDateTime.now());
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ExpiredJwtException.class)
+  public ResponseEntity<ApiError> handleExpiredJwtException(ExpiredJwtException exception) {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());

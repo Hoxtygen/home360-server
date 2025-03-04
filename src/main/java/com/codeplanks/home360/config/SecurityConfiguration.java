@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.config;
 
 import com.codeplanks.home360.exception.CustomAccessDeniedHandler;
@@ -47,7 +47,7 @@ public class SecurityConfiguration {
                     .requestMatchers(
                         HttpMethod.POST, "/api/v1/listing-enquiries", "/api/v1/listing-views")
                     .permitAll()
-                    .requestMatchers("/api/v1/auth/**", "/actuator/**")
+                    .requestMatchers("/api/v1/auth/**", "/actuator/**", "/ws/**", "/socket.io/**")
                     .permitAll()
                     .requestMatchers(
                         HttpMethod.GET,

@@ -6,10 +6,12 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReply;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReplyDTO;
+import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.event.ListingEnquiryEvent;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.ListingEnquiryServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
+import com.codeplanks.home360.validation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,12 +19,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -265,12 +270,15 @@ public class ListingEnquiryController {
               mediaType = "application/json")
         })
   })
-  @PostMapping("/{enquiryId}/message")
+  @MessageMapping("/chat/{enquiryId}/sendMessage")
+  @SendTo("/topic/public/{enquiryId}")
   public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>> sendEnquiryReply(
-      @PathVariable String enquiryId,
-      @RequestBody @Valid ListingEnquiryMessageReplyDTO replyMessage) {
+      @DestinationVariable String enquiryId,
+      @Payload ListingEnquiryMessageReplyDTO replyMessage,
+      @CurrentUser AppUser currentUser) {
     SuccessDataResponse<ListingEnquiryMessageReply> response = new SuccessDataResponse<>();
-    response.setData(listingEnquiryService.addReplyMessage(enquiryId, replyMessage));
+    response.setData(
+        listingEnquiryService.addReplyMessage(enquiryId, replyMessage, currentUser.getId()));
     response.setStatus(HttpStatus.CREATED);
     response.setMessage("message posted.");
     return new ResponseEntity<>(response, response.getStatus());
