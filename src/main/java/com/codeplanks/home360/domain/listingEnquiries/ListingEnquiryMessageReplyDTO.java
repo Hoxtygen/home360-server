@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
 import jakarta.validation.constraints.NotNull;
@@ -8,14 +9,18 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ListingEnquiryMessageReplyDTO {
-  @NotNull(message = "sender ID is required")
-  private  int senderId;
+  @NotNull(message = "Agent ID is required")
+  private int agentId;
 
-  @NotNull(message = "receiver ID is required")
-  private int receiverId;
+  @NotNull(message = "Enquirer ID is required")
+  private int enquirerId;
 
   @NotNull(message = "message content is required")
-  @Size(min = 2,  message = "message should be at least 2 characters")
-  private  String content;
+  @Size(min = 2, message = "message should be at least 2 characters")
+  private String content;
 
+  @NotNull(message = "Enquiry ID is required")
+  private String enquiryId;
+
+  private int senderId;
 }

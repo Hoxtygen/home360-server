@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,8 +15,9 @@ import lombok.NoArgsConstructor;
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class ListingEnquiryMessageReply {
   private String id;
-  private int senderId;
-  private int receiverId;
+  private int agentId;
+  private int enquirerId;
   private String content;
   private LocalDateTime createdAt;
+  private int senderId;
 }

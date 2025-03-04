@@ -30,6 +30,7 @@ public class CustomListingRepositoryImpl implements CustomListingRepository {
   @Override
   public Page<Listing> findAllWithFilter(
       String city, int annualRent, String apartmentType, Pageable pageable) {
+    // Todo: Only listings not rented out should be shown
     Query query =
         constructFilterQuery(city, annualRent, apartmentType)
             .with(pageable)

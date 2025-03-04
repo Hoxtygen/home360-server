@@ -108,13 +108,13 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
 
   @Override
   public ListingEnquiryMessageReply addReplyMessage(
-      String enquiryMessageId, ListingEnquiryMessageReplyDTO reply) {
+      String enquiryMessageId, ListingEnquiryMessageReplyDTO reply, int senderId) {
     if (reply == null) {
       throw new IllegalArgumentException("Message reply cannot be null or blank");
     }
-    validateUserIds(reply.getSenderId(), reply.getReceiverId());
+    validateUserIds(reply.getAgentId(), reply.getEnquirerId());
     Query query = createQuery(enquiryMessageId);
-    return addEnquiryReply(query, reply);
+    return addEnquiryReply(query, reply, senderId);
   }
 
   @Override
@@ -157,14 +157,15 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   private ListingEnquiryMessageReply addEnquiryReply(
-      Query query, ListingEnquiryMessageReplyDTO messageReply) {
+      Query query, ListingEnquiryMessageReplyDTO messageReply, int senderId) {
     if (messageReply == null) {
       throw new IllegalArgumentException("Message reply cannot be null");
     }
     ListingEnquiryMessageReply reply =
         ListingEnquiryMessageReply.builder()
-            .senderId(messageReply.getSenderId())
-            .receiverId(messageReply.getReceiverId())
+            .agentId(messageReply.getAgentId())
+            .enquirerId(messageReply.getEnquirerId())
+            .senderId(senderId)
             .content(messageReply.getContent())
             .id(UUID.randomUUID().toString())
             .createdAt(LocalDateTime.now())
@@ -182,8 +183,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return reply;
   }
 
-  private void validateUserIds(Integer senderId, Integer receiverId) {
-    userService.getUserByUserId(senderId);
-    userService.getUserByUserId(receiverId);
+  private void validateUserIds(Integer agentId, Integer enquirerId) {
+    userService.getUserByUserId(agentId);
+    userService.getUserByUserId(enquirerId);
   }
 }

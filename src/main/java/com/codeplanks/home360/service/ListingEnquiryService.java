@@ -17,7 +17,8 @@ public interface ListingEnquiryService {
 
   Boolean markMessageAsRead(String enquiryMessageId);
 
-  ListingEnquiryMessageReply addReplyMessage(String enquiryId, ListingEnquiryMessageReplyDTO reply);
+  ListingEnquiryMessageReply addReplyMessage(
+      String enquiryId, ListingEnquiryMessageReplyDTO reply, int senderId);
 
   List<ListingEnquiry> getEnquiriesByListingId(String listingId);
 }
