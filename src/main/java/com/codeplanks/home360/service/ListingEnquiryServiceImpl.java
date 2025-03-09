@@ -2,7 +2,6 @@
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listing.Listing;
-import com.codeplanks.home360.domain.listing.PaginatedResponse;
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
@@ -13,6 +12,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +28,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+@CacheConfig(cacheNames = "ListingEnquiriesCache")
 @Service
 @RequiredArgsConstructor
 @Validated
@@ -35,6 +39,11 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   private final ListingServiceImpl listingService;
   private final AuthenticationUtils authenticationUtils;
 
+  @Caching(
+      evict = {
+        @CacheEvict(value = "enquiriesByListingId", key = "#enquiryRequest.listingId"),
+        @CacheEvict(value = "agentListingEnquiries", key = "#enquiryRequest.agentId + '::*'")
+      })
   @Override
   public ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest) {
     if (authenticationUtils.isAuthenticated()) {
@@ -65,14 +74,16 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return listingEnquiryRepository.save(newListingEnquiry);
   }
 
+  @Cacheable(
+      value = "agentListingEnquiries",
+      key = "#agentId + '::page::' + #page + '::size::' + #size")
   @Override
-  public PaginatedResponse<ListingEnquiry> getListingEnquiries(
-      int page, int size, Integer senderId) {
-    Integer agentId = userService.extractUserId();
+  public PaginatedListingEnquiriesResponse getListingEnquiries(
+      int page, int size, Integer senderId, int agentId) {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<ListingEnquiry> agentListingEnquiries =
         listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable);
-    return PaginatedResponse.<ListingEnquiry>builder()
+    return PaginatedListingEnquiriesResponse.<ListingEnquiry>builder()
         .currentPage(agentListingEnquiries.getNumber() + 1)
         .totalItems(agentListingEnquiries.getTotalElements())
         .totalPages(agentListingEnquiries.getTotalPages())
@@ -81,6 +92,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
         .build();
   }
 
+  @Cacheable(value = "listingEnquiry", key = "#enquiryMessageId")
   @Override
   public ListingEnquiry getListingEnquiryById(String enquiryMessageId) {
     if (enquiryMessageId == null) {
@@ -95,6 +107,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return listingEnquiry;
   }
 
+  @Caching(evict = {@CacheEvict(value = "listingEnquiry", key = "#enquiryMessageId")})
   @Override
   public Boolean markMessageAsRead(String enquiryMessageId) {
     Query query = createQuery(enquiryMessageId);
@@ -106,6 +119,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return updateMessageAsRead(query);
   }
 
+  @Caching(evict = {@CacheEvict(value = "listingEnquiry", key = "#enquiryMessageId")})
   @Override
   public ListingEnquiryMessageReply addReplyMessage(
       String enquiryMessageId, ListingEnquiryMessageReplyDTO reply, int senderId) {
@@ -117,6 +131,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return addEnquiryReply(query, reply, senderId);
   }
 
+  @Cacheable(value = "enquiriesByListingId", key = "#listingId")
   @Override
   public List<ListingEnquiry> getEnquiriesByListingId(String listingId) {
     Integer userId = userService.extractUserId();

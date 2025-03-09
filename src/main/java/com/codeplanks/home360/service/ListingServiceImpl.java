@@ -6,6 +6,8 @@ import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -15,17 +17,22 @@ import org.bson.BsonNull;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Wasiu Idowu
  */
+@CacheConfig(cacheNames = "generalListingsCache")
 @Service
 @RequiredArgsConstructor
 public class ListingServiceImpl implements ListingService {
@@ -33,9 +40,15 @@ public class ListingServiceImpl implements ListingService {
   private final ListingRepository listingRepository;
   private final UserServiceImpl userService;
   private final MongoTemplate mongoTemplate;
-
   Logger logger = LoggerFactory.getLogger(ListingServiceImpl.class);
+  @Autowired private RedisTemplate<String, ListingWithAgentInfo> redisTemplate;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
+  @Caching(
+      evict = {
+        @CacheEvict(value = "allListingsCache", key = "'allListings'"),
+        @CacheEvict(value = "agentListings", key = "#listing.agentId + '::*'")
+      })
   public Listing createListing(ListingDTO request) {
     Integer userId = userService.extractUserId();
     AppUser user = userService.getUserByUserId(userId);
@@ -72,12 +85,15 @@ public class ListingServiceImpl implements ListingService {
     return savedListing;
   }
 
+  @Cacheable(value = "allListingsCache", key = "'allListings'")
   @Override
   public List<ListingWithViewCountDTO> allListings() {
     return listingRepository.getAllListingsWithViewCount();
   }
 
-  public Object deleteListing(String listingId) {
+  @Transactional
+  @CacheEvict(value = "listingCache", key = "#listingId")
+  public String deleteListing(String listingId) {
     Integer userId = userService.extractUserId();
     Listing listing = findListingById(listingId);
     Integer agentId = listing.getAgentId();
@@ -86,18 +102,27 @@ public class ListingServiceImpl implements ListingService {
     }
 
     listingRepository.deleteById(listing.getId());
+    logger.info("Listing with ID {} deleted successfully", listingId);
 
-    return null;
+    return "Listing deleted successfully";
   }
 
   @Override
   public ListingWithAgentInfo getListingById(String listingId) {
+    ListingWithAgentInfo cachedListing = redisTemplate.opsForValue().get(listingId);
+    if (cachedListing != null) {
+      return cachedListing;
+    }
+
     ListingWithViewCountDTO listing = getListingAndViewCountById(listingId);
     int agentId = listing.getAgent_id();
     AppUser listingAgent = userService.getUserByUserId(agentId);
     ListingAgentInfo agentInfo = ListingMapper.mapToListingAgentInfo(listingAgent);
 
-    return ListingWithAgentInfo.builder().agentInfo(agentInfo).listing(listing).build();
+    ListingWithAgentInfo listingWithAgentInfo =
+        ListingWithAgentInfo.builder().agentInfo(agentInfo).listing(listing).build();
+    redisTemplate.opsForValue().set(listingId, listingWithAgentInfo, Duration.ofMinutes(30));
+    return listingWithAgentInfo;
   }
 
   private ListingWithViewCountDTO getListingAndViewCountById(String listingId) {
@@ -111,12 +136,13 @@ public class ListingServiceImpl implements ListingService {
         .orElseThrow(() -> new NotFoundException("Listing not found"));
   }
 
+  @Cacheable(value = "agentListings", key = "#agentId + '::page::' + #page + '::size::' + #size")
   @Override
-  public PaginatedResponse<Listing> getListingsByAgentId(int page, int size) {
+  public PaginatedListingResponse getListingsByAgentId(int page, int size, int agentId) {
     Integer userId = userService.extractUserId();
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<Listing> agentListings = listingRepository.findListingsByAgentId(userId, pageable);
-    return PaginatedResponse.<Listing>builder()
+    return PaginatedListingResponse.builder()
         .currentPage(agentListings.getNumber() + 1)
         .totalItems(agentListings.getTotalElements())
         .totalPages(agentListings.getTotalPages())
@@ -125,13 +151,18 @@ public class ListingServiceImpl implements ListingService {
         .build();
   }
 
+  @Cacheable(
+      value = "filteredListings",
+      key =
+          "'::page::' + #page + '::size::' + #size + '::city::' + #city + '::annualRent::' +"
+              + " #annualRent + '::apartmentType::' + #apartmentType")
   @Override
-  public PaginatedResponse<Listing> getFilteredListings(
+  public PaginatedListingResponse getFilteredListings(
       int page, int size, String city, int annualRent, String apartmentType) {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
     Page<Listing> filteredListings =
         listingRepository.findAllWithFilter(city, annualRent, apartmentType, pageable);
-    return PaginatedResponse.<Listing>builder()
+    return PaginatedListingResponse.builder()
         .currentPage(filteredListings.getNumber() + 1)
         .totalItems(filteredListings.getTotalElements())
         .totalPages(filteredListings.getTotalPages())
@@ -140,6 +171,9 @@ public class ListingServiceImpl implements ListingService {
         .build();
   }
 
+  @Caching(
+      evict = {@CacheEvict(value = "listingCache", key = "#rentUpdate.listingId")},
+      put = {@CachePut(value = "listingCache", key = "#rentUpdate.listingId")})
   @Override
   public Listing updateRentedListing(RentUpdate rentUpdate) {
     Integer userId = userService.extractUserId();

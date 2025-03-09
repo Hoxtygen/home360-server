@@ -1,15 +1,12 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.controller;
 
-import com.codeplanks.home360.domain.listing.PaginatedResponse;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryDTO;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReply;
-import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReplyDTO;
+import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.event.ListingEnquiryEvent;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.ListingEnquiryServiceImpl;
+import com.codeplanks.home360.service.UserServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import com.codeplanks.home360.validation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 public class ListingEnquiryController {
   private final ListingEnquiryServiceImpl listingEnquiryService;
   private final ApplicationEventPublisher eventPublisher;
+  private final UserServiceImpl userService;
 
   @Operation(
       summary = "Create a listing enquiry",
@@ -104,13 +102,15 @@ public class ListingEnquiryController {
         }),
   })
   @GetMapping
-  public ResponseEntity<SuccessDataResponse<PaginatedResponse<ListingEnquiry>>> getListingEnquiries(
+  public ResponseEntity<SuccessDataResponse<PaginatedListingEnquiriesResponse>> getListingEnquiries(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "size", defaultValue = "25") int size,
       @RequestParam(required = false) Integer senderId) {
-    SuccessDataResponse<PaginatedResponse<ListingEnquiry>> listingEnquiries =
+    Integer agentId = userService.extractUserId();
+    SuccessDataResponse<PaginatedListingEnquiriesResponse> listingEnquiries =
         new SuccessDataResponse<>();
-    listingEnquiries.setData(listingEnquiryService.getListingEnquiries(page - 1, size, senderId));
+    listingEnquiries.setData(
+        listingEnquiryService.getListingEnquiries(page - 1, size, senderId, agentId));
     listingEnquiries.setMessage("Listing enquiries retrieved successfully");
     listingEnquiries.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(listingEnquiries, HttpStatus.OK);

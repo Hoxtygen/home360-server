@@ -323,7 +323,7 @@ class ListingServiceTest {
 
     // When
 
-    PaginatedResponse<Listing> result =
+    PaginatedListingResponse result =
         listingService.getFilteredListings(page, size, city, annualRent, apartmentType);
     // Then
     assertAll(
@@ -352,7 +352,7 @@ class ListingServiceTest {
         .willReturn(Page.empty());
 
     // When
-    PaginatedResponse<Listing> response =
+    PaginatedListingResponse response =
         listingService.getFilteredListings(page, size, city, annualRent, apartmentType);
 
     // Then
@@ -410,7 +410,7 @@ class ListingServiceTest {
     given(listingRepository.findListingsByAgentId(userId, pageable)).willReturn(mockPage);
 
     // When
-    PaginatedResponse<Listing> result = listingService.getListingsByAgentId(page, size);
+    PaginatedListingResponse result = listingService.getListingsByAgentId(page, size, userId);
 
     // Then
     assertAll(
@@ -438,7 +438,7 @@ class ListingServiceTest {
     given(listingRepository.findListingsByAgentId(userId, pageable)).willReturn(emptyPage);
 
     // When
-    PaginatedResponse<Listing> response = listingService.getListingsByAgentId(page, size);
+    PaginatedListingResponse response = listingService.getListingsByAgentId(page, size, userId);
 
     // Then
     assertAll(
