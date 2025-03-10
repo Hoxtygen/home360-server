@@ -1,11 +1,14 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.mongodb.MongoSocketOpenException;
 import com.sun.mail.util.MailConnectException;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.io.SerializationException;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
+import java.io.NotSerializableException;
 import java.net.ConnectException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -216,6 +219,40 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(ServiceException.class)
   public ResponseEntity<ApiError> handleServiceException(ServiceException exception) {
+
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(SerializationException.class)
+  public ResponseEntity<ApiError> handleSerializationException(SerializationException exception) {
+
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(InvalidDefinitionException.class)
+  public ResponseEntity<ApiError> handleInvalidDefinitionException(
+      InvalidDefinitionException exception) {
+
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(NotSerializableException.class)
+  public ResponseEntity<ApiError> handleNotSerializableException(
+      NotSerializableException exception) {
+
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(ClassCastException.class)
+  public ResponseEntity<ApiError> handleClassCastException(ClassCastException exception) {
 
     ApiError apiError =
         new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());

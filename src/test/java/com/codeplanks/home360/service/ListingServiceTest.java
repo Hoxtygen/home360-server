@@ -14,7 +14,6 @@ import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingRepository;
 import java.time.LocalDateTime;
 import java.util.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,21 +21,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class ListingServiceTest {
   @InjectMocks ListingServiceImpl listingService;
-  @Mock ListingRepository listingRepository;
-  @Mock UserServiceImpl userService;
+  @Mock private ListingRepository listingRepository;
+  @Mock private UserServiceImpl userService;
+  @Mock private RedisTemplate<String, ListingWithAgentInfo> redisTemplate;
+  @Mock private ValueOperations<String, ListingWithAgentInfo> valueOperations;
 
   private AppUser john;
 
   private ListingDTO listingDTO;
-
-  @BeforeEach
-  void setUp() {}
 
   @Test
   @DisplayName("create listing successfully")
@@ -200,10 +200,10 @@ class ListingServiceTest {
     given(userService.extractUserId()).willReturn(userId);
 
     // When
-    Object result = listingService.deleteListing(listingId);
+    String result = listingService.deleteListing(listingId);
 
     // Then
-    assertNull(result);
+    assertThat(result).isEqualTo("Listing deleted successfully");
     verify(listingRepository, times(1)).deleteById(listingId);
     verify(listingRepository, times(1)).findById(listingId);
   }
@@ -253,18 +253,28 @@ class ListingServiceTest {
   void givenValidListingIdWhenRequestForListingThenReturnListingWithAgentInfo() {
     // Given
     Integer userId = 1;
-
     String listingId = "12345";
-    Listing listing = new Listing();
 
     ListingWithViewCountDTO listingWithViewCountDTO = new ListingWithViewCountDTO();
     listingWithViewCountDTO.setId(listingId);
     listingWithViewCountDTO.setAgent_id(userId);
 
+    Listing listing = new Listing();
     listing.setId(listingId);
     listing.setAgentId(userId);
+
     AppUser user = new AppUser();
     user.setId(userId);
+
+    ListingAgentInfo agentInfo = new ListingAgentInfo();
+    ListingWithAgentInfo listingWithAgentInfo =
+        ListingWithAgentInfo.builder()
+            .agentInfo(agentInfo)
+            .listing(listingWithViewCountDTO)
+            .build();
+
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(listingId)).willReturn(null); // Simulate cache miss
 
     given(listingRepository.findListingWithViewCountById(listingId))
         .willReturn(listingWithViewCountDTO);
@@ -285,6 +295,8 @@ class ListingServiceTest {
   void givenNonExistentListingIdWhenUserRequestForListingThenThrowNotFoundExceptions() {
     // Given
     String listingId = "1234";
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(listingId)).willReturn(null); // Simulate cache miss
     given(listingRepository.findListingWithViewCountById(listingId))
         .willThrow(new NotFoundException("Listing not found"));
 
@@ -323,7 +335,7 @@ class ListingServiceTest {
 
     // When
 
-    PaginatedResponse<Listing> result =
+    PaginatedListingResponse result =
         listingService.getFilteredListings(page, size, city, annualRent, apartmentType);
     // Then
     assertAll(
@@ -352,7 +364,7 @@ class ListingServiceTest {
         .willReturn(Page.empty());
 
     // When
-    PaginatedResponse<Listing> response =
+    PaginatedListingResponse response =
         listingService.getFilteredListings(page, size, city, annualRent, apartmentType);
 
     // Then
@@ -410,7 +422,7 @@ class ListingServiceTest {
     given(listingRepository.findListingsByAgentId(userId, pageable)).willReturn(mockPage);
 
     // When
-    PaginatedResponse<Listing> result = listingService.getListingsByAgentId(page, size);
+    PaginatedListingResponse result = listingService.getListingsByAgentId(page, size, userId);
 
     // Then
     assertAll(
@@ -438,7 +450,7 @@ class ListingServiceTest {
     given(listingRepository.findListingsByAgentId(userId, pageable)).willReturn(emptyPage);
 
     // When
-    PaginatedResponse<Listing> response = listingService.getListingsByAgentId(page, size);
+    PaginatedListingResponse response = listingService.getListingsByAgentId(page, size, userId);
 
     // Then
     assertAll(

@@ -1,5 +1,5 @@
+/* (C)2025 */
 package com.codeplanks.home360.domain.listing;
-
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
@@ -10,21 +10,20 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-@JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
+@JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class ListingCost {
-    @NotNull(message = "Annual rent is required")
-    @Field(name = "annual_rent")
-    private Integer annualRent;
+  @NotNull(message = "Annual rent is required")
+  @Field(name = "annual_rent")
+  private Integer annualRent;
 
-    @Field(name = "agent_fee")
-    private Integer agentFee;
+  @Field(name = "agent_fee")
+  private Integer agentFee;
 
-    @Field(name = "caution_fee")
-    private Integer cautionFee;
+  @Field(name = "caution_fee")
+  private Integer cautionFee;
 
-    @Field(name = "agreement_fee")
-    private Integer agreementFee;
-
+  @Field(name = "agreement_fee")
+  private Integer agreementFee;
 }
-

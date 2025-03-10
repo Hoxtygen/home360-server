@@ -13,14 +13,14 @@ public interface ListingService {
 
   Object deleteListing(String listingId);
 
-  PaginatedResponse<Listing> getFilteredListings(
+  PaginatedListingResponse getFilteredListings(
       int page, int size, String city, int annualRent, String apartmentType);
 
   ListingWithAgentInfo getListingById(String listingId);
 
   List<ListingWithViewCountDTO> allListings();
 
-  PaginatedResponse<Listing> getListingsByAgentId(int page, int size);
+  PaginatedListingResponse getListingsByAgentId(int page, int size, int agentId);
 
   Listing updateRentedListing(RentUpdate update);
 

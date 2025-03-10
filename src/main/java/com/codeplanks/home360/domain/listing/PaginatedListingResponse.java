@@ -2,15 +2,19 @@
 package com.codeplanks.home360.domain.listing;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-public class PaginatedResponse<T> {
+@AllArgsConstructor
+@NoArgsConstructor
+public class PaginatedListingResponse {
   private int currentPage;
   private long totalItems;
   private int totalPages;
-  private List<T> items;
+  private List<Listing> items;
   private boolean hasNext;
 }

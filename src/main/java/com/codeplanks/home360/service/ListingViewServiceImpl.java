@@ -10,9 +10,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+@CacheConfig(cacheNames = "listingViews")
 @Service
 @RequiredArgsConstructor
 public class ListingViewServiceImpl implements ListingViewService {
@@ -35,11 +38,13 @@ public class ListingViewServiceImpl implements ListingViewService {
     return viewRepository.save(listingView);
   }
 
+  @Cacheable(value = "agentListingViews", key = "'agentListingViews'")
   @Override
   public List<ListingView> getAllListingViews() {
     return viewRepository.findAll();
   }
 
+  @Cacheable(value = "viewsByListingId", key = "#listingId")
   @Override
   public List<ListingView> getViewsByListingId(String listingId) {
     int userId = userService.extractUserId();

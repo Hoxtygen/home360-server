@@ -7,7 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 import com.codeplanks.home360.domain.listing.Listing;
-import com.codeplanks.home360.domain.listing.PaginatedResponse;
+import com.codeplanks.home360.domain.listing.ListingWithAgentInfo;
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
@@ -30,6 +30,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -42,6 +43,7 @@ class ListingEnquiryServiceTest {
   @Mock private ListingEnquiryRepository listingEnquiryRepository;
   @Mock private MongoTemplate mongoTemplate;
   @Mock private UserServiceImpl userService;
+  @Mock private RedisTemplate<String, ListingWithAgentInfo> redisTemplate;
   private ListingEnquiryDTO listingEnquiryDTO;
   private AppUser john;
   private AppUser jane;
@@ -227,14 +229,15 @@ class ListingEnquiryServiceTest {
     List<ListingEnquiry> enquiries = List.of(listingEnquiry1, listingEnquiry2);
     Page<ListingEnquiry> mockPage = new PageImpl<>(enquiries, PageRequest.of(page, size), 2);
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
-    given(userService.extractUserId()).willReturn(agentId);
+    //    given(userService.extractUserId()).willReturn(agentId);
     given(listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable))
         .willReturn(mockPage);
     given(listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable))
         .willReturn(mockPage);
 
     // When
-    PaginatedResponse<ListingEnquiry> result = listingEnquiryService.getListingEnquiries(0, 5, 1);
+    PaginatedListingEnquiriesResponse result =
+        listingEnquiryService.getListingEnquiries(0, 5, 1, agentId);
 
     // Then
     assertAll(
@@ -249,21 +252,24 @@ class ListingEnquiryServiceTest {
     verify(listingEnquiryRepository, times(1)).findListingEnquiries(agentId, senderId, pageable);
   }
 
-  @Test
-  @DisplayName("Failed user ID extraction")
-  void givenInvalidUserIdWhenUserFetchDataThenThrowException() {
-    // Given
-    given(userService.extractUserId()).willThrow(new RuntimeException("User not authenticated"));
-
-    // When
-    RuntimeException exception =
-        assertThrows(
-            RuntimeException.class, () -> listingEnquiryService.getListingEnquiries(0, 5, null));
-
-    // Then
-    assertThat(exception.getMessage()).isEqualTo("User not authenticated");
-    verify(listingEnquiryRepository, never()).findListingEnquiries(anyInt(), any(), any());
-  }
+  //  @Test
+  //  @DisplayName("Failed user ID extraction")
+  //  void givenInvalidUserIdWhenUserFetchDataThenThrowException() {
+  //    // Given
+  //    int agentId = 1;
+  //    given(userService.extractUserId()).willThrow(new RuntimeException("User not
+  // authenticated"));
+  //
+  //    // When
+  //    RuntimeException exception =
+  //        assertThrows(
+  //            RuntimeException.class, () -> listingEnquiryService.getListingEnquiries(0, 5, null,
+  //                        agentId));
+  //
+  //    // Then
+  //    assertThat(exception.getMessage()).isEqualTo("User not authenticated");
+  //    verify(listingEnquiryRepository, never()).findListingEnquiries(anyInt(), any(), any());
+  //  }
 
   @Test
   @DisplayName("Zero listing enquiries found")
@@ -272,13 +278,13 @@ class ListingEnquiryServiceTest {
     int page = 0, size = 5;
     Integer agentId = 1;
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
-    given(userService.extractUserId()).willReturn(agentId);
+    //    given(userService.extractUserId()).willReturn(agentId);
     given(listingEnquiryRepository.findListingEnquiries(agentId, null, pageable))
         .willReturn(Page.empty());
 
     // When
-    PaginatedResponse<ListingEnquiry> response =
-        listingEnquiryService.getListingEnquiries(page, size, null);
+    PaginatedListingEnquiriesResponse response =
+        listingEnquiryService.getListingEnquiries(page, size, null, agentId);
 
     // Then
     assertAll(
@@ -293,13 +299,13 @@ class ListingEnquiryServiceTest {
   @DisplayName("Invalid page or size values")
   void givenInvalidPageOrSizeValueWhenUserRequestThenThrowException() {
     // Given
-    int page = -1, size = 0;
+    int page = -1, size = 0, agentId = 1;
 
     // When
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> listingEnquiryService.getListingEnquiries(page, size, null));
+            () -> listingEnquiryService.getListingEnquiries(page, size, null, agentId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Page index must not be less than zero");
@@ -313,7 +319,7 @@ class ListingEnquiryServiceTest {
     int page = 0, size = 5;
     Integer agentId = 1;
 
-    given(userService.extractUserId()).willReturn(agentId);
+    //    given(userService.extractUserId()).willReturn(agentId);
     given(listingEnquiryRepository.findListingEnquiries(anyInt(), any(), any()))
         .willThrow(new RuntimeException("Database error"));
 
@@ -321,7 +327,7 @@ class ListingEnquiryServiceTest {
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> listingEnquiryService.getListingEnquiries(page, size, null));
+            () -> listingEnquiryService.getListingEnquiries(page, size, null, agentId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Database error");
@@ -336,13 +342,13 @@ class ListingEnquiryServiceTest {
     Integer invalidSenderId = -999;
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
 
-    given(userService.extractUserId()).willReturn(agentId);
+    //    given(userService.extractUserId()).willReturn(agentId);
     given(listingEnquiryRepository.findListingEnquiries(agentId, invalidSenderId, pageable))
         .willReturn(Page.empty());
 
     // When
-    PaginatedResponse<ListingEnquiry> response =
-        listingEnquiryService.getListingEnquiries(page, size, invalidSenderId);
+    PaginatedListingEnquiriesResponse response =
+        listingEnquiryService.getListingEnquiries(page, size, invalidSenderId, agentId);
 
     // Then
     assertThat(response).isNotNull();
