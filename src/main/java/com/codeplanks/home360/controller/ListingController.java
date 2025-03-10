@@ -4,6 +4,7 @@ package com.codeplanks.home360.controller;
 import com.codeplanks.home360.domain.listing.*;
 import com.codeplanks.home360.exception.ApiError;
 import com.codeplanks.home360.service.ListingServiceImpl;
+import com.codeplanks.home360.service.UserServiceImpl;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Listing", description = "Listings management APIs")
 public class ListingController {
   private final ListingServiceImpl listingService;
+  private final UserServiceImpl userService;
 
   @Operation(
       summary = "Create a listing",
@@ -191,7 +193,7 @@ public class ListingController {
         description = "Successfully retrieved",
         content = {
           @Content(
-              schema = @Schema(implementation = PaginatedResponse.class),
+              schema = @Schema(implementation = PaginatedListingResponse.class),
               mediaType = "application/json")
         }),
   })
@@ -203,13 +205,13 @@ public class ListingController {
     @Parameter(name = "apartmentType", description = "The type of apartment you want")
   })
   @GetMapping("/search")
-  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getFilteredListings(
+  public ResponseEntity<SuccessDataResponse<PaginatedListingResponse>> getFilteredListings(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "size", defaultValue = "25") int size,
       @RequestParam(required = false) String city,
       @RequestParam(required = false, defaultValue = "0") int annualRent,
       @RequestParam(required = false) String apartmentType) {
-    SuccessDataResponse<PaginatedResponse<Listing>> response = new SuccessDataResponse<>();
+    SuccessDataResponse<PaginatedListingResponse> response = new SuccessDataResponse<>();
     response.setData(
         listingService.getFilteredListings(page - 1, size, city, annualRent, apartmentType));
     response.setMessage("Listing fetched successfully");
@@ -227,7 +229,7 @@ public class ListingController {
         description = "Successfully retrieved",
         content = {
           @Content(
-              schema = @Schema(implementation = PaginatedResponse.class),
+              schema = @Schema(implementation = PaginatedListingResponse.class),
               mediaType = "application/json")
         }),
     @ApiResponse(
@@ -248,11 +250,12 @@ public class ListingController {
         }),
   })
   @GetMapping("/userListings")
-  public ResponseEntity<SuccessDataResponse<PaginatedResponse<Listing>>> getAgentListings(
+  public ResponseEntity<SuccessDataResponse<PaginatedListingResponse>> getAgentListings(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "size", defaultValue = "25") int size) {
-    SuccessDataResponse<PaginatedResponse<Listing>> agentListings = new SuccessDataResponse<>();
-    agentListings.setData(listingService.getListingsByAgentId(page - 1, size));
+    Integer userId = userService.extractUserId();
+    SuccessDataResponse<PaginatedListingResponse> agentListings = new SuccessDataResponse<>();
+    agentListings.setData(listingService.getListingsByAgentId(page - 1, size, userId));
     agentListings.setMessage("Listings retrieved successfully");
     agentListings.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(agentListings, HttpStatus.OK);

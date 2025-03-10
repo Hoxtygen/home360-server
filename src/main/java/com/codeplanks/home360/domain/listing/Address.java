@@ -1,5 +1,5 @@
+/* (C)2025 */
 package com.codeplanks.home360.domain.listing;
-
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
@@ -10,26 +10,26 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-@JsonInclude(value =JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
+@JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.NON_NULL)
 public class Address {
-    @NotNull(message = "Street name is required")
-    @Field(name = "street_name")
-    private String streetName;
+  @NotNull(message = "Street name is required")
+  @Field(name = "street_name")
+  private String streetName;
 
-    @Field(name = "house_number")
-    private String houseNumber;
+  @Field(name = "house_number")
+  private String houseNumber;
 
-    @NotNull(message = "City is required")
-    @Field(name = "city")
-    private String city;
+  @NotNull(message = "City is required")
+  @Field(name = "city")
+  private String city;
 
-    @NotNull(message = "State is required")
-    @Field(name = "state")
-    private  String state;
+  @NotNull(message = "State is required")
+  @Field(name = "state")
+  private String state;
 
-    @NotNull(message = "Local government area is required")
-    @Field(name = "lga")
-    private String lga;
-
+  @NotNull(message = "Local government area is required")
+  @Field(name = "lga")
+  private String lga;
 }
