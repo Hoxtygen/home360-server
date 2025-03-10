@@ -38,11 +38,6 @@ class ListingServiceTest {
 
   private ListingDTO listingDTO;
 
-  //  @BeforeEach
-  //  void setUp() {
-  //    when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-  //  }
-
   @Test
   @DisplayName("create listing successfully")
   void givenValidRequestWhenSavedThenListingIsCreated() {

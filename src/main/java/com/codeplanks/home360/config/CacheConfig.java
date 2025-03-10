@@ -40,35 +40,6 @@ public class CacheConfig {
             .serializeValuesWith(
                 RedisSerializationContext.SerializationPair.fromSerializer(serializer));
 
-    //    Jackson2JsonRedisSerializer<PaginatedListingResponse> paginatedListingSerializer =
-    //        new Jackson2JsonRedisSerializer<>(PaginatedListingResponse.class);
-    //    paginatedListingSerializer.setObjectMapper(objectMapper);
-    //
-    //    RedisCacheConfiguration paginatedListingCacheConfiguration =
-    //        RedisCacheConfiguration.defaultCacheConfig()
-    //            .entryTtl(Duration.ofHours(1))
-    //            .serializeValuesWith(
-    //                RedisSerializationContext.SerializationPair.fromSerializer(
-    //                    paginatedListingSerializer));
-    //
-    //    Jackson2JsonRedisSerializer<PaginatedListingEnquiriesResponse>
-    //        paginatedListingEnquiriesSerializer =
-    //            new Jackson2JsonRedisSerializer<>(PaginatedListingEnquiriesResponse.class);
-    //    paginatedListingEnquiriesSerializer.setObjectMapper(objectMapper);
-    //
-    //    RedisCacheConfiguration paginatedListingEnquiriesCacheConfiguration =
-    //        RedisCacheConfiguration.defaultCacheConfig()
-    //            .entryTtl(Duration.ofHours(1))
-    //            .serializeValuesWith(
-    //                RedisSerializationContext.SerializationPair.fromSerializer(
-    //                    paginatedListingEnquiriesSerializer));
-
-    //    Map<String, RedisCacheConfiguration> cacheConfigurationMap = new HashMap<>();
-    //    cacheConfigurationMap.put("objectCache", cacheConfiguration);
-    //    cacheConfigurationMap.put("paginatedListingsCache", paginatedListingCacheConfiguration);
-    //    cacheConfigurationMap.put(
-    //        "paginatedListingEnquiriesCache", paginatedListingEnquiriesCacheConfiguration);
-
     return RedisCacheManager.builder(connectionFactory).cacheDefaults(cacheConfiguration).build();
   }
 }
