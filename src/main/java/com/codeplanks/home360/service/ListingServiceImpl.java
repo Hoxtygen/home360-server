@@ -6,7 +6,6 @@ import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,8 +40,7 @@ public class ListingServiceImpl implements ListingService {
   private final UserServiceImpl userService;
   private final MongoTemplate mongoTemplate;
   Logger logger = LoggerFactory.getLogger(ListingServiceImpl.class);
-  @Autowired private RedisTemplate<String, ListingWithAgentInfo> redisTemplate;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  @Autowired private final RedisTemplate<String, ListingWithAgentInfo> redisTemplate;
 
   @Caching(
       evict = {
