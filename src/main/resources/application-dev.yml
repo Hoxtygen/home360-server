@@ -1,5 +1,5 @@
 server:
-  port: <port>
+  port: 8080
 
 springdoc:
   api-docs:
@@ -8,27 +8,27 @@ springdoc:
     path: /swagger-ui.html
 
 cors:
-  allowed-origins: "http://localhost:3000"
+  allowed-origins: ${SPRING_ALLOWED_ORIGINS}
 
 spring:
   application:
     name: Home360
   config:
     activate:
-      on-profile: docker
+      on-profile: dev
 
   cache:
     type: redis
-    host: localhost
+    host: redis
     port: 6379
     redis:
       time-to-live: 60000
 
   mail:
-    host: <enter host>
-    port: <enter port>
-    username: <enter username>
-    password: <enter password>
+    host: ${SPRING_EMAIL_HOST}
+    port: ${SPRING_EMAIL_PORT}
+    username: ${SPRING_EMAIL_USERNAME}
+    password: ${SPRING_EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -37,11 +37,11 @@ spring:
             enable: true
 
   data:
-     mongodb:
+    mongodb:
       authentication-database: admin
-      database: <enter database name>
+      database: home360dev
       auto-index-creation: true
-      uri: mongodb://mongo:27017/<database name>
+      uri: mongodb://localhost:27017/home360dev
       embedded:
         enabled: false
 
@@ -49,9 +49,9 @@ spring:
     ansi:
       enabled: DETECT
   datasource:
-    url: jdbc:postgresql://localhost:<port>/<database name>
-    username: <enter database username>
-    password: <enter database password>
+    url: jdbc:postgresql://localhost:5432/home360_dev
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -68,26 +68,28 @@ spring:
 application:
   security:
     jwt:
-      secret-key: <jwt secret key>
-      jwtTokenExpirationMs: <jwt expiration time>
+      secret-key: ${SPRING_SECRET_KEY}
+      jwtTokenExpirationMs: 1800000 # 30 minutes
+#      jwtTokenExpirationMs: 300000 # 5 minutes
 
   frontend:
-    url: <frontend base url>
+    url: ${SPRING_FRONTEND_URL}
     password-reset-request:
-      url: <frontend password reset request url>
+      url: ${SPRING_PASSWORD_RESET_REQUEST}
     reset-password:
-      url: <frontend password reset url>
+      url: ${SPRING_RESET_PASSWORD}
     verify-email:
-      url: <frontend email verification page>
+      url: ${SPRING_VERIFY_EMAIL}
     user-listings-url:
-      url: <frontend listing url>
+      url: ${SPRING_USER_LISTINGS_URL}
 
   mail:
-    mailSenderName: Home360
-    mailSenderAddress: udubit@hotmail.com
+    mailSenderName: ${SPRING_EMAIL_SENDER_NAME}
+    mailSenderAddress: ${SPRING_EMAIL_SENDER_ADDRESS}
+
 
 logging:
-  file.name: <log file url>
+  file.name: logs/application-debug.log
   pattern:
     console: "%d{dd-MM-yyyy HH:mm:ss} - %msg%n"
     file: "%d{dd-MM-yyyy HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -98,7 +100,7 @@ logging:
     org.hibernate: ERROR
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
     org.springframework.orm: DEBUG
-    org.springframework.cache: DEBUG
+    org.springframework.cache: TRACE
 
 management:
   info:
@@ -143,3 +145,12 @@ info:
     description: Application for real estate agents
     version: '@project.version@'
     spring-boot-version: '@project.parent.version@'
+
+sentry:
+  dsn: ${SPRING_SENTRY_DSN_URL}
+  # Add data like request headers and IP for users,
+  # see https://docs.sentry.io/platforms/java/guides/spring-boot/data-management/data-collected/ for more info
+  send-default-pii: true
+  # Set traces-sample-rate to 1.0 to capture 100% of transactions for tracing.
+  # We recommend adjusting this value in production.
+  traces-sample-rate: 1.0

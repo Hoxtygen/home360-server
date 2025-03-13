@@ -45,7 +45,7 @@ public class ListingServiceImpl implements ListingService {
   @Caching(
       evict = {
         @CacheEvict(value = "allListingsCache", key = "'allListings'"),
-        @CacheEvict(value = "agentListings", key = "#listing.agentId + '::*'")
+        @CacheEvict(value = "agentListings", key = "#request.agentId + '::*'")
       })
   public Listing createListing(ListingDTO request) {
     Integer userId = userService.extractUserId();
