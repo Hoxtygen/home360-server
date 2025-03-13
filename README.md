@@ -13,6 +13,7 @@ and apartment.
 * [Mailgun](https://www.mailgun.com/)
 * [Docker](https://www.docker.com/)
 * [Bucket4j](https://www.bucket4j.com)
+* [Redis](https://redis.io/)
 
 ## Features
 * User registration
@@ -66,14 +67,15 @@ SPRING_LOCAL_PORT=8080
 SPRING_DOCKER_PORT=8080
 ```
 
-* Create a `application-dev.yml` file and add to the resources' directory. Check the `application-sample-dev.yml` for
+* Create  `application-dev.yml` and `application-docker.yml` files and add to the resources' directory. Check the `application-sample-dev.yml` for
   content to fill it up with.
 
 
 There are 2 ways to run the app
-1. Using the docker compose file
-- `docker-compose up --build`
-- This will start the app on port `8000`
+1. Using the docker compose file.
+-  By default, active profile is `docker`
+- `docker-compose -f docker-compose.dev.yml up --build`
+- This will build and start the app on port `8080`
 
 2. Running a local version of the Spring boot app
 - Build the project : `mvn clean install`
