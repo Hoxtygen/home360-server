@@ -1,0 +1,11 @@
+previews:
+  generation: automatic
+
+services:
+  - name: Home360-server
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    type: web
+    runtime: docker
+    repo: https://github.com/Hoxtygen/home360-server.git
