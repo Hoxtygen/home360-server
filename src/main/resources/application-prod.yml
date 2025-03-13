@@ -1,0 +1,152 @@
+server:
+  port: ${PORT:8080}
+
+springdoc:
+  api-docs:
+    path: /v3/api/docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+cors:
+  allowed-origins: ${SPRING_PROD_ALLOWED_ORIGINS}
+
+spring:
+  cache:
+    type: redis
+  redis:
+    url: ${SPRING_PROD_REDIS_URL}
+
+  application:
+    name: Home360
+  config:
+    activate:
+      on-profile: prod
+  mail:
+    host: ${SPRING_EMAIL_HOST}
+    port: ${SPRING_EMAIL_PORT}
+    username: ${SPRING_EMAIL_USERNAME}
+    password: ${SPRING_EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+  data:
+    mongodb:
+      auto-index-creation: true
+      uri: ${PROD_MONGODB_URI}
+
+    redis:
+      url: ${SPRING_PROD_REDIS_URL}
+
+  output:
+    ansi:
+      enabled: DETECT
+  datasource:
+    url: {PROD_POSTGRES_DATABASE_URL}
+    username: ${PROD_POSTGRES_USER}
+    password: ${PROD_POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+      database: postgresql
+    show-sql: true
+  main:
+    web-application-type: servlet
+
+application:
+  security:
+    jwt:
+      secret-key: ${SPRING_SECRET_KEY}
+      jwtTokenExpirationMs: ${SPRING_TOKEN_EXPIRATION_MILLISECONDS} # 30 minutes
+
+  frontend:
+    url: ${SPRING_PROD_FRONTEND_URL}
+    password-reset-request:
+      url: ${SPRING_PROD_PASSWORD_RESET_REQUEST}
+    reset-password:
+      url: ${SPRING_PROD_RESET_PASSWORD}
+    verify-email:
+      url: ${SPRING_PROD_VERIFY_EMAIL}
+    user-listings-url:
+      url:${SPRING_PROD_USER_LISTINGS_URL}
+
+  mail:
+    mailSenderName: ${SPRING_EMAIL_SENDER_NAME}
+    mailSenderAddress: ${SPRING_EMAIL_SENDER_ADDRESS}
+
+logging:
+  file.name: logs/application-debug.log
+  pattern:
+    console: "%d{dd-MM-yyyy HH:mm:ss} - %msg%n"
+    file: "%d{dd-MM-yyyy HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: ERROR
+    org.springframework.web: ERROR
+    com.codeplanks: DEBUG
+    org.hibernate: ERROR
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.orm: DEBUG
+    org.springframework.cache: TRACE
+
+
+management:
+  info:
+    git:
+      mode: full
+    env:
+      enabled: true
+    java:
+      enabled: true
+  app:
+    name: Home360
+    description: "Home360 Application"
+    version: 1.0.0
+  env:
+    enabled: true
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    db:
+      enabled: true
+    redis:
+      enabled: true
+    metrics:
+      enabled: true
+      prometheus:
+        enabled: true
+    info:
+      enabled: true
+  metrics:
+    tags:
+      application: ${SPRING_APPLICATION_NAME}
+
+info:
+  app:
+    name: ${SPRING_APPLICATION_NAME}
+    description: Application for real estate agents
+    version: '@project.version@'
+    spring-boot-version: '@project.parent.version@'
+
+    sentry:
+      dsn: ${SPRING_SENTRY_DSN_URL}
+      # Add data like request headers and IP for users,
+      # see https://docs.sentry.io/platforms/java/guides/spring-boot/data-management/data-collected/ for more info
+      send-default-pii: true
+      # Set traces-sample-rate to 1.0 to capture 100% of transactions for tracing.
+      # We recommend adjusting this value in production.
+      traces-sample-rate: 1.0
