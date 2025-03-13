@@ -23,7 +23,12 @@ public class JwtService {
   @Value("${application.security.jwt.jwtTokenExpirationMs}")
   private int jwtExpiration;
 
-  @Autowired private JwtUtils jwtUtils;
+  private final JwtUtils jwtUtils;
+
+  @Autowired
+  public JwtService(JwtUtils jwtUtils) {
+    this.jwtUtils = jwtUtils;
+  }
 
   public String extractUsername(String jwtToken) {
     return extractClaim(jwtToken, Claims::getSubject);
