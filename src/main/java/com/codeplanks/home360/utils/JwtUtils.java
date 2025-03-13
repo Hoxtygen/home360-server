@@ -20,13 +20,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtils {
   private final BlacklistedTokenRepository blacklistedTokenRepository;
-
-  @Value("${application.security.jwt.secret-key}")
-  private String secretKey;
+  private final String secretKey;
 
   @Autowired
-  public JwtUtils(BlacklistedTokenRepository blacklistedTokenRepository) {
+  public JwtUtils(
+      BlacklistedTokenRepository blacklistedTokenRepository,
+      @Value("${application.security.jwt.secret-key}") String secretKey) {
     this.blacklistedTokenRepository = blacklistedTokenRepository;
+    this.secretKey = secretKey;
   }
 
   public void invalidateToken(String token) {
