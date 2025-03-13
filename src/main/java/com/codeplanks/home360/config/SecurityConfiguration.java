@@ -3,7 +3,6 @@ package com.codeplanks.home360.config;
 
 import com.codeplanks.home360.exception.CustomAccessDeniedHandler;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,16 +24,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  */
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfiguration {
   private final JwtAuthenticationFilter jwtAuthFilter;
   private final AuthenticationProvider authenticationProvider;
+  private final String allowedOrigins;
 
-  @Value("${cors.allowed-origins}")
-  private String allowedOrigins;
+  public SecurityConfiguration(
+      JwtAuthenticationFilter jwtAuthFilter,
+      AuthenticationProvider authenticationProvider,
+      @Value("${cors.allowed-origins}") String allowedOrigins) {
+    this.jwtAuthFilter = jwtAuthFilter;
+    this.authenticationProvider = authenticationProvider;
+    this.allowedOrigins = allowedOrigins;
+  }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    System.out.println("Allowed Origins: " + allowedOrigins); // Debugging
     httpSecurity
         .addFilterBefore(new TrailingSlashRedirectFilter(), ChannelProcessingFilter.class)
         .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
