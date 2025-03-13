@@ -46,7 +46,7 @@ spring:
     ansi:
       enabled: DETECT
   datasource:
-    url: {PROD_POSTGRES_DATABASE_URL}
+    url: jdbc:{PROD_POSTGRES_DATABASE_URL}
     username: ${PROD_POSTGRES_USER}
     password: ${PROD_POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
