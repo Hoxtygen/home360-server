@@ -12,7 +12,6 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,15 +26,15 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-  @Autowired private final JwtService jwtService;
-  @Autowired private JwtUtils jwtUtils;
 
+  private final JwtService jwtService;
+  private final JwtUtils jwtUtils;
   private final UserDetailsService userDetailsService;
-  Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-  @Autowired
   @Qualifier("handlerExceptionResolver")
-  private HandlerExceptionResolver resolver;
+  private final HandlerExceptionResolver resolver;
+
+  Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
   @Override
   protected void doFilterInternal(
