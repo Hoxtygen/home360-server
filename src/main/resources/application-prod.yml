@@ -47,6 +47,7 @@ spring:
       enabled: DETECT
   datasource:
     url: jdbc:postgresql://${PROD_POSTGRES_HOSTNAME}/${PROD_POSTGRES_DATABASE}?user=${PROD_POSTGRES_USER}&password=${PROD_POSTGRES_PASSWORD}&sslmode=require
+
     username: ${PROD_POSTGRES_USER}
     password: ${PROD_POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
