@@ -37,7 +37,7 @@ spring:
   data:
     mongodb:
       auto-index-creation: true
-      uri: ${PROD_MONGODB_URI}
+      uri: mongodb+srv://${PROD_MONGODB_USER}:${PROD_MONGODB_PASSWORD}@${PROD_MONGODB_HOSTNAME}/${PROD_MONGODB_DATABASE}?retryWrites=true&w=majority&appName=${PROD_MONGODB_APP_NAME}
 
     redis:
       url: ${SPRING_PROD_REDIS_URL}
@@ -46,7 +46,7 @@ spring:
     ansi:
       enabled: DETECT
   datasource:
-    url: jdbc:${PROD_POSTGRES_DATABASE_URL}
+    url: jdbc:postgresql://${PROD_POSTGRES_HOSTNAME}/${PROD_POSTGRES_DATABASE}?user=${PROD_POSTGRES_USER}&password=${PROD_POSTGRES_PASSWORD}&sslmode=require
     username: ${PROD_POSTGRES_USER}
     password: ${PROD_POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -77,7 +77,7 @@ application:
     verify-email:
       url: ${SPRING_PROD_VERIFY_EMAIL}
     user-listings-url:
-      url:${SPRING_PROD_USER_LISTINGS_URL}
+      url: ${SPRING_PROD_USER_LISTINGS_URL}
 
   mail:
     mailSenderName: ${SPRING_EMAIL_SENDER_NAME}
