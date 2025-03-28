@@ -108,7 +108,7 @@ public class AuthenticationController {
   })
   @PostMapping("/login")
   public ResponseEntity<SuccessDataResponse<AuthenticationResponse>> login(
-      @RequestBody AuthenticationRequest request, HttpServletResponse response) {
+      @Valid @RequestBody AuthenticationRequest request, HttpServletResponse response) {
     SuccessDataResponse<AuthenticationResponse> result = new SuccessDataResponse<>();
     AuthenticationResponse authResponse = authenticationServiceImpl.login(request);
 

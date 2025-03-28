@@ -14,6 +14,7 @@ import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.RefreshTokenRepository;
 import com.codeplanks.home360.repository.UserRepository;
+import com.codeplanks.home360.utils.GeneralUtils;
 import com.codeplanks.home360.utils.JwtUtils;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
@@ -26,13 +27,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * @author Wasiu Idowu
@@ -52,6 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final ApplicationEventPublisher publisher;
   private final VerificationTokenServiceImpl verificationTokenService;
   private final JwtUtils jwtUtils;
+  private final RefreshTokenRepository refreshTokenRepository;
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
   @Value("${application.frontend.reset-password.url}")
@@ -60,11 +65,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Value("${application.frontend.verify-email.url}")
   private String emailVerificationUrl;
 
-  private final RefreshTokenRepository refreshTokenRepository;
-
   @Override
   public AppUser register(RegisterRequest request) throws UserAlreadyExistsException {
-    if (userService.userExists(request.getEmail().toLowerCase(), request.getPhoneNumber())) {
+    String email = GeneralUtils.toLowerCase(request.getEmail());
+    if (userService.userExists(email, request.getPhoneNumber())) {
       throw new UserAlreadyExistsException("User with email or phone number already exists");
     }
 
@@ -72,34 +76,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         AppUser.builder()
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
-            .email(request.getEmail().toLowerCase())
+            .email(email)
             .address(request.getAddress())
             .phoneNumber(request.getPhoneNumber())
             .password(passwordEncoder.encode(request.getPassword()))
             .role(Role.USER)
             .build();
     userRepository.save(user);
-    publisher.publishEvent(new RegistrationCompleteEvent(user, applicationUrl(servletRequest)));
+    publisher.publishEvent(
+        new RegistrationCompleteEvent(user, buildApplicationUrl(servletRequest)));
     return user;
   }
 
   @Override
   public AuthenticationResponse login(AuthenticationRequest request)
       throws BadCredentialsException {
-    boolean userExist = userService.emailExists(request.getEmail().toLowerCase());
-
-    if (!userExist) {
-      logger.error("User does not exist: " + request.getEmail());
-      throw new BadCredentialsException("Incorrect email/password");
-    }
+    String email = GeneralUtils.toLowerCase(request.getEmail());
     try {
       Authentication authentication =
           authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(
-                  request.getEmail().toLowerCase(), request.getPassword()));
-      if (!authentication.isAuthenticated()) {
-        throw new NotFoundException("Incorrect email/password");
-      }
+              new UsernamePasswordAuthenticationToken(email, request.getPassword()));
+
       AppUser user = userService.getUser(request.getEmail().toLowerCase());
       RefreshToken refreshToken = refreshTokenServiceImpl.generateRefreshToken(user);
       TokenResponse tokenResponse =
@@ -115,6 +112,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .build();
 
     } catch (BadCredentialsException exception) {
+      logger.error("Authentication failed for user: {}", request.getEmail());
       throw new BadCredentialsException("Incorrect username/password");
     }
   }
@@ -166,18 +164,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Transactional
   @Override
   public String logout(String token, HttpServletRequest request, HttpServletResponse response) {
-    jwtUtils.invalidateToken(token);
-
     String refreshToken = jwtUtils.extractRefreshTokenFromRequest(request);
-    if (refreshToken != null) {
-      refreshTokenRepository.deleteByToken(refreshToken);
+
+    String userEmail = jwtUtils.extractSubject(token);
+
+    try {
+      jwtUtils.invalidateToken(token);
+      if (userEmail != null) {
+        logger.info("Access token blacklisted for user: {}", userEmail);
+      }
+    } catch (DataAccessException exception) {
+      logger.warn(
+          "Error blacklisting access token for user {}: {}", userEmail, exception.getMessage());
     }
+
+    if (refreshToken != null) {
+
+      try {
+        refreshTokenRepository.deleteByToken(refreshToken);
+        logger.info("Refresh token deleted: {}", refreshToken);
+
+      } catch (DataAccessException exception) {
+        logger.warn("Error deleting refresh token {}: {}", refreshToken, exception.getMessage());
+      }
+    }
+
     Cookie cookie = new Cookie("refreshToken", null);
     cookie.setPath("/");
     cookie.setHttpOnly(true);
     cookie.setMaxAge(0);
     response.addCookie(cookie);
-
+    SecurityContextHolder.clearContext();
     return "User successfully logged out";
   }
 
@@ -191,12 +208,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     eventListener.sendPasswordResetEmail(url);
   }
 
-  private String applicationUrl(HttpServletRequest request) {
-    return "http://"
-        + request.getServerName()
-        + ":"
-        + request.getServerPort()
-        + "/api/v1/auth"
-        + request.getContextPath();
+  private String buildApplicationUrl(HttpServletRequest request) {
+    return ServletUriComponentsBuilder.fromRequestUri(request)
+        .replacePath("/api/v1/auth" + request.getContextPath())
+        .replaceQuery(null)
+        .build()
+        .toUriString();
   }
 }

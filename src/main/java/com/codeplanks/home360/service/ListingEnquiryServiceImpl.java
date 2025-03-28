@@ -107,7 +107,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return listingEnquiry;
   }
 
-  @Caching(evict = {@CacheEvict(value = "listingEnquiry", key = "#enquiryMessageId")})
+  //  @Caching(evict = {@CacheEvict(value = "listingEnquiry", key = "#enquiryMessageId")})
   @Override
   public Boolean markMessageAsRead(String enquiryMessageId) {
     Query query = createQuery(enquiryMessageId);
