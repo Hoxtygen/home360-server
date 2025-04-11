@@ -80,4 +80,9 @@ public class JwtUtils {
     }
     return null;
   }
+
+  public String extractSubject(String token) {
+    Claims claims = extractAllClaims(token);
+    return claims.getSubject();
+  }
 }

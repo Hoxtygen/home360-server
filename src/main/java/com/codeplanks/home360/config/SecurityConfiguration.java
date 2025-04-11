@@ -2,6 +2,7 @@
 package com.codeplanks.home360.config;
 
 import com.codeplanks.home360.exception.CustomAccessDeniedHandler;
+import com.codeplanks.home360.filters.JwtAuthenticationFilter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,7 +41,6 @@ public class SecurityConfiguration {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-    System.out.println("Allowed Origins: " + allowedOrigins); // Debugging
     httpSecurity
         .addFilterBefore(new TrailingSlashRedirectFilter(), ChannelProcessingFilter.class)
         .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)

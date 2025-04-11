@@ -1,5 +1,5 @@
-/* (C)2024 */
-package com.codeplanks.home360.config;
+/* (C)2024-2025 */
+package com.codeplanks.home360.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
@@ -60,7 +60,7 @@ public class RateLimitingFilter implements Filter {
           authenticatedBucketCache.computeIfAbsent(
               userId, newBucket -> createNewAuthenticatedBucket());
       if (!authBucket.tryConsume(1)) {
-        logger.debug("rate limiting abuse: " + userId);
+        logger.warn("rate limiting abuse: {}", userId);
         sendErrorResponse(httpResponse, "Rate limit exceeded for authenticated user.");
         return;
       }
@@ -69,7 +69,7 @@ public class RateLimitingFilter implements Filter {
           unAuthenticatedBucketCache.computeIfAbsent(
               clientIpAddress, newBucket -> createNewUnAuthenticatedBucket());
       if (!unAuthBucket.tryConsume(1)) {
-        logger.debug("rate limiting abuse: " + clientIpAddress);
+        logger.warn("rate limiting abuse by unauthenticated user: {}", clientIpAddress);
         sendErrorResponse(httpResponse, "Rate limit exceeded for unauthenticated user.");
         return;
       }
@@ -109,7 +109,7 @@ public class RateLimitingFilter implements Filter {
 
     String jsonResponse = objectMapper.writeValueAsString(errorDetails);
     response.getWriter().write(jsonResponse);
-    logger.debug("Rate limiting Error: " + message);
+    logger.error("Rate limiting Error: {}", message);
   }
 
   private String getCurrentTimestamp() {

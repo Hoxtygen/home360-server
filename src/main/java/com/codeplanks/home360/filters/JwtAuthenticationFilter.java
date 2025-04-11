@@ -1,6 +1,9 @@
 /* (C)2024-2025 */
-package com.codeplanks.home360.config;
+package com.codeplanks.home360.filters;
 
+import com.codeplanks.home360.config.JwtService;
+import com.codeplanks.home360.exception.UnAuthorizedException;
+import com.codeplanks.home360.repository.BlacklistedTokenRepository;
 import com.codeplanks.home360.utils.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -34,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Qualifier("handlerExceptionResolver")
   private final HandlerExceptionResolver resolver;
 
+  private final BlacklistedTokenRepository blacklistedTokenRepository;
   Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
   @Override
@@ -60,6 +64,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     try {
       jwt = authHeader.substring(7);
 
+      if (isTokenBlacklisted(jwt)) {
+        logger.warn(
+            "Blacklisted JWT received for user (attempting to extract): {}",
+            jwtService.extractUsername(jwt));
+
+        resolver.resolveException(
+            request, response, null, new UnAuthorizedException("Invalid token"));
+        return;
+      }
+
       if (jwtUtils.validateToken(jwt)) {
         username = jwtService.extractUsername(jwt);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -78,11 +92,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       logger.error("JWT Error: {}", exception.getMessage());
       resolver.resolveException(request, response, null, exception);
       return;
+    } catch (UnAuthorizedException exception) {
+      logger.error("Blacklisted JWT error: {}", exception.getMessage());
+      return;
     } catch (Exception exception) {
       logger.error("Unexpected error: {}", exception.getMessage());
       resolver.resolveException(request, response, null, exception);
       return;
     }
     filterChain.doFilter(request, response);
+  }
+
+  private boolean isTokenBlacklisted(String token) {
+    return blacklistedTokenRepository.findByToken(token).isPresent();
   }
 }

@@ -180,10 +180,10 @@ class AuthenticationServiceTest {
     // Given
     AuthenticationRequest authRequest =
         new AuthenticationRequest("elaeis@example.com", userPassword);
-    given(userService.emailExists(authRequest.getEmail())).willReturn(true);
+//    given(userService.emailExists(authRequest.getEmail())).willReturn(true);
     given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .willReturn(authentication);
-    given(authentication.isAuthenticated()).willReturn(true);
+//    given(authentication.isAuthenticated()).willReturn(true);
     given(userService.getUser(authRequest.getEmail().toLowerCase())).willReturn(user);
     given(jwtService.generateToken(user)).willReturn(token);
     given(refreshTokenService.generateRefreshToken(user)).willReturn(refreshToken);
@@ -210,14 +210,17 @@ class AuthenticationServiceTest {
     // Given
     AuthenticationRequest authRequest =
         new AuthenticationRequest("nonexistent@example.com", "password123");
-    given(userService.emailExists(authRequest.getEmail())).willReturn(false);
+//    given(userService.emailExists(authRequest.getEmail())).willReturn(false);
 
+    given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).willThrow(new BadCredentialsException("Incorrect username/password"));
     // When
     assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
 
     // Then
-    verify(authenticationManager, never())
-        .authenticate(any(UsernamePasswordAuthenticationToken.class));
+
+    verify(authenticationManager, times(1))
+            .authenticate(any(UsernamePasswordAuthenticationToken.class));
+    verify(userService, never()).getUser(any());
   }
 
   @DisplayName("incorrect password")
@@ -227,7 +230,6 @@ class AuthenticationServiceTest {
         new AuthenticationRequest("elaeis@example.com", "password123");
 
     // Given
-    given(userService.emailExists(authenticationRequest.getEmail())).willReturn(true);
     given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .willThrow(new BadCredentialsException("Incorrect username/password"));
 
@@ -238,7 +240,7 @@ class AuthenticationServiceTest {
     // Then
     verify(authenticationManager, times(1))
         .authenticate(any(UsernamePasswordAuthenticationToken.class));
-    verify(userService, times(1)).emailExists(authenticationRequest.getEmail());
+    verify(userService, never()).getUser(any());
   }
 
   @DisplayName("verify user successfully")
