@@ -1,4 +1,5 @@
-package com.codeplanks.home360.config;
+/* (C)2025 */
+package com.codeplanks.home360.filters;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
