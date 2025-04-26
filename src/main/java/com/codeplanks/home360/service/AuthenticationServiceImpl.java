@@ -123,7 +123,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
       String sessionToken = generateSessionToken();
 
-      //      TimeUnit timeUnit = TimeUnit.DAYS(3)
       redisTemplate
           .opsForValue()
           .set("active_session: " + user.getEmail(), sessionToken, 3, TimeUnit.DAYS);
@@ -206,15 +205,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       HttpServletResponse response,
       String sessionToken) {
     String refreshToken = jwtUtils.extractRefreshTokenFromRequest(request);
-
     String sessionKey = "session:" + sessionToken;
-
     String userEmail = jwtUtils.extractSubject(accessToken);
 
     try {
       jwtUtils.invalidateToken(accessToken);
 
       redisTemplate.delete(sessionKey);
+      redisTemplate.delete("active_session" + userEmail);
 
       if (userEmail != null) {
         logger.info("Access token blacklisted for user: {}", userEmail);
