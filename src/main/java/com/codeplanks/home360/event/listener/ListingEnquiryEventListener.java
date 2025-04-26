@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.event.listener;
 
 import com.codeplanks.home360.domain.listing.ListingWithAgentInfo;
@@ -48,9 +48,11 @@ public class ListingEnquiryEventListener implements ApplicationListener<ListingE
     String subject = "Listing Enquiry Notification";
 
     String mailContent =
-        "You have a new enquiry about one of your listings.Login to your "
-            + "dashboard to view the content.The listing being enquired about can be found in the "
-            + "url below.";
+        """
+        You have a new enquiry about one of your listings.Login to your
+        dashboard to view the content.The listing being enquired about can be found in the
+        url below.
+        """;
 
     context.setVariable("name", agentFirstName);
     context.setVariable("subject", subject);

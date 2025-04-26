@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +30,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Component
 @RequiredArgsConstructor
+@Order(Ordered.LOWEST_PRECEDENCE)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
@@ -69,8 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "Blacklisted JWT received for user (attempting to extract): {}",
             jwtService.extractUsername(jwt));
 
-        resolver.resolveException(
-            request, response, null, new UnAuthorizedException("Invalid token"));
+        sendUnauthorizedError(request, response, "Invalid JWT");
         return;
       }
 
@@ -105,5 +107,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private boolean isTokenBlacklisted(String token) {
     return blacklistedTokenRepository.findByToken(token).isPresent();
+  }
+
+  private void sendUnauthorizedError(
+      HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+    logger.warn("Sending unauthorized error from JWT filter: {}", message);
+    resolver.resolveException(request, response, null, new UnAuthorizedException(message));
   }
 }

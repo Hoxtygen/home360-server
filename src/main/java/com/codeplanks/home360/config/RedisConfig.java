@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
@@ -32,6 +34,23 @@ public class RedisConfig {
     template.setKeySerializer(template.getStringSerializer());
     template.setHashKeySerializer(template.getStringSerializer());
     template.setHashValueSerializer(serializer);
+
+    return template;
+  }
+
+  @Bean
+  public RedisTemplate<String, Object> sessionIdRedisTemplate(
+      RedisConnectionFactory connectionFactory) {
+    RedisTemplate<String, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(connectionFactory);
+
+    // Use String serializers for keys and hash keys (human-readable format)
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setHashKeySerializer(new StringRedisSerializer());
+
+    template.setHashValueSerializer(new GenericToStringSerializer<>(Object.class));
+
+    template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
 
     return template;
   }

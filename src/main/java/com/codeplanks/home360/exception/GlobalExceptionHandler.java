@@ -259,6 +259,15 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ExceptionHandler(DuplicateSessionException.class)
+  public ResponseEntity<ApiError> handleDuplicateSessionException(
+      DuplicateSessionException exception) {
+    ApiError apiError =
+        new ApiError(LocalDateTime.now(), HttpStatus.CONFLICT, exception.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+  }
+
   private String extractEnumErrorMessage(String message) {
     if (message.contains("Cannot deserialize value of type")) {
       try {

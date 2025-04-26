@@ -1,6 +1,7 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.controller;
 
+import com.blueconic.browscap.ParseException;
 import com.codeplanks.home360.domain.auth.*;
 import com.codeplanks.home360.domain.token.TokenRequest;
 import com.codeplanks.home360.domain.token.TokenResponse;
@@ -10,6 +11,7 @@ import com.codeplanks.home360.service.AuthenticationServiceImpl;
 import com.codeplanks.home360.service.RefreshTokenServiceImpl;
 import com.codeplanks.home360.service.VerificationTokenServiceImpl;
 import com.codeplanks.home360.utils.AuthenticationUtils;
+import com.codeplanks.home360.utils.SessionUserInfoUtil;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +24,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,9 +111,25 @@ public class AuthenticationController {
   })
   @PostMapping("/login")
   public ResponseEntity<SuccessDataResponse<AuthenticationResponse>> login(
-      @Valid @RequestBody AuthenticationRequest request, HttpServletResponse response) {
+      @Valid @RequestBody AuthenticationRequest request,
+      HttpServletRequest httpServletRequest,
+      HttpServletResponse response)
+      throws IOException, ParseException {
+
+    SessionUserInfo sessionUserInfo =
+        SessionUserInfoUtil.extractSessionUserInfo(httpServletRequest);
+
     SuccessDataResponse<AuthenticationResponse> result = new SuccessDataResponse<>();
-    AuthenticationResponse authResponse = authenticationServiceImpl.login(request);
+    AuthenticationResponse authResponse = authenticationServiceImpl.login(request, sessionUserInfo);
+
+    // Create and set session token cookie
+    Cookie sessionTokenCookie =
+        new Cookie("sessionToken", authResponse.getToken().getSessionToken());
+    sessionTokenCookie.setHttpOnly(true);
+    sessionTokenCookie.setSecure(!authenticationUtils.isLocalEnvironment());
+    sessionTokenCookie.setPath("/");
+    sessionTokenCookie.setMaxAge(60 * 60 * 24 * 3); // 3 days
+    response.addCookie(sessionTokenCookie);
 
     Cookie refreshTokenCookie =
         new Cookie("refreshToken", authResponse.getToken().getRefreshToken());
@@ -152,12 +171,13 @@ public class AuthenticationController {
   public ResponseEntity<SuccessDataResponse<String>> logout(
       @RequestHeader("Authorization") String authToken,
       HttpServletRequest request,
-      HttpServletResponse response) {
+      HttpServletResponse response,
+      @CookieValue("sessionToken") String sessionToken) {
     String token = authToken.substring(7);
 
     SuccessDataResponse<String> result = new SuccessDataResponse<>();
 
-    result.setData(authenticationServiceImpl.logout(token, request, response));
+    result.setData(authenticationServiceImpl.logout(token, request, response, sessionToken));
     result.setStatus(HttpStatus.OK);
     result.setMessage("Logout successful");
 

@@ -14,7 +14,7 @@ import java.io.UnsupportedEncodingException;
 public interface AuthenticationService {
   AppUser register(RegisterRequest request);
 
-  AuthenticationResponse login(AuthenticationRequest request);
+  AuthenticationResponse login(AuthenticationRequest request, SessionUserInfo sessionUserInfo);
 
   AppUser findUserByPasswordToken(String token);
 
@@ -25,5 +25,6 @@ public interface AuthenticationService {
   String requestPasswordReset(PasswordResetRequestDTO request)
       throws MessagingException, UnsupportedEncodingException;
 
-  String logout(String token, HttpServletRequest request, HttpServletResponse response);
+  String logout(
+      String token, HttpServletRequest request, HttpServletResponse response, String sessionToken);
 }
