@@ -201,12 +201,9 @@ class AuthenticationServiceTest {
     given(jwtService.generateToken(user)).willReturn(token);
     given(refreshTokenService.generateRefreshToken(user)).willReturn(refreshToken);
 
-    //      given(redisTemplate.hasKey(startsWith("session:"))).willReturn(false);
-
     given(redisTemplate.opsForHash()).willReturn(hashOperations);
 
-    given(redisTemplate.opsForValue())
-        .willReturn(valueOperations); // Ensure opsForValue() returns mock
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
     doNothing().when(hashOperations).put(any(), any(), any());
 
