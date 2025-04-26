@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
@@ -49,15 +48,21 @@ public class SessionTokenFilter extends OncePerRequestFilter {
     if (sessionTokenOptional.isPresent()) {
       String sessionToken = sessionTokenOptional.get();
 
-      ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-      String userEmail = (String) valueOperations.get("active_session:" + sessionToken);
+      String userEmail =
+          (String) redisTemplate.opsForHash().get("session:" + sessionToken, "email");
 
       if (userEmail != null) {
-        request.setAttribute("sessionValid", true);
-        request.setAttribute("sessionUserEmail", userEmail);
+        String activeSessionToken =
+            (String) redisTemplate.opsForValue().get("active_session:" + userEmail);
+        if (sessionToken.equals(activeSessionToken)) {
+          request.setAttribute("sessionValid", true);
+          request.setAttribute("sessionUserEmail", userEmail);
 
-        logger.info("Valid session token found for user: " + userEmail);
-        filterChain.doFilter(request, response);
+          logger.info("Valid session token found for user: " + userEmail);
+          filterChain.doFilter(request, response);
+          return;
+        }
+
       } else {
         logger.warn("Invalid or expired session token: {}" + sessionToken);
         sendUnauthorizedError(request, response);

@@ -125,7 +125,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
       redisTemplate
           .opsForValue()
-          .set("active_session: " + user.getEmail(), sessionToken, 3, TimeUnit.DAYS);
+          .set("active_session:" + user.getEmail(), sessionToken, 3, TimeUnit.DAYS);
       redisTemplate.opsForHash().put("session:" + sessionToken, "email", user.getEmail());
       redisTemplate
           .opsForHash()
