@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2025 */
 package com.codeplanks.home360.exception;
 
 import org.springframework.http.HttpStatus;

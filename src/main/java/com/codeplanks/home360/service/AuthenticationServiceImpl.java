@@ -8,8 +8,10 @@ import com.codeplanks.home360.domain.token.TokenResponse;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
+import com.codeplanks.home360.event.DuplicateSessionEvent;
 import com.codeplanks.home360.event.RegistrationCompleteEvent;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
+import com.codeplanks.home360.exception.DuplicateSessionException;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.RefreshTokenRepository;
@@ -22,12 +24,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -57,6 +61,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final VerificationTokenServiceImpl verificationTokenService;
   private final JwtUtils jwtUtils;
   private final RefreshTokenRepository refreshTokenRepository;
+  private final RedisTemplate<String, Object> redisTemplate;
   Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
   @Value("${application.frontend.reset-password.url}")
@@ -89,20 +94,52 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public AuthenticationResponse login(AuthenticationRequest request)
+  public AuthenticationResponse login(
+      AuthenticationRequest request, SessionUserInfo sessionUserInfo)
       throws BadCredentialsException {
     String email = GeneralUtils.toLowerCase(request.getEmail());
+
     try {
       Authentication authentication =
           authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(email, request.getPassword()));
 
       AppUser user = userService.getUser(request.getEmail().toLowerCase());
+
+      boolean userHasActiveSession = hasActiveSession(user.getEmail());
+      if (userHasActiveSession) {
+        logger.error("user trying to create duplicate session {}", user.getEmail());
+        publisher.publishEvent(
+            new DuplicateSessionEvent(
+                user.getEmail(),
+                sessionUserInfo.getDeviceType(),
+                sessionUserInfo.getRemoteAddress(),
+                sessionUserInfo.getBrowserName(),
+                sessionUserInfo.getOperatingSystem()));
+
+        throw new DuplicateSessionException(
+            "You have an active session. Please logout of that session and login again.");
+      }
+
+      String sessionToken = generateSessionToken();
+
+      //      TimeUnit timeUnit = TimeUnit.DAYS(3)
+      redisTemplate
+          .opsForValue()
+          .set("active_session: " + user.getEmail(), sessionToken, 3, TimeUnit.DAYS);
+      redisTemplate.opsForHash().put("session:" + sessionToken, "email", user.getEmail());
+      redisTemplate
+          .opsForHash()
+          .put("session:" + sessionToken, "createdAt", System.currentTimeMillis());
+
+      redisTemplate.expire("session:" + sessionToken, 3, TimeUnit.DAYS);
+
       RefreshToken refreshToken = refreshTokenServiceImpl.generateRefreshToken(user);
       TokenResponse tokenResponse =
           TokenResponse.builder()
               .accessToken(jwtService.generateToken(user))
               .refreshToken(refreshToken.getToken())
+              .sessionToken(sessionToken)
               .build();
       return AuthenticationResponse.builder()
           .token(tokenResponse)
@@ -163,13 +200,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Transactional
   @Override
-  public String logout(String token, HttpServletRequest request, HttpServletResponse response) {
+  public String logout(
+      String accessToken,
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String sessionToken) {
     String refreshToken = jwtUtils.extractRefreshTokenFromRequest(request);
 
-    String userEmail = jwtUtils.extractSubject(token);
+    String sessionKey = "session:" + sessionToken;
+
+    String userEmail = jwtUtils.extractSubject(accessToken);
 
     try {
-      jwtUtils.invalidateToken(token);
+      jwtUtils.invalidateToken(accessToken);
+
+      redisTemplate.delete(sessionKey);
+
       if (userEmail != null) {
         logger.info("Access token blacklisted for user: {}", userEmail);
       }
@@ -188,12 +234,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         logger.warn("Error deleting refresh token {}: {}", refreshToken, exception.getMessage());
       }
     }
+    logger.info("Session token deleted: user:{} sessionToken:{}", userEmail, sessionToken);
+    Cookie refresTokenCookie = new Cookie("refreshToken", null);
+    refresTokenCookie.setPath("/");
+    refresTokenCookie.setHttpOnly(true);
+    refresTokenCookie.setMaxAge(0);
+    response.addCookie(refresTokenCookie);
 
-    Cookie cookie = new Cookie("refreshToken", null);
-    cookie.setPath("/");
-    cookie.setHttpOnly(true);
-    cookie.setMaxAge(0);
-    response.addCookie(cookie);
+    Cookie sessionTokenCookie = new Cookie("sessionToken", null);
+    sessionTokenCookie.setPath("/");
+    sessionTokenCookie.setHttpOnly(true);
+    sessionTokenCookie.setMaxAge(0);
+    response.addCookie(sessionTokenCookie);
     SecurityContextHolder.clearContext();
     return "User successfully logged out";
   }
@@ -214,5 +266,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .replaceQuery(null)
         .build()
         .toUriString();
+  }
+
+  private String generateSessionToken() {
+    return UUID.randomUUID().toString();
+  }
+
+  private boolean hasActiveSession(String userEmail) {
+    String activeSessionToken =
+        (String) redisTemplate.opsForValue().get("active_session:" + userEmail);
+
+    return activeSessionToken != null; // If found, user has an active session
   }
 }

@@ -3,6 +3,7 @@ package com.codeplanks.home360.config;
 
 import com.codeplanks.home360.exception.CustomAccessDeniedHandler;
 import com.codeplanks.home360.filters.JwtAuthenticationFilter;
+import com.codeplanks.home360.filters.SessionTokenFilter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,21 +31,25 @@ public class SecurityConfiguration {
   private final JwtAuthenticationFilter jwtAuthFilter;
   private final AuthenticationProvider authenticationProvider;
   private final String allowedOrigins;
+  private final SessionTokenFilter sessionTokenFilter;
 
   public SecurityConfiguration(
       JwtAuthenticationFilter jwtAuthFilter,
       AuthenticationProvider authenticationProvider,
-      @Value("${cors.allowed-origins}") String allowedOrigins) {
+      @Value("${cors.allowed-origins}") String allowedOrigins,
+      SessionTokenFilter sessionTokenFilter) {
     this.jwtAuthFilter = jwtAuthFilter;
     this.authenticationProvider = authenticationProvider;
     this.allowedOrigins = allowedOrigins;
+    this.sessionTokenFilter = sessionTokenFilter;
   }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity
         .addFilterBefore(new TrailingSlashRedirectFilter(), ChannelProcessingFilter.class)
-        .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
+        .addFilterBefore(sessionTokenFilter, BasicAuthenticationFilter.class)
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .cors(Customizer.withDefaults())
         .csrf()
         .disable()
