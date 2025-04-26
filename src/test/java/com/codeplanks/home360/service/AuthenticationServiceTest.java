@@ -14,6 +14,7 @@ import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import com.codeplanks.home360.event.listener.RegistrationCompleteEventListener;
+import com.codeplanks.home360.exception.DuplicateSessionException;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UserAlreadyExistsException;
 import com.codeplanks.home360.repository.*;
@@ -24,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +37,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,6 +71,9 @@ class AuthenticationServiceTest {
   @Mock private BlacklistedTokenRepository blacklistedTokenRepository;
   @Mock private HttpServletResponse response;
   @Mock private Cookie cookie;
+  @Mock private RedisTemplate<String, Object> redisTemplate;
+  @Mock private HashOperations<String, Object, Object> hashOperations;
+  @Mock private ValueOperations<String, Object> valueOperations;
 
   private RegisterRequest request;
   private AppUser user;
@@ -88,8 +96,12 @@ class AuthenticationServiceTest {
   @Value("${application.security.newPassword}")
   private String newPassword;
 
+  private SessionUserInfo sessionUserInfo;
+
   @BeforeEach
   public void setup() {
+    sessionUserInfo = new SessionUserInfo("FireFox", "Win10", "Desktop", "192.168.254.5");
+
     request =
         RegisterRequest.builder()
             .firstName("Elaeis")
@@ -178,18 +190,28 @@ class AuthenticationServiceTest {
   @Test
   public void givenAppUserCredentials_whenLoginUser_thenReturnAppUser() {
     // Given
+
     AuthenticationRequest authRequest =
         new AuthenticationRequest("elaeis@example.com", userPassword);
-//    given(userService.emailExists(authRequest.getEmail())).willReturn(true);
+
     given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .willReturn(authentication);
-//    given(authentication.isAuthenticated()).willReturn(true);
+
     given(userService.getUser(authRequest.getEmail().toLowerCase())).willReturn(user);
     given(jwtService.generateToken(user)).willReturn(token);
     given(refreshTokenService.generateRefreshToken(user)).willReturn(refreshToken);
 
+    //      given(redisTemplate.hasKey(startsWith("session:"))).willReturn(false);
+
+    given(redisTemplate.opsForHash()).willReturn(hashOperations);
+
+    given(redisTemplate.opsForValue())
+        .willReturn(valueOperations); // Ensure opsForValue() returns mock
+
+    doNothing().when(hashOperations).put(any(), any(), any());
+
     // When
-    AuthenticationResponse response = authenticationService.login(authRequest);
+    AuthenticationResponse response = authenticationService.login(authRequest, sessionUserInfo);
 
     // Then
     assertAll(
@@ -204,22 +226,54 @@ class AuthenticationServiceTest {
     verify(refreshTokenService, times(1)).generateRefreshToken(user);
   }
 
+  @DisplayName("user cannot login if an active session exists")
+  @Test
+  void givenActiveSessionWhenUserLoginThenThrowDuplicateSessionException() {
+    // Given
+    AuthenticationRequest authRequest =
+        new AuthenticationRequest("elaeis@example.com", userPassword);
+
+    given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+        .willReturn(authentication);
+
+    given(userService.getUser(authRequest.getEmail().toLowerCase())).willReturn(user);
+
+    // Simulate Redis returning an active session
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get("active_session:" + user.getEmail()))
+        .willReturn("existingSessionToken");
+
+    // When & Then
+    assertThrows(
+        DuplicateSessionException.class,
+        () -> authenticationService.login(authRequest, sessionUserInfo));
+
+    verify(authenticationManager, times(1))
+        .authenticate(any(UsernamePasswordAuthenticationToken.class));
+    verify(userService, times(1)).getUser(authRequest.getEmail().toLowerCase());
+    verify(valueOperations, times(1))
+        .get("active_session:" + user.getEmail()); // Ensure Redis lookup happens
+  }
+
   @DisplayName("incorrect user email login")
   @Test
   public void givenNonExistentAppUser_whenUserLogin_thenThrowsException() {
     // Given
     AuthenticationRequest authRequest =
         new AuthenticationRequest("nonexistent@example.com", "password123");
-//    given(userService.emailExists(authRequest.getEmail())).willReturn(false);
+    //    given(userService.emailExists(authRequest.getEmail())).willReturn(false);
 
-    given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).willThrow(new BadCredentialsException("Incorrect username/password"));
+    given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+        .willThrow(new BadCredentialsException("Incorrect username/password"));
     // When
-    assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
+    assertThrows(
+        BadCredentialsException.class,
+        () -> authenticationService.login(authRequest, sessionUserInfo));
 
     // Then
 
     verify(authenticationManager, times(1))
-            .authenticate(any(UsernamePasswordAuthenticationToken.class));
+        .authenticate(any(UsernamePasswordAuthenticationToken.class));
     verify(userService, never()).getUser(any());
   }
 
@@ -235,7 +289,8 @@ class AuthenticationServiceTest {
 
     // When
     assertThrows(
-        BadCredentialsException.class, () -> authenticationService.login(authenticationRequest));
+        BadCredentialsException.class,
+        () -> authenticationService.login(authenticationRequest, sessionUserInfo));
 
     // Then
     verify(authenticationManager, times(1))
@@ -357,13 +412,14 @@ class AuthenticationServiceTest {
     String token = "valid_access_token";
     String refreshToken = "valid_refresh_token";
     LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+    String sessionToken = "kdjfeuieyieroerieuife";
 
     given(jwtUtils.extractRefreshTokenFromRequest(servletRequest)).willReturn(refreshToken);
 
     doNothing().when(refreshTokenRepository).deleteByToken(refreshToken);
 
     // When
-    String result = authenticationService.logout(token, servletRequest, response);
+    String result = authenticationService.logout(token, servletRequest, response, sessionToken);
 
     // Then
     assertThat(result).isEqualTo("User successfully logged out");
@@ -371,12 +427,21 @@ class AuthenticationServiceTest {
 
     // Verify that cookie was cleared
     ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-    verify(response, times(1)).addCookie(cookieCaptor.capture());
+    verify(response, times(2)).addCookie(cookieCaptor.capture());
 
-    Cookie clearedCookie = cookieCaptor.getValue();
-    assertThat(clearedCookie.getName()).isEqualTo("refreshToken");
-    assertThat(clearedCookie.getValue()).isNull();
-    assertThat(clearedCookie.getMaxAge()).isEqualTo(0);
+    List<Cookie> clearedCookies = cookieCaptor.getAllValues();
+
+    assertThat(clearedCookies.size()).isEqualTo(2);
+
+    Cookie refreshTokenCookie = clearedCookies.get(0);
+    assertThat(refreshTokenCookie.getName()).isEqualTo("refreshToken");
+    assertThat(refreshTokenCookie.getValue()).isNull();
+    assertThat(refreshTokenCookie.getMaxAge()).isEqualTo(0);
+
+    Cookie sessionTokenCookie = clearedCookies.get(1);
+    assertThat(sessionTokenCookie.getName()).isEqualTo("sessionToken");
+    assertThat(sessionTokenCookie.getValue()).isNull();
+    assertThat(sessionTokenCookie.getMaxAge()).isEqualTo(0);
   }
 
   @Test
@@ -384,16 +449,26 @@ class AuthenticationServiceTest {
   void givenNoRefreshToken_whenLogout_thenInvalidateTokenAndClearCookie() {
     // Given
     String token = "valid-access-token";
-    LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+    String sessionToken = "kdjfeuieyieroerieuife";
 
     given(jwtUtils.extractRefreshTokenFromRequest(servletRequest)).willReturn(null);
 
     // When
-    String result = authenticationService.logout(token, servletRequest, response);
+    String result = authenticationService.logout(token, servletRequest, response, sessionToken);
 
     // Then
     assertThat(result).isEqualTo("User successfully logged out");
     verify(refreshTokenRepository, never()).deleteByToken(anyString());
-    verify(response, times(1)).addCookie(any(Cookie.class));
+
+    ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
+    verify(response, times(2)).addCookie(cookieCaptor.capture());
+
+    List<Cookie> clearedCookies = cookieCaptor.getAllValues();
+    assertThat(clearedCookies.size()).isEqualTo(2);
+
+    Cookie sessionTokenCookie = clearedCookies.get(1);
+    assertThat(sessionTokenCookie.getName()).isEqualTo("sessionToken");
+    assertThat(sessionTokenCookie.getValue()).isNull();
+    assertThat(sessionTokenCookie.getMaxAge()).isEqualTo(0);
   }
 }

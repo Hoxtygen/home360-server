@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.codeplanks.home360.domain.token;
 
 import lombok.AllArgsConstructor;
@@ -12,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class TokenResponse {
   private String accessToken;
   private String refreshToken;
+  private String sessionToken;
 }
