@@ -207,12 +207,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String refreshToken = jwtUtils.extractRefreshTokenFromRequest(request);
     String sessionKey = "session:" + sessionToken;
     String userEmail = jwtUtils.extractSubject(accessToken);
-
+    String activeSession = "active_session:" + userEmail;
     try {
       jwtUtils.invalidateToken(accessToken);
 
       redisTemplate.delete(sessionKey);
-      redisTemplate.delete("active_session" + userEmail);
+      redisTemplate.delete(activeSession);
 
       if (userEmail != null) {
         logger.info("Access token blacklisted for user: {}", userEmail);
