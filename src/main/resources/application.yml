@@ -5,7 +5,6 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE}
 
-
 springdoc:
   api-docs:
     path: /v1/api-docs
