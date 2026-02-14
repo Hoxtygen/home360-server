@@ -89,8 +89,24 @@ class VerificationTokenRepositoryTest {
     String uuidToken = UUID.randomUUID().toString();
     VerificationToken token = VerificationToken.builder().token(uuidToken).user(appUser).build();
     String uuidToken1 = UUID.randomUUID().toString();
-    VerificationToken token1 = VerificationToken.builder().token(uuidToken1).user(appUser).build();
+
+    AppUser appUser2 =
+        AppUser.builder()
+            .firstName("Jane")
+            .lastName("Doe")
+            .email("jane.doe@example.com")
+            .address("221B, Baker street, London")
+            .phoneNumber("08030123457")
+            .password(userPassword)
+            .role(Role.USER)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
     userRepository.save(appUser);
+    userRepository.save(appUser2);
+
+    VerificationToken token1 = VerificationToken.builder().token(uuidToken1).user(appUser2).build();
+
     verificationTokenRepository.save(token);
     verificationTokenRepository.save(token1);
 

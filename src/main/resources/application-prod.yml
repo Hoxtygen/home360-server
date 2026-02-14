@@ -15,6 +15,13 @@ spring:
     type: redis
   redis:
     url: ${SPRING_PROD_REDIS_URL}
+  jackson:
+    time-zone: UTC
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
 
   application:
     name: Home360
@@ -53,7 +60,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

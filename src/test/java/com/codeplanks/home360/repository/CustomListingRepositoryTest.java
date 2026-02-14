@@ -59,10 +59,11 @@ class CustomListingRepositoryTest {
     Query capturedQuery = queryCaptor.getValue();
 
     assertThat(capturedQuery.getQueryObject().get("address.city")).isEqualTo(city);
-    assertThat(capturedQuery.getQueryObject().get("cost.annualRent"))
+    assertThat(capturedQuery.getQueryObject().get("cost.annual_rent"))
         .isEqualTo(new Criteria().gte(annualRent).getCriteriaObject());
-    assertThat(capturedQuery.getQueryObject().get("apartmentInfo.apartmentType"))
-        .isEqualTo(apartmentType);
+    assertThat(capturedQuery.getQueryObject().get("apartment_info.apartment_type"))
+        .isEqualTo(apartmentType.toUpperCase());
+    assertThat(capturedQuery.getQueryObject().get("rented")).isEqualTo(false);
 
     Document sortDocument = capturedQuery.getSortObject();
     assertThat(sortDocument).isNotNull();

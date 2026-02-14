@@ -1,0 +1,44 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  data:
+    mongodb:
+      authentication-database: admin
+      database: testdb
+      uri: mongodb://localhost:27017/testdb
+      embedded:
+        enabled: true
+
+application:
+  security:
+    token: ${SPRING_SECURITY_TOKEN_TEST:dummy_token}
+    password: ${SPRING_SECURITY_PASSWORD_TEST:dummy_password}
+    newPassword: ${SPRING_SECURITY_NEW_PASSWORD_TEST:dummy_new_password}
+
+  frontend:
+    url: http://localhost:3000
+    password-reset-request:
+      url: http://localhost:3000/auth/password-reset-request
+    reset-password:
+      url: http://localhost:3000/auth/reset-password
+    verify-email:
+      url: http://localhost:3000/auth/email-verify
+    user-listings-url:
+      url: http://localhost:3000/listings/userlistings

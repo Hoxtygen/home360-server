@@ -29,8 +29,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
   public Object resolveArgument(@NonNull MethodParameter parameter, @NonNull Message<?> message)
       throws Exception {
     StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-    Authentication authentication =
-        (Authentication) accessor.getSessionAttributes().get("SPRING_SECURITY_CONTEXT");
+    Authentication authentication = (Authentication) accessor.getUser();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       throw new UnAuthorizedException("User is not authenticated");
     }

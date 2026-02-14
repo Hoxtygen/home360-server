@@ -1,8 +1,10 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360;
 
+import com.codeplanks.home360.config.configProperties.WebsocketBrokerProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableTransactionManagement
 @EnableCaching
 @EnableJpaRepositories(basePackages = "com.codeplanks.home360.repository")
+@EnableConfigurationProperties(WebsocketBrokerProperties.class)
 public class Home360Application {
   public static void main(String[] args) {
     SpringApplication.run(Home360Application.class, args);

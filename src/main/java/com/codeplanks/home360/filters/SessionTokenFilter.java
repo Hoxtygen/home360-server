@@ -57,14 +57,11 @@ public class SessionTokenFilter extends OncePerRequestFilter {
         if (sessionToken.equals(activeSessionToken)) {
           request.setAttribute("sessionValid", true);
           request.setAttribute("sessionUserEmail", userEmail);
-
-          logger.info("Valid session token found for user: " + userEmail);
           filterChain.doFilter(request, response);
-          return;
         }
 
       } else {
-        logger.warn("Invalid or expired session token: {}" + sessionToken);
+        logger.warn("Invalid or expired session token: {}" + sessionToken.substring(7));
         sendUnauthorizedError(request, response);
       }
       return;

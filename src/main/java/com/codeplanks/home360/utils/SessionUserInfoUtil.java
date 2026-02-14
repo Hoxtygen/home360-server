@@ -2,34 +2,52 @@
 package com.codeplanks.home360.utils;
 
 import com.blueconic.browscap.Capabilities;
-import com.blueconic.browscap.ParseException;
 import com.blueconic.browscap.UserAgentParser;
-import com.blueconic.browscap.UserAgentService;
 import com.codeplanks.home360.domain.auth.SessionUserInfo;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
 public class SessionUserInfoUtil {
-  public static SessionUserInfo extractSessionUserInfo(HttpServletRequest httpServletRequest)
-      throws IOException, ParseException {
 
-    String userAgentString = httpServletRequest.getHeader("User-Agent");
+  private final UserAgentParser parser;
 
-    final UserAgentParser parser = new UserAgentService().loadParser();
+  public SessionUserInfo extractSessionUserInfo(HttpServletRequest request) {
+    String userAgent = request.getHeader("User-Agent");
+    String remoteAddress =
+            Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                    .orElse(request.getRemoteAddr());
 
-    final Capabilities capabilities = parser.parse(userAgentString);
+    if (userAgent == null) {
+      return unknown(remoteAddress);
+    }
 
-    final String browser = capabilities.getBrowser();
-    final String deviceType = capabilities.getDeviceType();
-    final String platform = capabilities.getPlatform();
+    try {
+      Capabilities capabilities = parser.parse(userAgent);
+      return SessionUserInfo.builder()
+              .browserName(capabilities.getBrowser())
+              .operatingSystem(capabilities.getPlatform())
+              .deviceType(capabilities.getDeviceType())
+              .remoteAddress(remoteAddress)
+              .build();
+    } catch (Exception e) {
+      log.debug("Failed to parse user agent", e);
+      return unknown(remoteAddress);
+    }
+  }
 
-    String remoteAddress = httpServletRequest.getRemoteAddr();
-
+  private SessionUserInfo unknown(String remoteAddress) {
     return SessionUserInfo.builder()
-        .browserName(browser)
-        .operatingSystem(platform)
-        .deviceType(deviceType)
-        .remoteAddress(remoteAddress)
-        .build();
+            .browserName("Unknown")
+            .operatingSystem("Unknown")
+            .deviceType("Unknown")
+            .remoteAddress(remoteAddress)
+            .build();
   }
 }

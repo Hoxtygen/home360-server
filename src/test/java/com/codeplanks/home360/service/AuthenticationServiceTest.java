@@ -468,4 +468,27 @@ class AuthenticationServiceTest {
     assertThat(sessionTokenCookie.getValue()).isNull();
     assertThat(sessionTokenCookie.getMaxAge()).isEqualTo(0);
   }
+
+  @Test
+  @DisplayName("Logout should work even when JWT is expired")
+  void logoutWithExpiredToken() {
+    // Given
+    String token = "expired_token";
+    String sessionToken = "session_token";
+    String sessionKey = "session:" + sessionToken;
+    String userEmail = "elaeis@example.com";
+
+    given(jwtUtils.extractSubject(token)).willThrow(new RuntimeException("Token expired"));
+    given(redisTemplate.opsForHash()).willReturn(hashOperations);
+    given(hashOperations.get(sessionKey, "email")).willReturn(userEmail);
+
+    // When
+    String result = authenticationService.logout(token, servletRequest, response, sessionToken);
+
+    // Then
+    assertThat(result).isEqualTo("User successfully logged out");
+    verify(redisTemplate).delete(sessionKey);
+    verify(redisTemplate).delete("active_session:" + userEmail);
+    verify(response, times(2)).addCookie(any(Cookie.class));
+  }
 }

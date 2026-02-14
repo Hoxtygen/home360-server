@@ -98,24 +98,18 @@ public class CustomListingRepositoryImpl implements CustomListingRepository {
 
   private Query constructFilterQuery(String city, int annualRent, String apartmentType) {
     Query query = new Query();
-    Map<String, Criteria> criteriaMap = new HashMap<>();
-    Criteria cityCriteria = Criteria.where("address.city").is(city);
-    Criteria annualRentCriteria = Criteria.where("cost.annualRent").gte(annualRent);
-    Criteria apartmentTypeCriteria =
-        Criteria.where("apartmentInfo.apartmentType").is(apartmentType);
-    Criteria apartmentAvailableCriteria = Criteria.where("available").is(true);
 
     if (city != null && !city.isEmpty()) {
-      criteriaMap.put("address.city", cityCriteria);
+      query.addCriteria(Criteria.where("address.city").is(city));
     }
 
     if (apartmentType != null && !apartmentType.isEmpty()) {
-      criteriaMap.put("apartmentInfo.apartmentType", apartmentTypeCriteria);
+      query.addCriteria(
+          Criteria.where("apartment_info.apartment_type").is(apartmentType.toUpperCase()));
     }
-    criteriaMap.put("cost.annualRent", annualRentCriteria);
-    criteriaMap.put("available", apartmentAvailableCriteria);
 
-    criteriaMap.values().forEach(query::addCriteria);
+    query.addCriteria(Criteria.where("cost.annual_rent").gte(annualRent));
+    query.addCriteria(Criteria.where("rented").is(false));
 
     return query;
   }
