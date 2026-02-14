@@ -2,6 +2,7 @@
 package com.codeplanks.home360.repository;
 
 import com.codeplanks.home360.domain.refreshToken.RefreshToken;
+import com.codeplanks.home360.domain.user.AppUser;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Integer> {
   Optional<RefreshToken> findByToken(String token);
+
+  Optional<RefreshToken> findByUser(AppUser user);
 
   @Transactional
   void deleteByToken(String token);

@@ -3,7 +3,6 @@ package com.codeplanks.home360.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.mongodb.MongoSocketOpenException;
-import com.sun.mail.util.MailConnectException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.io.SerializationException;
 import jakarta.mail.AuthenticationFailedException;
@@ -14,6 +13,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import org.eclipse.angus.mail.util.MailConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;

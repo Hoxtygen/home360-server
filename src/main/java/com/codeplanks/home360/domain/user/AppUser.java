@@ -73,6 +73,7 @@ public class AppUser implements UserDetails {
   private Role role;
 
   @Column(name = "isEnabled", columnDefinition = "boolean default false")
+  @Builder.Default
   private boolean isEnabled = false;
 
   public AppUser(

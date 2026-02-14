@@ -44,6 +44,28 @@ services:
       timeout: 10s
       retries: 3
 
+  rabbitmq:
+    image: rabbitmq:4.2-management-alpine
+    container_name: home360-rabbitmq
+    ports:
+      - "5672:5672" # Standard AMQP port
+      - "61613:61613" # STOMP port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Enable the STOMP plugin
+    command: >
+      sh -c "rabbitmq-plugins enable --offline rabbitmq_stomp && rabbitmq-server"
+      
+
   app:
     build:
       context: .
@@ -52,6 +74,7 @@ services:
       - postgres
       - mongo
       - redis
+      - rabbitmq
     restart: on-failure
     container_name: home360-server
     healthcheck:

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class RateLimitingFilter implements Filter {
   private static final Logger logger = LoggerFactory.getLogger(RateLimitingFilter.class);
   private final ObjectMapper objectMapper = new ObjectMapper();
