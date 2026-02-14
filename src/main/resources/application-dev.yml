@@ -68,8 +68,8 @@ spring:
       enabled: DETECT
   datasource:
     url: jdbc:postgresql://localhost:5432/home360_dev
-    username: hoxtygen
-    password: postgres
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
