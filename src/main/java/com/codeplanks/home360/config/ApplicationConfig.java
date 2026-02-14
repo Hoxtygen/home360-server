@@ -13,11 +13,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.blueconic.browscap.UserAgentParser;
+import com.blueconic.browscap.UserAgentService;
+import com.blueconic.browscap.ParseException;
+import java.io.IOException;
 
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
   private final UserRepository userRepository;
+
+  @Bean
+  public UserAgentParser userAgentParser() throws IOException, ParseException {
+    return new UserAgentService().loadParser();
+  }
 
   @Bean
   public UserDetailsService userDetailsService() {

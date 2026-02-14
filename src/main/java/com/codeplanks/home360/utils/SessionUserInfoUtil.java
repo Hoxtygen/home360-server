@@ -3,59 +3,51 @@ package com.codeplanks.home360.utils;
 
 import com.blueconic.browscap.Capabilities;
 import com.blueconic.browscap.UserAgentParser;
-import com.blueconic.browscap.UserAgentService;
 import com.codeplanks.home360.domain.auth.SessionUserInfo;
 import jakarta.servlet.http.HttpServletRequest;
-
-
-import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class SessionUserInfoUtil {
 
-  private UserAgentParser parser;
+  private final UserAgentParser parser;
 
-  @PostConstruct
-  public void init() {
+  public SessionUserInfo extractSessionUserInfo(HttpServletRequest request) {
+    String userAgent = request.getHeader("User-Agent");
+    String remoteAddress =
+            Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                    .orElse(request.getRemoteAddr());
+
+    if (userAgent == null) {
+      return unknown(remoteAddress);
+    }
+
     try {
-      this.parser = new UserAgentService().loadParser();
+      Capabilities capabilities = parser.parse(userAgent);
+      return SessionUserInfo.builder()
+              .browserName(capabilities.getBrowser())
+              .operatingSystem(capabilities.getPlatform())
+              .deviceType(capabilities.getDeviceType())
+              .remoteAddress(remoteAddress)
+              .build();
     } catch (Exception e) {
-      log.error("Failed to initialize UserAgentParser. User agent detection will be limited.", e);
+      log.debug("Failed to parse user agent", e);
+      return unknown(remoteAddress);
     }
   }
 
-  public SessionUserInfo extractSessionUserInfo(HttpServletRequest httpServletRequest) {
-    String userAgentString = httpServletRequest.getHeader("User-Agent");
-    String remoteAddress = httpServletRequest.getRemoteAddr();
-
-    if (parser == null || userAgentString == null) {
-      return SessionUserInfo.builder()
-          .browserName("Unknown")
-          .operatingSystem("Unknown")
-          .deviceType("Unknown")
-          .remoteAddress(remoteAddress)
-          .build();
-    }
-
-    try {
-      final Capabilities capabilities = parser.parse(userAgentString);
-      return SessionUserInfo.builder()
-          .browserName(capabilities.getBrowser())
-          .operatingSystem(capabilities.getPlatform())
-          .deviceType(capabilities.getDeviceType())
-          .remoteAddress(remoteAddress)
-          .build();
-    } catch (Exception e) {
-      log.warn("Failed to parse user agent string: {}", userAgentString);
-      return SessionUserInfo.builder()
-          .browserName("Unknown")
-          .operatingSystem("Unknown")
-          .deviceType("Unknown")
-          .remoteAddress(remoteAddress)
-          .build();
-    }
+  private SessionUserInfo unknown(String remoteAddress) {
+    return SessionUserInfo.builder()
+            .browserName("Unknown")
+            .operatingSystem("Unknown")
+            .deviceType("Unknown")
+            .remoteAddress(remoteAddress)
+            .build();
   }
 }
