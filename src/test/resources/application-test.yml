@@ -28,9 +28,9 @@ spring:
 
 application:
   security:
-    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtaW1vc2FAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTExNjcxNjEsImV4cCI6MTY5MTE2ODYwMX0.J8NrbPaIMw8VZWUz5uxZ_aGGTPJnNnn3bn_h0aNXiKGcKQnbMXDha5XpSvlA2WRVzU55jNf_qx9wyc5xH3z7BQ
-    password: Int3rnat!onalization
-    newPassword: Int3rnat!on
+    token: ${SPRING_SECURITY_TOKEN_TEST:dummy_token}
+    password: ${SPRING_SECURITY_PASSWORD_TEST:dummy_password}
+    newPassword: ${SPRING_SECURITY_NEW_PASSWORD_TEST:dummy_new_password}
 
   frontend:
     url: http://localhost:3000
