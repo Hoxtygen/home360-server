@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,16 +22,24 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
   private final JwtService jwtService;
-  @Autowired private RefreshTokenRepository refreshTokenRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
 
   @Override
   public RefreshToken generateRefreshToken(AppUser user) {
-    RefreshToken refreshToken =
-        RefreshToken.builder()
-            .user(user)
-            .token(UUID.randomUUID().toString())
-            .expiryDate(LocalDateTime.now().plusSeconds(259200))
-            .build();
+    Optional<RefreshToken> oldToken = refreshTokenRepository.findByUser(user);
+    RefreshToken refreshToken;
+    if (oldToken.isPresent()) {
+      refreshToken = oldToken.get();
+      refreshToken.setToken(UUID.randomUUID().toString());
+      refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(259200));
+    } else {
+      refreshToken =
+          RefreshToken.builder()
+              .user(user)
+              .token(UUID.randomUUID().toString())
+              .expiryDate(LocalDateTime.now().plusSeconds(259200))
+              .build();
+    }
     return refreshTokenRepository.save(refreshToken);
   }
 

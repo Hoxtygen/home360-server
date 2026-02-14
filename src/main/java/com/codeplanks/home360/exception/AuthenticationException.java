@@ -1,33 +1,24 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-public class AuthenticationException {
-  private final String message;
-  private final HttpStatusCode statusCode;
+public class AuthenticationException extends RuntimeException {
 
-  public AuthenticationException(String message, HttpStatusCode statusCode) {
-    this.message = message;
-    this.statusCode = statusCode;
+  private final HttpStatusCode status;
+
+  public AuthenticationException(String message, HttpStatusCode status) {
+    super(message);
+    this.status = status;
   }
 
-  public String getMessage() {
-    return message;
+  public AuthenticationException(String message) {
+    this(message, HttpStatus.UNAUTHORIZED);
   }
 
-  public HttpStatusCode getStatusCode() {
-    return statusCode;
-  }
-
-  @Override
-  public String toString() {
-    return "AuthenticationException{"
-        + "message='"
-        + message
-        + '\''
-        + ", statusCode="
-        + statusCode
-        + '}';
+  public HttpStatusCode status() {
+    return status;
   }
 }
+

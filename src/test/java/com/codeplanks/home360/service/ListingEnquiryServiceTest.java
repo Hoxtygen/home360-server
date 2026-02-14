@@ -630,9 +630,9 @@ class ListingEnquiryServiceTest {
         new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId, senderId);
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
     // Mock the dependencies
-    given(userService.getUserByUserId(1)).willReturn(john);
-    given(userService.getUserByUserId(2)).willReturn(jane);
-    given(mongoTemplate.updateFirst(eq(query), any(Update.class), eq(ListingEnquiry.class)))
+    // given(userService.getUserByUserId(1)).willReturn(john);
+    // given(userService.getUserByUserId(2)).willReturn(jane);
+    given(mongoTemplate.updateFirst(any(Query.class), any(Update.class), eq(ListingEnquiry.class)))
         .willReturn(UpdateResult.acknowledged(1L, 1L, null));
 
     // When
@@ -656,20 +656,20 @@ class ListingEnquiryServiceTest {
         new ListingEnquiryMessageReplyDTO(1, 2, "Hello", invalidEnquiryMessageId, senderId);
     Query query = new Query(Criteria.where("_id").is(invalidEnquiryMessageId));
 
-    given(userService.getUserByUserId(1)).willReturn(john);
-    given(userService.getUserByUserId(2)).willReturn(jane);
-    given(mongoTemplate.updateFirst(eq(query), any(Update.class), eq(ListingEnquiry.class)))
+    // given(userService.getUserByUserId(1)).willReturn(john);
+    // given(userService.getUserByUserId(2)).willReturn(jane);
+    given(mongoTemplate.updateFirst(any(Query.class), any(Update.class), eq(ListingEnquiry.class)))
         .willReturn(UpdateResult.acknowledged(0L, 0L, null));
 
     // When
-    NotFoundException exception =
+    AccessDeniedException exception =
         assertThrows(
-            NotFoundException.class,
+            AccessDeniedException.class,
             () ->
                 listingEnquiryService.addReplyMessage(invalidEnquiryMessageId, replyDTO, senderId));
 
     // Then
-    assertThat(exception.getMessage()).isEqualTo("EnquiryId does not exist");
+    assertThat(exception.getMessage()).isEqualTo("Enquiry not found or you are not authorized to reply to it.");
   }
 
   @Test
@@ -698,16 +698,18 @@ class ListingEnquiryServiceTest {
     ListingEnquiryMessageReplyDTO replyDTO =
         new ListingEnquiryMessageReplyDTO(99, 100, "Hello", enquiryMessageId, senderId);
 
-    given(userService.getUserByUserId(99)).willThrow(new NotFoundException("User not found"));
+    // given(userService.getUserByUserId(99)).willThrow(new NotFoundException("User not found"));
+    given(mongoTemplate.updateFirst(any(Query.class), any(Update.class), eq(ListingEnquiry.class)))
+        .willReturn(UpdateResult.acknowledged(0L, 0L, null));
 
     // When
-    NotFoundException exception =
+    AccessDeniedException exception =
         assertThrows(
-            NotFoundException.class,
+            AccessDeniedException.class,
             () -> listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO, senderId));
 
     // Then
-    assertThat(exception.getMessage()).isEqualTo("User not found");
+    assertThat(exception.getMessage()).isEqualTo("Enquiry not found or you are not authorized to reply to it.");
   }
 
   @Test
@@ -720,19 +722,19 @@ class ListingEnquiryServiceTest {
         new ListingEnquiryMessageReplyDTO(1, 2, "Hello", enquiryMessageId, senderId);
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
 
-    given(userService.getUserByUserId(1)).willReturn(john);
-    given(userService.getUserByUserId(2)).willReturn(jane);
-    given(mongoTemplate.updateFirst(eq(query), any(Update.class), eq(ListingEnquiry.class)))
-        .willReturn(UpdateResult.acknowledged(1L, 0L, null));
+    // given(userService.getUserByUserId(1)).willReturn(john);
+    // given(userService.getUserByUserId(2)).willReturn(jane);
+    given(mongoTemplate.updateFirst(any(Query.class), any(Update.class), eq(ListingEnquiry.class)))
+        .willReturn(UpdateResult.acknowledged(0L, 0L, null));
 
     // When
-    NotFoundException exception =
+    AccessDeniedException exception =
         assertThrows(
-            NotFoundException.class,
+            AccessDeniedException.class,
             () -> listingEnquiryService.addReplyMessage(enquiryMessageId, replyDTO, senderId));
 
     // Then
-    assertThat(exception.getMessage()).isEqualTo("EnquiryId");
+    assertThat(exception.getMessage()).isEqualTo("Enquiry not found or you are not authorized to reply to it.");
   }
 
   @Test

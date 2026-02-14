@@ -76,7 +76,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
 
   @Cacheable(
       value = "agentListingEnquiries",
-      key = "#agentId + '::page::' + #page + '::size::' + #size")
+      key =
+          "#agentId + '::senderId::' + #senderId + '::page::' + #page + '::size::' + #size")
   @Override
   public PaginatedListingEnquiriesResponse getListingEnquiries(
       int page, int size, Integer senderId, int agentId) {
@@ -125,9 +126,39 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     if (reply == null) {
       throw new IllegalArgumentException("Message reply cannot be null or blank");
     }
-    validateUserIds(reply.getAgentId(), reply.getEnquirerId());
-    Query query = createQuery(enquiryMessageId);
-    return addEnquiryReply(query, reply, senderId);
+
+    // 1. Create the reply object
+    ListingEnquiryMessageReply newReply =
+        ListingEnquiryMessageReply.builder()
+            .agentId(reply.getAgentId())
+            .enquirerId(reply.getEnquirerId())
+            .senderId(senderId)
+            .content(reply.getContent())
+            .id(UUID.randomUUID().toString())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+    // 2. Create a single, atomic, authorizing query
+    Query query =
+        new Query(
+            Criteria.where("_id")
+                .is(enquiryMessageId)
+                .orOperator(
+                    Criteria.where("agentId").is(senderId), Criteria.where("userId").is(senderId)));
+
+    // 3. Create the update operation
+    Update update = new Update().push("replies", newReply);
+
+    // 4. Execute the update
+    UpdateResult result = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
+
+    // 5. Check if the update was successful
+    if (result.getMatchedCount() == 0) {
+      // This means either the enquiry doesn't exist OR the user is not authorized
+      throw new AccessDeniedException("Enquiry not found or you are not authorized to reply to it.");
+    }
+
+    return newReply;
   }
 
   @Cacheable(value = "enquiriesByListingId", key = "#listingId")
@@ -168,37 +199,5 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     Update update = new Update().set("read", true);
     UpdateResult updateResult = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
     return updateResult.getModifiedCount() > 0;
-  }
-
-  private ListingEnquiryMessageReply addEnquiryReply(
-      Query query, ListingEnquiryMessageReplyDTO messageReply, int senderId) {
-    if (messageReply == null) {
-      throw new IllegalArgumentException("Message reply cannot be null");
-    }
-    ListingEnquiryMessageReply reply =
-        ListingEnquiryMessageReply.builder()
-            .agentId(messageReply.getAgentId())
-            .enquirerId(messageReply.getEnquirerId())
-            .senderId(senderId)
-            .content(messageReply.getContent())
-            .id(UUID.randomUUID().toString())
-            .createdAt(LocalDateTime.now())
-            .build();
-
-    Update update = new Update().push("replies", reply);
-    UpdateResult result = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
-    if (result.getMatchedCount() == 0) {
-      throw new NotFoundException("EnquiryId does not exist");
-    }
-    if (result.getModifiedCount() == 0) {
-      throw new NotFoundException("EnquiryId");
-    }
-
-    return reply;
-  }
-
-  private void validateUserIds(Integer agentId, Integer enquirerId) {
-    userService.getUserByUserId(agentId);
-    userService.getUserByUserId(enquirerId);
   }
 }

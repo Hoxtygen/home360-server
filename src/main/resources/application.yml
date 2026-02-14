@@ -3,7 +3,8 @@ server:
 
 spring:
   profiles:
-    active: ${ACTIVE_PROFILE}
+    active: dev
+
 
 springdoc:
   api-docs:

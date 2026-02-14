@@ -1,11 +1,22 @@
 server:
   port: 8080
 
+allowed:
+  origins: http://localhost:3000
+
 springdoc:
   api-docs:
     path: /v3/api/docs
   swagger-ui:
     path: /swagger-ui.html
+
+websocket:
+  broker:
+    relayHost: ${SPRING_WEBSOCKET_BROKER_RELAY_HOST:localhost}
+    brokerPort: ${SPRING_WEBSOCKET_BROKER_RELAY_PORT:61613}
+    clientLogin: ${SPRING_WEBSOCKET_BROKER_CLIENT_LOGIN:guest}
+    clientPasscode: ${SPRING_WEBSOCKET_BROKER_CLIENT_PASSCODE:guest}
+
 
 cors:
   allowed-origins: ${SPRING_ALLOWED_ORIGINS}
@@ -16,6 +27,13 @@ spring:
   config:
     activate:
       on-profile: dev
+  jackson:
+    time-zone: UTC
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
 
   cache:
     type: redis
@@ -50,16 +68,18 @@ spring:
       enabled: DETECT
   datasource:
     url: jdbc:postgresql://localhost:5432/home360_dev
-    username: postgres
-    password: postgres
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          time_zone: UTC
       database: postgresql
     show-sql: true
   main:

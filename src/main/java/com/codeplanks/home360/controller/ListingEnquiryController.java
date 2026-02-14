@@ -23,8 +23,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -271,17 +273,18 @@ public class ListingEnquiryController {
         })
   })
   @MessageMapping("/chat/{enquiryId}/sendMessage")
-  @SendTo("/topic/public/{enquiryId}")
-  public ResponseEntity<SuccessDataResponse<ListingEnquiryMessageReply>> sendEnquiryReply(
+  @SendTo("/topic/public.{enquiryId}")
+  public ListingEnquiryMessageReply sendEnquiryReply(
       @DestinationVariable String enquiryId,
       @Payload ListingEnquiryMessageReplyDTO replyMessage,
       @CurrentUser AppUser currentUser) {
-    SuccessDataResponse<ListingEnquiryMessageReply> response = new SuccessDataResponse<>();
-    response.setData(
-        listingEnquiryService.addReplyMessage(enquiryId, replyMessage, currentUser.getId()));
-    response.setStatus(HttpStatus.CREATED);
-    response.setMessage("message posted.");
-    return new ResponseEntity<>(response, response.getStatus());
+    return listingEnquiryService.addReplyMessage(enquiryId, replyMessage, currentUser.getId());
+  }
+
+  @MessageExceptionHandler
+  @SendToUser("/queue/errors")
+  public String handleException(Throwable exception) {
+    return "An error occurred: " + exception.getMessage();
   }
 
   @Operation(
