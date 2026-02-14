@@ -45,6 +45,7 @@ public class AuthenticationController {
   private final RefreshTokenServiceImpl refreshTokenService;
   private final VerificationTokenServiceImpl verificationTokenService;
   private final AuthenticationUtils authenticationUtils;
+  private final SessionUserInfoUtil sessionUserInfoUtil;
 
   @Operation(
       summary = "Register user",
@@ -113,11 +114,10 @@ public class AuthenticationController {
   public ResponseEntity<SuccessDataResponse<AuthenticationResponse>> login(
       @Valid @RequestBody AuthenticationRequest request,
       HttpServletRequest httpServletRequest,
-      HttpServletResponse response)
-      throws IOException, ParseException {
+      HttpServletResponse response) {
 
     SessionUserInfo sessionUserInfo =
-        SessionUserInfoUtil.extractSessionUserInfo(httpServletRequest);
+        sessionUserInfoUtil.extractSessionUserInfo(httpServletRequest);
 
     SuccessDataResponse<AuthenticationResponse> result = new SuccessDataResponse<>();
     AuthenticationResponse authResponse = authenticationServiceImpl.login(request, sessionUserInfo);

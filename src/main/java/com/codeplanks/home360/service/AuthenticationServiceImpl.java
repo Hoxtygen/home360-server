@@ -206,20 +206,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       String sessionToken) {
     String refreshToken = jwtUtils.extractRefreshTokenFromRequest(request);
     String sessionKey = "session:" + sessionToken;
-    String userEmail = jwtUtils.extractSubject(accessToken);
-    String activeSession = "active_session:" + userEmail;
+    String userEmail = null;
+
     try {
-      jwtUtils.invalidateToken(accessToken);
+      userEmail = jwtUtils.extractSubject(accessToken);
+    } catch (Exception e) {
+      logger.warn("Could not extract subject from access token: {}", e.getMessage());
+    }
+
+    if (userEmail == null && sessionToken != null) {
+      try {
+        userEmail = (String) redisTemplate.opsForHash().get(sessionKey, "email");
+      } catch (Exception e) {
+        logger.warn("Could not extract email from session store: {}", e.getMessage());
+      }
+    }
+
+    try {
+      if (accessToken != null) {
+        try {
+          jwtUtils.invalidateToken(accessToken);
+        } catch (Exception e) {
+          logger.warn("Could not invalidate access token: {}", e.getMessage());
+        }
+      }
 
       redisTemplate.delete(sessionKey);
-      redisTemplate.delete(activeSession);
 
       if (userEmail != null) {
-        logger.info("Access token blacklisted for user: {}", userEmail);
+        String activeSession = "active_session:" + userEmail;
+        redisTemplate.delete(activeSession);
+        logger.info("Access token blacklisted and session cleared for user: {}", userEmail);
       }
     } catch (DataAccessException exception) {
       logger.warn(
-          "Error blacklisting access token for user {}: {}", userEmail, exception.getMessage());
+          "Error during logout cleanup for user {}: {}", userEmail, exception.getMessage());
     }
 
     if (refreshToken != null) {

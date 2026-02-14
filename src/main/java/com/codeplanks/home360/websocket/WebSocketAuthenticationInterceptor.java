@@ -80,7 +80,6 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
     try {
       Authentication authentication = authenticate(token);
       accessor.setUser(authentication);
-      logger.info("WebSocket authentication successful for user: {}", authentication.getName());
       return message;
     } catch (Exception ex) {
       logger.error("WebSocket authentication failed: {}", ex.getMessage());

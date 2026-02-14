@@ -97,9 +97,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registration.interceptors(new ChannelInterceptor() {
       @Override
       public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
-        // logging, tracing, metrics, etc.
-        logger.info("Message being sent;{}", message.getPayload());
-        logger.info("Channel being used {}:", channel.toString());
         return message;
       }
     });

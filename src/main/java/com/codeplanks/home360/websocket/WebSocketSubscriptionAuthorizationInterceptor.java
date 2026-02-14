@@ -24,12 +24,11 @@ import org.springframework.util.AntPathMatcher;
 @Component
 public class WebSocketSubscriptionAuthorizationInterceptor implements ChannelInterceptor {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(WebSocketSubscriptionAuthorizationInterceptor.class);
+  private static final Logger logger = LoggerFactory.getLogger(WebSocketSubscriptionAuthorizationInterceptor.class);
 
   private final ListingEnquiryRepository listingEnquiryRepository;
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
-  
+
   // Define the pattern we are protecting
   private static final String ENQUIRY_TOPIC_PATTERN = AppConstants.TOPIC_PREFIX + "/public.{enquiryId}";
 
@@ -40,8 +39,7 @@ public class WebSocketSubscriptionAuthorizationInterceptor implements ChannelInt
 
   @Override
   public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
-    StompHeaderAccessor accessor =
-        MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+    StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
     if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
       validateSubscription(accessor);
@@ -52,13 +50,11 @@ public class WebSocketSubscriptionAuthorizationInterceptor implements ChannelInt
 
   private void validateSubscription(StompHeaderAccessor accessor) {
     String destination = accessor.getDestination();
-    
-    // Only intercept topics matching our protected pattern
+
     if (destination == null || !pathMatcher.match(ENQUIRY_TOPIC_PATTERN, destination)) {
       return;
     }
 
-    // Extract the variable using Spring's standard matcher
     Map<String, String> variables = pathMatcher.extractUriTemplateVariables(ENQUIRY_TOPIC_PATTERN, destination);
     String enquiryId = variables.get("enquiryId");
 
@@ -70,22 +66,19 @@ public class WebSocketSubscriptionAuthorizationInterceptor implements ChannelInt
     }
 
     AppUser currentUser = (AppUser) authentication.getPrincipal();
-    ListingEnquiry enquiry =
-        listingEnquiryRepository
-            .findById(enquiryId)
-            .orElseThrow(() -> new MessagingException("Enquiry not found"));
+    ListingEnquiry enquiry = listingEnquiryRepository
+        .findById(enquiryId)
+        .orElseThrow(() -> new MessagingException("Enquiry not found"));
 
-    boolean isAuthorized =
-        currentUser.getId().equals(enquiry.getUserId())
-            || currentUser.getId().equals(enquiry.getAgentId());
+    boolean isAuthorized = currentUser.getId().equals(enquiry.getUserId())
+        || currentUser.getId().equals(enquiry.getAgentId());
 
     if (!isAuthorized) {
       logger.warn(
-          "User {} attempted to subscribe to unauthorized enquiry {}",
-          currentUser.getEmail(),
+          "Userattempted to subscribe to unauthorized enquiry {}",
           enquiryId);
       throw new AccessDeniedException("You are not authorized to view this conversation");
     }
-    logger.info("User {} authorized for enquiry {}", currentUser.getEmail(), enquiryId);
+    logger.info("User authorized for enquiry {}", enquiryId);
   }
 }
