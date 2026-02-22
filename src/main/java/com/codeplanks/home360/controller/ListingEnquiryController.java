@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -230,7 +229,7 @@ public class ListingEnquiryController {
   public ResponseEntity<SuccessDataResponse<Boolean>> markMessageAsRead(
       @PathVariable String listingEnquiryId) {
     SuccessDataResponse<Boolean> response = new SuccessDataResponse<>();
-    response.setData(listingEnquiryService.markMessageAsRead(listingEnquiryId));
+    response.setData(listingEnquiryService.markEnquiryAsRead(listingEnquiryId));
     if (!response.getData()) {
       response.setMessage("Listing enquiry message already  read");
       response.setStatus(HttpStatus.NOT_MODIFIED);
@@ -287,7 +286,6 @@ public class ListingEnquiryController {
       @DestinationVariable String enquiryId,
       @Payload ListingEnquiryMessageReplyDTO replyMessage,
       @CurrentUser AppUser currentUser) {
-    logger.info("Reply message: {}", replyMessage);
     return enquiryMessageService.addReplyMessage(enquiryId, replyMessage, currentUser.getId());
   }
 
@@ -315,7 +313,7 @@ public class ListingEnquiryController {
   @MessageExceptionHandler
   @SendToUser("/queue/errors")
   public ApiError handleException(Throwable exception) {
-    logger.error("WebSocket Error: {}", exception.getMessage(), exception);
+    logger.error("WebSocket Error: {}", exception.getMessage());
     return new ApiError(
         ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
   }

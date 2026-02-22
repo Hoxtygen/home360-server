@@ -89,7 +89,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         if (accessor != null && accessor.getCommand() != null) {
           logger.info("Inbound STOMP command: {} destination={}",
                   accessor.getCommand(), accessor.getDestination());
-          logger.info("message being sent: {}", message.getPayload());
         }
         return message;
       }

@@ -503,7 +503,7 @@ class ListingEnquiryServiceTest {
 
   @Test
   @DisplayName("Mark message as read successfully")
-  void givenValidEnquiryIdWhenMarkMessageAsReadThenReturnTrue() {
+  void givenValidEnquiryIdWhenMarkEnquiryAsReadThenReturnTrue() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
     ListingEnquiry listingEnquiry =
@@ -525,7 +525,7 @@ class ListingEnquiryServiceTest {
         .willReturn(updateResult);
 
     // When
-    Boolean result = listingEnquiryService.markMessageAsRead(enquiryMessageId);
+    Boolean result = listingEnquiryService.markEnquiryAsRead(enquiryMessageId);
 
     // Then
     assertThat(result).isTrue();
@@ -533,7 +533,7 @@ class ListingEnquiryServiceTest {
 
   @Test
   @DisplayName("Enquiry ID does not exist")
-  void givenInvalidEnquiryIdWhenMarkMessageAsReadThenThrowNotFoundException() {
+  void givenInvalidEnquiryIdWhenMarkEnquiryAsReadThenThrowNotFoundException() {
     // Given
     String enquiryMessageId = "invalid_id";
     Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
@@ -543,7 +543,7 @@ class ListingEnquiryServiceTest {
     NotFoundException exception =
         assertThrows(
             NotFoundException.class,
-            () -> listingEnquiryService.markMessageAsRead(enquiryMessageId));
+            () -> listingEnquiryService.markEnquiryAsRead(enquiryMessageId));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Listing enquiry with the given ID was not found");
@@ -551,7 +551,7 @@ class ListingEnquiryServiceTest {
 
   @Test
   @DisplayName("AccessDeniedException when user is not authorized")
-  void givenUnauthorizedUserWhenMarkMessageAsReadThenThrowAccessDeniedException() {
+  void givenUnauthorizedUserWhenMarkEnquiryAsReadThenThrowAccessDeniedException() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
     ListingEnquiry listingEnquiry =
@@ -569,7 +569,7 @@ class ListingEnquiryServiceTest {
     AccessDeniedException exception =
         assertThrows(
             AccessDeniedException.class,
-            () -> listingEnquiryService.markMessageAsRead(enquiryMessageId));
+            () -> listingEnquiryService.markEnquiryAsRead(enquiryMessageId));
 
     // Then
     assertThat(exception.getMessage())
@@ -578,7 +578,7 @@ class ListingEnquiryServiceTest {
 
   @Test
   @DisplayName("Return false if message was not updated")
-  void givenValidEnquiryId_whenMarkMessageAsReadButNotModified_thenReturnFalse() {
+  void givenValidEnquiryId_whenMarkEnquiryAsReadButNotModified_thenReturnFalse() {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
     ListingEnquiry listingEnquiry =
@@ -596,7 +596,7 @@ class ListingEnquiryServiceTest {
         .willReturn(updateResult);
 
     // When
-    Boolean result = listingEnquiryService.markMessageAsRead(enquiryMessageId);
+    Boolean result = listingEnquiryService.markEnquiryAsRead(enquiryMessageId);
 
     // Then
     assertThat(result).isFalse();

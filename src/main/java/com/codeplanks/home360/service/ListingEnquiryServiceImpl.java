@@ -17,9 +17,7 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -122,7 +120,7 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   @Override
-  public Boolean markMessageAsRead(String enquiryMessageId) {
+  public Boolean markEnquiryAsRead(String enquiryMessageId) {
     Query query = createQuery(enquiryMessageId);
     validateEnquiryExists(query);
     ListingEnquiry listingEnquiry = mongoTemplate.findOne(query, ListingEnquiry.class);
