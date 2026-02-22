@@ -1,12 +1,10 @@
-/* (C)2024 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -65,13 +63,20 @@ public class ListingEnquiry {
   private Integer agentId;
 
   @Field(name = "created_at", targetType = FieldType.DATE_TIME)
-  private LocalDateTime createdAt;
+  private ZonedDateTime createdAt;
 
-  @Field(name = "read", targetType = FieldType.BOOLEAN)
-  @Builder.Default
-  private boolean read = false;
+  @Field(name = "last_message_at", targetType = FieldType.DATE_TIME)
+  private ZonedDateTime lastMessageAt;
 
+  @Field(name = "unreadCountByAgent", targetType = FieldType.INT32)
   @Builder.Default
-  @Field(name = "replies")
-  private List<ListingEnquiryMessageReply> replies = new ArrayList<>();
+  private int unreadCountByAgent = 0;
+
+  @Field(name = "unreadCountByInquirer", targetType = FieldType.INT32)
+  @Builder.Default
+  private int unreadCountByInquirer = 0;
+
+  @Field(name = "status")
+  @Builder.Default
+  private EnquiryStatus status = EnquiryStatus.PENDING;
 }

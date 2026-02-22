@@ -1,7 +1,10 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.filters;
 
+import com.codeplanks.home360.utils.AppConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +15,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,9 +24,15 @@ import org.springframework.stereotype.Component;
 public class RateLimitingFilter implements Filter {
   private static final Logger logger = LoggerFactory.getLogger(RateLimitingFilter.class);
   private final ObjectMapper objectMapper = new ObjectMapper();
-  private final Map<String, Bucket> authenticatedBucketCache = new ConcurrentHashMap<>();
-  private final Map<String, Bucket> unAuthenticatedBucketCache = new ConcurrentHashMap<>();
-  private final Map<String, Bucket> loginBucketCache = new ConcurrentHashMap<>();
+
+  private final Cache<String, Bucket> authenticatedBucketCache =
+      Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).maximumSize(10000).build();
+
+  private final Cache<String, Bucket> unAuthenticatedBucketCache =
+      Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).maximumSize(10000).build();
+
+  private final Cache<String, Bucket> loginBucketCache =
+      Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).maximumSize(10000).build();
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -37,14 +45,15 @@ public class RateLimitingFilter implements Filter {
 
     String path = httpServletRequest.getRequestURI();
 
-    if (path.startsWith("/swagger") || path.startsWith("/v1/api-docs")) {
+    if (path.startsWith("/swagger")
+        || path.startsWith("/v1/api-docs")
+        || path.startsWith(AppConstants.WS_ENDPOINT)) {
       chain.doFilter(request, response);
       return;
     }
 
     if (path.equals("/api/v1/auth/login")) {
-      Bucket loginBucket =
-          loginBucketCache.computeIfAbsent(clientIpAddress, bucket -> createLoginBucket());
+      Bucket loginBucket = loginBucketCache.get(clientIpAddress, k -> createLoginBucket());
       logger.debug(
           "Client IP: {}, Bucket Tokens Available: {}",
           clientIpAddress,
@@ -56,9 +65,7 @@ public class RateLimitingFilter implements Filter {
       }
     } else if (isAuthenticated) {
       String userId = httpServletRequest.getUserPrincipal().getName();
-      Bucket authBucket =
-          authenticatedBucketCache.computeIfAbsent(
-              userId, newBucket -> createNewAuthenticatedBucket());
+      Bucket authBucket = authenticatedBucketCache.get(userId, k -> createNewAuthenticatedBucket());
       if (!authBucket.tryConsume(1)) {
         logger.warn("rate limiting abuse: {}", userId);
         sendErrorResponse(httpResponse, "Rate limit exceeded for authenticated user.");
@@ -66,8 +73,7 @@ public class RateLimitingFilter implements Filter {
       }
     } else {
       Bucket unAuthBucket =
-          unAuthenticatedBucketCache.computeIfAbsent(
-              clientIpAddress, newBucket -> createNewUnAuthenticatedBucket());
+          unAuthenticatedBucketCache.get(clientIpAddress, k -> createNewUnAuthenticatedBucket());
       if (!unAuthBucket.tryConsume(1)) {
         logger.warn("rate limiting abuse by unauthenticated user: {}", clientIpAddress);
         sendErrorResponse(httpResponse, "Rate limit exceeded for unauthenticated user.");

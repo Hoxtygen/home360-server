@@ -1,4 +1,4 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
@@ -9,11 +9,11 @@ import jakarta.mail.AuthenticationFailedException;
 import jakarta.validation.ConstraintViolationException;
 import java.io.NotSerializableException;
 import java.net.ConnectException;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import org.eclipse.angus.mail.util.MailConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,8 @@ public class GlobalExceptionHandler {
             .map(DefaultMessageSourceResolvable::getDefaultMessage)
             .toList();
 
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, errors);
+    ApiError apiError =
+        new ApiError(ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, errors);
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -54,7 +55,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(UnAuthorizedException.class)
   public ResponseEntity<ApiError> handleUnAuthorizedException(UnAuthorizedException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.UNAUTHORIZED, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
   }
@@ -63,7 +65,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleIllegalArgumentException(
       IllegalArgumentException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -73,7 +76,7 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage("Item does not exist: " + exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -83,7 +86,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleMethodNotAllowedException(
       HttpRequestMethodNotSupportedException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.METHOD_NOT_ALLOWED, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC),
+            HttpStatus.METHOD_NOT_ALLOWED,
+            exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.METHOD_NOT_ALLOWED);
   }
@@ -93,7 +99,7 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage("User is currently disabled: " + exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -104,7 +110,7 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -114,7 +120,7 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
     apiError.setMessage(exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -127,7 +133,7 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
@@ -137,7 +143,7 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
@@ -146,14 +152,15 @@ public class GlobalExceptionHandler {
     ApiError apiError = new ApiError();
     apiError.setStatus(HttpStatus.BAD_REQUEST);
     apiError.setMessage(exception.getMessage());
-    apiError.setTimestamp(LocalDateTime.now());
+    apiError.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC));
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiError> handleForbiddenException(AccessDeniedException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.FORBIDDEN, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.FORBIDDEN, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
   }
@@ -161,7 +168,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MappingException.class)
   public ResponseEntity<ApiError> handleMappingException(MappingException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -170,7 +178,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleConversionFailedException(
       ConversionFailedException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -178,7 +187,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(DateTimeParseException.class)
   public ResponseEntity<ApiError> handleDateTimeParseException(DateTimeParseException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -187,7 +197,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleDataAccessResourceFailureException(
       DataAccessResourceFailureException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -196,7 +207,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleMongoSocketOpenException(
       MongoSocketOpenException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -204,7 +216,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ConnectException.class)
   public ResponseEntity<ApiError> handleConnectException(ConnectException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -213,7 +226,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleHttpMessageNotReadableException(
       HttpMessageNotReadableException exception) {
     String readableMessage = extractEnumErrorMessage(exception.getMessage());
-    ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST, readableMessage);
+    ApiError apiError =
+        new ApiError(ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, readableMessage);
 
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
   }
@@ -222,7 +236,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleServiceException(ServiceException exception) {
 
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC),
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage());
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -230,7 +247,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleSerializationException(SerializationException exception) {
 
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC),
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage());
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -239,7 +259,10 @@ public class GlobalExceptionHandler {
       InvalidDefinitionException exception) {
 
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC),
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage());
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -248,7 +271,10 @@ public class GlobalExceptionHandler {
       NotSerializableException exception) {
 
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC),
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage());
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -256,7 +282,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleClassCastException(ClassCastException exception) {
 
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC),
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage());
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -264,7 +293,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleDuplicateSessionException(
       DuplicateSessionException exception) {
     ApiError apiError =
-        new ApiError(LocalDateTime.now(), HttpStatus.CONFLICT, exception.getMessage());
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.CONFLICT, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
   }

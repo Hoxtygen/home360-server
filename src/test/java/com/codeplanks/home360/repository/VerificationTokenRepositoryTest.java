@@ -8,6 +8,8 @@ import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
 import com.codeplanks.home360.domain.verificationToken.VerificationToken;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,8 +48,8 @@ class VerificationTokenRepositoryTest {
             .phoneNumber("08030123456")
             .password(userPassword)
             .role(Role.USER)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
+            .createdAt(ZonedDateTime.now(ZoneOffset.UTC))
+            .updatedAt(ZonedDateTime.now(ZoneOffset.UTC))
             .build();
   }
 
@@ -99,8 +101,8 @@ class VerificationTokenRepositoryTest {
             .phoneNumber("08030123457")
             .password(userPassword)
             .role(Role.USER)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
+            .createdAt(ZonedDateTime.now(ZoneOffset.UTC))
+            .updatedAt(ZonedDateTime.now(ZoneOffset.UTC))
             .build();
     userRepository.save(appUser);
     userRepository.save(appUser2);

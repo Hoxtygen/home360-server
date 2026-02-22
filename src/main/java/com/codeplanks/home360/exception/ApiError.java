@@ -1,13 +1,12 @@
+/* (C)2026 */
 package com.codeplanks.home360.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.ZonedDateTime;
+import java.util.List;
 import lombok.*;
 import org.springframework.http.HttpStatus;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
 
 @Getter
 @Setter
@@ -16,19 +15,20 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
-  private LocalDateTime timestamp;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private ZonedDateTime timestamp;
+
   private HttpStatus status;
   private String message;
-  private  List<String> errors;
+  private List<String> errors;
 
-  public ApiError(LocalDateTime timestamp, HttpStatus status, String message) {
+  public ApiError(ZonedDateTime timestamp, HttpStatus status, String message) {
     this.timestamp = timestamp;
     this.status = status;
     this.message = message;
   }
 
-  public ApiError(LocalDateTime timestamp, HttpStatus status, List<String> errors) {
+  public ApiError(ZonedDateTime timestamp, HttpStatus status, List<String> errors) {
     this.timestamp = timestamp;
     this.status = status;
     this.errors = errors;

@@ -1,4 +1,4 @@
-/* (C)2025 */
+/* (C)2025-2026 */
 package com.codeplanks.home360.websocket;
 
 import com.codeplanks.home360.config.JwtService;
@@ -62,8 +62,7 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
       throw new BadCredentialsException("Invalid JWT");
     }
 
-    return new UsernamePasswordAuthenticationToken(
-        userDetails, null, userDetails.getAuthorities());
+    return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
   }
 
   private Message<?> handleConnect(StompHeaderAccessor accessor, Message<?> message) {
@@ -83,7 +82,7 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
       return message;
     } catch (Exception ex) {
       logger.error("WebSocket authentication failed: {}", ex.getMessage());
-      throw new MessagingException("Authentication failed: " + ex.getMessage());
+      throw new MessagingException("Authentication failed");
     }
   }
 }
