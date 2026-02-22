@@ -1,10 +1,10 @@
-/* (C)2024 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -65,5 +65,5 @@ public class ListingEnquiryDTO {
 
   private Integer userId;
 
-  private LocalDateTime createdAt;
+  private ZonedDateTime createdAt;
 }

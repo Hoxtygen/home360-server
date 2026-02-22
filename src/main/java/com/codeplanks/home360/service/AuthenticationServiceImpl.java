@@ -1,4 +1,4 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.config.JwtService;
@@ -239,8 +239,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         logger.info("Access token blacklisted and session cleared for user: {}", userEmail);
       }
     } catch (DataAccessException exception) {
-      logger.warn(
-          "Error during logout cleanup for user {}: {}", userEmail, exception.getMessage());
+      logger.warn("Error during logout cleanup for user {}: {}", userEmail, exception.getMessage());
     }
 
     if (refreshToken != null) {
@@ -295,6 +294,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String activeSessionToken =
         (String) redisTemplate.opsForValue().get("active_session:" + userEmail);
 
-    return activeSessionToken != null; // If found, user has an active session
+    return activeSessionToken != null;
   }
 }

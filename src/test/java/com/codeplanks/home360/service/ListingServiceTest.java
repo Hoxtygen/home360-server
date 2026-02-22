@@ -13,6 +13,8 @@ import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.exception.UnAuthorizedException;
 import com.codeplanks.home360.repository.ListingRepository;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,8 +55,8 @@ class ListingServiceTest {
             .password("1245678")
             .role(Role.USER)
             .isEnabled(true)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
+            .createdAt(ZonedDateTime.now(ZoneOffset.UTC))
+            .updatedAt(ZonedDateTime.now(ZoneOffset.UTC))
             .build();
 
     listingDTO =

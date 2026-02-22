@@ -1,4 +1,4 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listingEnquiries.*;
@@ -8,14 +8,13 @@ public interface ListingEnquiryService {
   ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest);
 
   PaginatedListingEnquiriesResponse getListingEnquiries(
-      int page, int size, Integer senderId, int agentId);
+      int page, int size, Integer senderId, int agentId, EnquiryStatus status);
 
   ListingEnquiry getListingEnquiryById(String enquiryMessageId);
 
-  Boolean markMessageAsRead(String enquiryMessageId);
-
-  ListingEnquiryMessageReply addReplyMessage(
-      String enquiryId, ListingEnquiryMessageReplyDTO reply, int senderId);
+  Boolean markEnquiryAsRead(String enquiryMessageId);
 
   List<ListingEnquiry> getEnquiriesByListingId(String listingId);
+
+  Integer getTotalUnreadCount();
 }

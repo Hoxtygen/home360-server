@@ -1,6 +1,7 @@
-/* (C)2024 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.repository;
 
+import com.codeplanks.home360.domain.listingEnquiries.EnquiryStatus;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,11 @@ public class CustomListingEnquiryRepositoryImpl implements CustomListingEnquiryR
 
   @Override
   public Page<ListingEnquiry> findListingEnquiries(
-      Integer agentId, Integer senderId, Pageable pageable) {
+      Integer agentId, Integer senderId, EnquiryStatus status, Pageable pageable) {
     Query query =
-        fetchListingEnquiries(agentId, senderId).with(pageable).collation(getEnglishCollation());
+        fetchListingEnquiries(agentId, senderId, status)
+            .with(pageable)
+            .collation(getEnglishCollation());
     List<ListingEnquiry> listingEnquiries =
         mongoTemplate.find(query, ListingEnquiry.class, "listingEnquiries");
     return PageableExecutionUtils.getPage(
@@ -31,7 +34,7 @@ public class CustomListingEnquiryRepositoryImpl implements CustomListingEnquiryR
         () -> mongoTemplate.count(query.limit(-1).skip(-1), ListingEnquiry.class));
   }
 
-  private Query fetchListingEnquiries(Integer agentId, Integer senderId) {
+  private Query fetchListingEnquiries(Integer agentId, Integer senderId, EnquiryStatus status) {
     List<Criteria> criteriaList = new ArrayList<>();
     if (agentId != null) {
       criteriaList.add(Criteria.where("agentId").is(agentId));
@@ -44,7 +47,12 @@ public class CustomListingEnquiryRepositoryImpl implements CustomListingEnquiryR
       throw new IllegalArgumentException("At least one of agentId or senderId must be provided");
     }
 
-    return new Query(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+    Criteria rootCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+    if (status != null) {
+      rootCriteria = rootCriteria.and("status").is(status);
+    }
+
+    return new Query(rootCriteria);
   }
 
   private Collation getEnglishCollation() {
