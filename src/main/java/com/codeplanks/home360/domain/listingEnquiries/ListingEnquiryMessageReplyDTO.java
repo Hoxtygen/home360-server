@@ -24,5 +24,5 @@ public class ListingEnquiryMessageReplyDTO {
   @NotNull(message = "Enquiry ID is required")
   private String enquiryId;
 
-  private int senderId;
+  private Integer senderId;
 }

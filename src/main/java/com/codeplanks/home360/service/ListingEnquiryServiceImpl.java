@@ -4,7 +4,6 @@ package com.codeplanks.home360.service;
 import com.codeplanks.home360.domain.listing.Listing;
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.repository.EnquiryMessageRepository;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
@@ -13,8 +12,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -37,13 +34,11 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   private final ListingEnquiryRepository listingEnquiryRepository;
-  private final EnquiryMessageRepository enquiryMessageRepository;
   private final MongoTemplate mongoTemplate;
   private final UserServiceImpl userService;
   private final ListingServiceImpl listingService;
   private final AuthenticationUtils authenticationUtils;
 
-  private static final Logger logger = LoggerFactory.getLogger(ListingEnquiryServiceImpl.class);
 
   @Caching(
       evict = {
@@ -78,19 +73,23 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
             .userId(enquiryRequest.getUserId())
             .createdAt(now)
             .lastMessageAt(now)
+            .unreadCountByAgent(1)
+            .unreadCountByInquirer(0)
+            .status(EnquiryStatus.PENDING)
             .build();
     return listingEnquiryRepository.save(newListingEnquiry);
   }
 
   @Cacheable(
       value = "agentListingEnquiries",
-      key = "#agentId + '::senderId::' + #senderId + '::page::' + #page + '::size::' + #size")
+      key =
+          "#agentId + '::senderId::' + #senderId + '::status::' + #status + '::page::' + #page + '::size::' + #size")
   @Override
   public PaginatedListingEnquiriesResponse getListingEnquiries(
-      int page, int size, Integer senderId, int agentId) {
+      int page, int size, Integer senderId, int agentId, EnquiryStatus status) {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "last_message_at");
     Page<ListingEnquiry> agentListingEnquiries =
-        listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable);
+        listingEnquiryRepository.findListingEnquiries(agentId, senderId, status, pageable);
     return PaginatedListingEnquiriesResponse.<ListingEnquiry>builder()
         .currentPage(agentListingEnquiries.getNumber() + 1)
         .totalItems(agentListingEnquiries.getTotalElements())
@@ -100,7 +99,9 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
         .build();
   }
 
-  @Cacheable(value = "listingEnquiry", key = "#enquiryMessageId")
+  @Cacheable(
+      value = "listingEnquiry",
+      key = "#enquiryMessageId + '::' + #root.target.userService.extractUserId()")
   @Override
   public ListingEnquiry getListingEnquiryById(String enquiryMessageId) {
     if (enquiryMessageId == null) {
@@ -116,17 +117,32 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   }
 
   @Override
-  public Boolean markEnquiryAsRead(String enquiryMessageId) {
-    Query query = createQuery(enquiryMessageId);
-    validateEnquiryExists(query);
-    ListingEnquiry listingEnquiry = mongoTemplate.findOne(query, ListingEnquiry.class);
-    if (listingEnquiry != null) {
-      validateUserAuthorization(listingEnquiry, userService.extractUserId());
+  public Boolean markEnquiryAsRead(String enquiryId) {
+    ListingEnquiry enquiry = getListingEnquiryById(enquiryId);
+    Integer userId = userService.extractUserId();
+
+    Query query = new Query(Criteria.where("_id").is(enquiryId));
+    Update update = new Update();
+
+    if (Objects.equals(userId, enquiry.getAgentId())) {
+      update.set("unreadCountByAgent", 0);
+      // Transition from PENDING to ACTIVE when agent acknowledges
+      if (enquiry.getStatus() == EnquiryStatus.PENDING) {
+        update.set("status", EnquiryStatus.ACTIVE);
+      }
+    } else if (Objects.equals(userId, enquiry.getUserId())) {
+      update.set("unreadCountByInquirer", 0);
+    } else {
+      throw new AccessDeniedException("You are not authorized to mark this conversation as read");
     }
-    return updateMessageAsRead(query);
+
+    UpdateResult updateResult = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
+    return updateResult.getModifiedCount() > 0;
   }
 
-  @Cacheable(value = "enquiriesByListingId", key = "#listingId")
+  @Cacheable(
+      value = "enquiriesByListingId",
+      key = "#listingId + '::' + #root.target.userService.extractUserId()")
   @Override
   public List<ListingEnquiry> getEnquiriesByListingId(String listingId) {
     Integer userId = userService.extractUserId();
@@ -137,15 +153,26 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     return listingEnquiryRepository.findByListingId(listingId);
   }
 
-  private Query createQuery(String enquiryMessageId) {
-    return new Query(Criteria.where("_id").is(enquiryMessageId));
-  }
-
-  private void validateEnquiryExists(Query query) {
-    boolean exists = mongoTemplate.exists(query, ListingEnquiry.class);
-    if (!exists) {
-      throw new NotFoundException("Listing enquiry with the given ID was not found");
+  @Override
+  public Integer getTotalUnreadCount() {
+    Integer userId = userService.extractUserId();
+    if (userId == null) {
+      return 0;
     }
+
+    // Sum unread messages as an Agent
+    int agentUnread =
+        listingEnquiryRepository.findAgentUnreadCounts(userId).stream()
+            .mapToInt(ListingEnquiry::getUnreadCountByAgent)
+            .sum();
+
+    // Sum unread messages as an Inquirer
+    int inquirerUnread =
+        listingEnquiryRepository.findInquirerUnreadCounts(userId).stream()
+            .mapToInt(ListingEnquiry::getUnreadCountByInquirer)
+            .sum();
+
+    return agentUnread + inquirerUnread;
   }
 
   private void validateUserAuthorization(ListingEnquiry listingEnquiry, Integer userId) {
@@ -157,11 +184,6 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     if (!isAgent && !isInquirer) {
       throw new AccessDeniedException("Forbidden. You're not authorized to access this data");
     }
-  }
+  }}
 
-  private Boolean updateMessageAsRead(Query query) {
-    Update update = new Update().set("read", true);
-    UpdateResult updateResult = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
-    return updateResult.getModifiedCount() > 0;
-  }
-}
+

@@ -115,12 +115,13 @@ public class ListingEnquiryController {
   public ResponseEntity<SuccessDataResponse<PaginatedListingEnquiriesResponse>> getListingEnquiries(
       @RequestParam(value = "page", defaultValue = "1") int page,
       @RequestParam(value = "size", defaultValue = "25") int size,
-      @RequestParam(required = false) Integer senderId) {
+      @RequestParam(required = false) Integer senderId,
+      @RequestParam(required = false) EnquiryStatus status) {
     Integer agentId = userService.extractUserId();
     SuccessDataResponse<PaginatedListingEnquiriesResponse> listingEnquiries =
         new SuccessDataResponse<>();
     listingEnquiries.setData(
-        listingEnquiryService.getListingEnquiries(page - 1, size, senderId, agentId));
+        listingEnquiryService.getListingEnquiries(page - 1, size, senderId, agentId, status));
     listingEnquiries.setMessage("Listing enquiries retrieved successfully");
     listingEnquiries.setStatus(HttpStatus.OK);
     return new ResponseEntity<>(listingEnquiries, HttpStatus.OK);
@@ -310,12 +311,31 @@ public class ListingEnquiryController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @Operation(
+      summary = "Get total unread message count",
+      description = "Returns the sum of all unread messages for the current user",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+  })
+  @GetMapping("/unread-count")
+  public ResponseEntity<SuccessDataResponse<Integer>> getTotalUnreadCount() {
+    SuccessDataResponse<Integer> response = new SuccessDataResponse<>();
+    response.setData(listingEnquiryService.getTotalUnreadCount());
+    response.setMessage("Total unread count retrieved successfully");
+    response.setStatus(HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
   @MessageExceptionHandler
   @SendToUser("/queue/errors")
   public ApiError handleException(Throwable exception) {
-    logger.error("WebSocket Error: {}", exception.getMessage());
+    logger.error("WebSocket Error: {}", exception.getMessage(), exception);
     return new ApiError(
-        ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
+        ZonedDateTime.now(ZoneOffset.UTC),
+        HttpStatus.BAD_REQUEST,
+        "An unexpected error occurred. Please try again later.");
   }
 
   @Operation(

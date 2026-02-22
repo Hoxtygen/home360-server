@@ -79,8 +79,8 @@ class ListingEnquiryServiceTest {
             "1245678",
             "221B Baker street",
             "080212345678",
-            LocalDateTime.now(),
-            LocalDateTime.now(),
+            ZonedDateTime.now(),
+            ZonedDateTime.now(),
             Role.USER,
             true);
     jane =
@@ -92,8 +92,8 @@ class ListingEnquiryServiceTest {
             "1245678",
             "221C Butler street",
             "080212345687",
-            LocalDateTime.now(),
-            LocalDateTime.now(),
+            ZonedDateTime.now(),
+            ZonedDateTime.now(),
             Role.USER,
             true);
   }
@@ -233,12 +233,12 @@ class ListingEnquiryServiceTest {
     Page<ListingEnquiry> mockPage = new PageImpl<>(enquiries, PageRequest.of(page, size), 2);
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "last_message_at");
     //    given(userService.extractUserId()).willReturn(agentId);
-    given(listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, senderId, null, pageable))
         .willReturn(mockPage);
 
     // When
     PaginatedListingEnquiriesResponse result =
-        listingEnquiryService.getListingEnquiries(0, 5, 1, agentId);
+        listingEnquiryService.getListingEnquiries(0, 5, 1, agentId, null);
 
     // Then
     assertAll(
@@ -250,7 +250,7 @@ class ListingEnquiryServiceTest {
         () -> assertThat(result.getItems()).hasSize(2),
         () -> assertThat(result.isHasNext()).isFalse());
 
-    verify(listingEnquiryRepository, times(1)).findListingEnquiries(agentId, senderId, pageable);
+    verify(listingEnquiryRepository, times(1)).findListingEnquiries(agentId, senderId, null, pageable);
   }
 
   @Test
@@ -260,12 +260,12 @@ class ListingEnquiryServiceTest {
     int page = 0, size = 5;
     Integer agentId = 1;
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "last_message_at");
-    given(listingEnquiryRepository.findListingEnquiries(agentId, null, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, null, null, pageable))
         .willReturn(Page.empty());
 
     // When
     PaginatedListingEnquiriesResponse response =
-        listingEnquiryService.getListingEnquiries(page, size, null, agentId);
+        listingEnquiryService.getListingEnquiries(page, size, null, agentId, null);
 
     // Then
     assertAll(
@@ -286,11 +286,11 @@ class ListingEnquiryServiceTest {
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> listingEnquiryService.getListingEnquiries(page, size, null, agentId));
+            () -> listingEnquiryService.getListingEnquiries(page, size, null, agentId, null));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Page index must not be less than zero");
-    verify(listingEnquiryRepository, never()).findListingEnquiries(anyInt(), any(), any());
+    verify(listingEnquiryRepository, never()).findListingEnquiries(anyInt(), any(), any(), any());
   }
 
   @Test
@@ -301,14 +301,14 @@ class ListingEnquiryServiceTest {
     Integer agentId = 1;
 
     //    given(userService.extractUserId()).willReturn(agentId);
-    given(listingEnquiryRepository.findListingEnquiries(anyInt(), any(), any()))
+    given(listingEnquiryRepository.findListingEnquiries(anyInt(), any(), any(), any()))
         .willThrow(new RuntimeException("Database error"));
 
     // When
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> listingEnquiryService.getListingEnquiries(page, size, null, agentId));
+            () -> listingEnquiryService.getListingEnquiries(page, size, null, agentId, null));
 
     // Then
     assertThat(exception.getMessage()).isEqualTo("Database error");
@@ -324,12 +324,12 @@ class ListingEnquiryServiceTest {
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "last_message_at");
 
     //    given(userService.extractUserId()).willReturn(agentId);
-    given(listingEnquiryRepository.findListingEnquiries(agentId, invalidSenderId, pageable))
+    given(listingEnquiryRepository.findListingEnquiries(agentId, invalidSenderId, null, pageable))
         .willReturn(Page.empty());
 
     // When
     PaginatedListingEnquiriesResponse response =
-        listingEnquiryService.getListingEnquiries(page, size, invalidSenderId, agentId);
+        listingEnquiryService.getListingEnquiries(page, size, invalidSenderId, agentId, null);
 
     // Then
     assertThat(response).isNotNull();
@@ -508,14 +508,12 @@ class ListingEnquiryServiceTest {
     ListingEnquiry listingEnquiry =
         ListingEnquiry.builder()
             .id(enquiryMessageId)
-            .agentId(1) // Matching the user ID for authorization
-            .read(false)
+            .agentId(1)
+            .status(EnquiryStatus.PENDING)
+            .unreadCountByAgent(1)
             .build();
 
-    Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
-
-    given(mongoTemplate.exists(query, ListingEnquiry.class)).willReturn(true);
-    given(mongoTemplate.findOne(query, ListingEnquiry.class)).willReturn(listingEnquiry);
+    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.of(listingEnquiry));
     given(userService.extractUserId()).willReturn(1);
 
     UpdateResult updateResult = mock(UpdateResult.class);
@@ -528,6 +526,7 @@ class ListingEnquiryServiceTest {
 
     // Then
     assertThat(result).isTrue();
+    verify(listingEnquiryRepository, times(1)).findById(enquiryMessageId);
   }
 
   @Test
@@ -535,8 +534,7 @@ class ListingEnquiryServiceTest {
   void givenInvalidEnquiryIdWhenMarkEnquiryAsReadThenThrowNotFoundException() {
     // Given
     String enquiryMessageId = "invalid_id";
-    Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
-    given(mongoTemplate.exists(query, ListingEnquiry.class)).willReturn(false);
+    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.empty());
 
     // When
     NotFoundException exception =
@@ -545,7 +543,7 @@ class ListingEnquiryServiceTest {
             () -> listingEnquiryService.markEnquiryAsRead(enquiryMessageId));
 
     // Then
-    assertThat(exception.getMessage()).isEqualTo("Listing enquiry with the given ID was not found");
+    assertThat(exception.getMessage()).isEqualTo("Listing enquiry not found");
   }
 
   @Test
@@ -559,9 +557,7 @@ class ListingEnquiryServiceTest {
             .agentId(2) // Different agent ID
             .build();
 
-    Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
-    given(mongoTemplate.exists(query, ListingEnquiry.class)).willReturn(true);
-    given(mongoTemplate.findOne(query, ListingEnquiry.class)).willReturn(listingEnquiry);
+    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.of(listingEnquiry));
     given(userService.extractUserId()).willReturn(1); // User ID does not match agent ID
 
     // When
@@ -572,7 +568,7 @@ class ListingEnquiryServiceTest {
 
     // Then
     assertThat(exception.getMessage())
-        .isEqualTo("Forbidden. You're not authorized to access this data");
+        .isEqualTo("You are not authorized to mark this conversation as read");
   }
 
   @Test
@@ -581,12 +577,9 @@ class ListingEnquiryServiceTest {
     // Given
     String enquiryMessageId = "64bd652852212f03ee0d2158";
     ListingEnquiry listingEnquiry =
-        ListingEnquiry.builder().id(enquiryMessageId).agentId(1).read(false).build();
+        ListingEnquiry.builder().id(enquiryMessageId).agentId(1).build();
 
-    Query query = new Query(Criteria.where("_id").is(enquiryMessageId));
-
-    given(mongoTemplate.exists(query, ListingEnquiry.class)).willReturn(true);
-    given(mongoTemplate.findOne(query, ListingEnquiry.class)).willReturn(listingEnquiry);
+    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.of(listingEnquiry));
     given(userService.extractUserId()).willReturn(1);
 
     UpdateResult updateResult = mock(UpdateResult.class);

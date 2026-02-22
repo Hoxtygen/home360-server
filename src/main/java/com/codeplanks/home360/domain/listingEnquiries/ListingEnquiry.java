@@ -68,7 +68,15 @@ public class ListingEnquiry {
   @Field(name = "last_message_at", targetType = FieldType.DATE_TIME)
   private ZonedDateTime lastMessageAt;
 
-  @Field(name = "read", targetType = FieldType.BOOLEAN)
+  @Field(name = "unreadCountByAgent", targetType = FieldType.INT32)
   @Builder.Default
-  private boolean read = false;
+  private int unreadCountByAgent = 0;
+
+  @Field(name = "unreadCountByInquirer", targetType = FieldType.INT32)
+  @Builder.Default
+  private int unreadCountByInquirer = 0;
+
+  @Field(name = "status")
+  @Builder.Default
+  private EnquiryStatus status = EnquiryStatus.PENDING;
 }

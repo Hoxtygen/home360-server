@@ -83,7 +83,7 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
       return message;
     } catch (Exception ex) {
       logger.error("WebSocket authentication failed: {}", ex.getMessage());
-      throw new MessagingException("Authentication failed: " + ex.getMessage());
+      throw new MessagingException("Authentication failed");
     }
   }
 }

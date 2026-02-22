@@ -8,11 +8,13 @@ public interface ListingEnquiryService {
   ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest);
 
   PaginatedListingEnquiriesResponse getListingEnquiries(
-      int page, int size, Integer senderId, int agentId);
+      int page, int size, Integer senderId, int agentId, EnquiryStatus status);
 
   ListingEnquiry getListingEnquiryById(String enquiryMessageId);
 
   Boolean markEnquiryAsRead(String enquiryMessageId);
 
   List<ListingEnquiry> getEnquiriesByListingId(String listingId);
+
+  Integer getTotalUnreadCount();
 }

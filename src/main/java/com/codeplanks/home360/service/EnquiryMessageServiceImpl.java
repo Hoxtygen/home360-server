@@ -55,9 +55,18 @@ public class EnquiryMessageServiceImpl implements EnquiryMessageService {
 
     EnquiryMessage savedMessage = enquiryMessageRepository.save(newMessage);
 
-    // 3. Atomic Update of lastMessageAt in the parent enquiry
+    // 3. Atomic Update of lastMessageAt and increment recipient's unread count
     Query query = new Query(Criteria.where("_id").is(enquiryId));
     Update update = new Update().set("lastMessageAt", now);
+
+    if (senderId == enquiry.getAgentId()) {
+      update.inc("unreadCountByInquirer", 1);
+      update.set("unreadCountByAgent", 0); // Sender is reading/viewing the chat
+    } else if (senderId == enquiry.getUserId()) {
+      update.inc("unreadCountByAgent", 1);
+      update.set("unreadCountByInquirer", 0); // Sender is reading/viewing the chat
+    }
+
     mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
 
     logger.info("New message added to enquiry {}: {}", enquiryId, savedMessage.getId());
@@ -67,15 +76,16 @@ public class EnquiryMessageServiceImpl implements EnquiryMessageService {
 
   @Override
   public PaginatedListingEnquiriesChat getEnquiryMessages(String enquiryId, int page, int size) {
+    ListingEnquiry enquiry = listingEnquiryService.getListingEnquiryById(enquiryId);
 
-    listingEnquiryService.getListingEnquiryById(enquiryId);
+    listingEnquiryService.markEnquiryAsRead(enquiryId);
 
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "createdAt");
     Page<EnquiryMessage> messages = enquiryMessageRepository.findByEnquiryId(enquiryId, pageable);
 
     return PaginatedListingEnquiriesChat.builder()
         .items(messages.getContent())
-        .currentPage(messages.getNumber())
+        .currentPage(messages.getNumber()+ 1)
         .totalItems(messages.getTotalElements())
         .totalPages(messages.getTotalPages())
         .hasNext(messages.hasNext())
