@@ -85,7 +85,7 @@ public class EnquiryMessageServiceImpl implements EnquiryMessageService {
 
     return PaginatedListingEnquiriesChat.builder()
         .items(messages.getContent())
-        .currentPage(messages.getNumber()+ 1)
+        .currentPage(messages.getNumber() + 1)
         .totalItems(messages.getTotalElements())
         .totalPages(messages.getTotalPages())
         .hasNext(messages.hasNext())

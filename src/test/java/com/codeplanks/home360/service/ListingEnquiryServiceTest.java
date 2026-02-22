@@ -17,7 +17,6 @@ import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
 import jakarta.validation.*;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +28,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -250,7 +248,8 @@ class ListingEnquiryServiceTest {
         () -> assertThat(result.getItems()).hasSize(2),
         () -> assertThat(result.isHasNext()).isFalse());
 
-    verify(listingEnquiryRepository, times(1)).findListingEnquiries(agentId, senderId, null, pageable);
+    verify(listingEnquiryRepository, times(1))
+        .findListingEnquiries(agentId, senderId, null, pageable);
   }
 
   @Test
@@ -513,7 +512,8 @@ class ListingEnquiryServiceTest {
             .unreadCountByAgent(1)
             .build();
 
-    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.of(listingEnquiry));
+    given(listingEnquiryRepository.findById(enquiryMessageId))
+        .willReturn(Optional.of(listingEnquiry));
     given(userService.extractUserId()).willReturn(1);
 
     UpdateResult updateResult = mock(UpdateResult.class);
@@ -557,7 +557,8 @@ class ListingEnquiryServiceTest {
             .agentId(2) // Different agent ID
             .build();
 
-    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.of(listingEnquiry));
+    given(listingEnquiryRepository.findById(enquiryMessageId))
+        .willReturn(Optional.of(listingEnquiry));
     given(userService.extractUserId()).willReturn(1); // User ID does not match agent ID
 
     // When
@@ -579,7 +580,8 @@ class ListingEnquiryServiceTest {
     ListingEnquiry listingEnquiry =
         ListingEnquiry.builder().id(enquiryMessageId).agentId(1).build();
 
-    given(listingEnquiryRepository.findById(enquiryMessageId)).willReturn(Optional.of(listingEnquiry));
+    given(listingEnquiryRepository.findById(enquiryMessageId))
+        .willReturn(Optional.of(listingEnquiry));
     given(userService.extractUserId()).willReturn(1);
 
     UpdateResult updateResult = mock(UpdateResult.class);

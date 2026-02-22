@@ -39,7 +39,6 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   private final ListingServiceImpl listingService;
   private final AuthenticationUtils authenticationUtils;
 
-
   @Caching(
       evict = {
         @CacheEvict(value = "enquiriesByListingId", key = "#enquiryRequest.listingId"),
@@ -83,7 +82,8 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   @Cacheable(
       value = "agentListingEnquiries",
       key =
-          "#agentId + '::senderId::' + #senderId + '::status::' + #status + '::page::' + #page + '::size::' + #size")
+          "#agentId + '::senderId::' + #senderId + '::status::' + #status + '::page::' + #page +"
+              + " '::size::' + #size")
   @Override
   public PaginatedListingEnquiriesResponse getListingEnquiries(
       int page, int size, Integer senderId, int agentId, EnquiryStatus status) {
@@ -184,6 +184,5 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     if (!isAgent && !isInquirer) {
       throw new AccessDeniedException("Forbidden. You're not authorized to access this data");
     }
-  }}
-
-
+  }
+}

@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.repository;
 
 import com.codeplanks.home360.domain.listingEnquiries.EnquiryStatus;
@@ -23,7 +23,9 @@ public class CustomListingEnquiryRepositoryImpl implements CustomListingEnquiryR
   public Page<ListingEnquiry> findListingEnquiries(
       Integer agentId, Integer senderId, EnquiryStatus status, Pageable pageable) {
     Query query =
-        fetchListingEnquiries(agentId, senderId, status).with(pageable).collation(getEnglishCollation());
+        fetchListingEnquiries(agentId, senderId, status)
+            .with(pageable)
+            .collation(getEnglishCollation());
     List<ListingEnquiry> listingEnquiries =
         mongoTemplate.find(query, ListingEnquiry.class, "listingEnquiries");
     return PageableExecutionUtils.getPage(
