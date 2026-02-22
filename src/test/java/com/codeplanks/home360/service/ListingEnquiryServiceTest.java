@@ -569,7 +569,7 @@ class ListingEnquiryServiceTest {
 
     // Then
     assertThat(exception.getMessage())
-        .isEqualTo("You are not authorized to mark this conversation as read");
+        .isEqualTo("Forbidden. You're not authorized to access this data");
   }
 
   @Test

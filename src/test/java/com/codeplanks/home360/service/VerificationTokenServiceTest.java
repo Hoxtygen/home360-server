@@ -17,6 +17,8 @@ import com.codeplanks.home360.repository.VerificationTokenRepository;
 import jakarta.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,8 +56,8 @@ class VerificationTokenServiceTest {
             .phoneNumber("08030123456")
             .password(userPassword)
             .role(Role.USER)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
+            .createdAt(ZonedDateTime.now(ZoneOffset.UTC))
+            .updatedAt(ZonedDateTime.now(ZoneOffset.UTC))
             .build();
   }
 

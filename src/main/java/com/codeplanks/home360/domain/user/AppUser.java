@@ -2,7 +2,7 @@
 package com.codeplanks.home360.domain.user;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import lombok.*;
@@ -62,11 +62,11 @@ public class AppUser implements UserDetails {
       nullable = false,
       columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
   @CreationTimestamp
-  private LocalDateTime createdAt;
+  private ZonedDateTime createdAt;
 
   @Column(name = "updatedAt", nullable = false)
   @UpdateTimestamp
-  private LocalDateTime updatedAt;
+  private ZonedDateTime updatedAt;
 
   @Column(name = "role", length = 50, nullable = false)
   @Enumerated(EnumType.STRING)
@@ -83,8 +83,8 @@ public class AppUser implements UserDetails {
       String password,
       String address,
       String phoneNumber,
-      LocalDateTime createdAt,
-      LocalDateTime updatedAt,
+      ZonedDateTime createdAt,
+      ZonedDateTime updatedAt,
       Role role) {
     this.firstName = firstName;
     this.lastName = lastName;
