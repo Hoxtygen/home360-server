@@ -1,6 +1,10 @@
+/* (C)2026 */
 package com.codeplanks.home360.exception;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import java.nio.file.AccessDeniedException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -8,35 +12,39 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.nio.file.AccessDeniedException;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-
 @ControllerAdvice
 public class UserExceptionHandler {
 
   @ExceptionHandler(value = {UserAlreadyExistsException.class})
   public ResponseEntity<ApiError> handleUserExistsException(UserAlreadyExistsException exception) {
-    ApiError apiError = new ApiError(ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.CONFLICT, exception.getMessage());
+    ApiError apiError =
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.CONFLICT, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(value = {NotFoundException.class})
   public ResponseEntity<ApiError> handleUserNotFoundException(NotFoundException exception) {
-    ApiError apiError = new ApiError(ZonedDateTime.now(ZoneOffset.UTC),HttpStatus.NOT_FOUND, exception.getMessage() );
+    ApiError apiError =
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.NOT_FOUND, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(value = {BadCredentialsException.class, AccessDeniedException.class,
-          ExpiredJwtException.class, UsernameNotFoundException.class})
+  @ExceptionHandler(
+      value = {
+        BadCredentialsException.class,
+        AccessDeniedException.class,
+        ExpiredJwtException.class,
+        UsernameNotFoundException.class
+      })
   public ResponseEntity<ApiError> handleBadCredentialsException(RuntimeException exception) {
-    ApiError apiError = new ApiError(ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.UNAUTHORIZED, exception.getMessage());
+    ApiError apiError =
+        new ApiError(
+            ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.UNAUTHORIZED, exception.getMessage());
 
     return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
   }
-
 }
-
-

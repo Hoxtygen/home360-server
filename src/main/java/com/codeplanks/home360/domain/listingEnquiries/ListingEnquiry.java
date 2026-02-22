@@ -1,12 +1,10 @@
-/* (C)2024 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

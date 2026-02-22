@@ -1,4 +1,4 @@
-/* (C)2025 */
+/* (C)2025-2026 */
 package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listingEnquiries.EnquiryMessage;
@@ -6,6 +6,8 @@ import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiry;
 import com.codeplanks.home360.domain.listingEnquiries.ListingEnquiryMessageReplyDTO;
 import com.codeplanks.home360.domain.listingEnquiries.PaginatedListingEnquiriesChat;
 import com.codeplanks.home360.repository.EnquiryMessageRepository;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +21,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +67,7 @@ public class EnquiryMessageServiceImpl implements EnquiryMessageService {
 
   @Override
   public PaginatedListingEnquiriesChat getEnquiryMessages(String enquiryId, int page, int size) {
-    
+
     listingEnquiryService.getListingEnquiryById(enquiryId);
 
     Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "createdAt");

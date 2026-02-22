@@ -1,11 +1,11 @@
+/* (C)2026 */
 package com.codeplanks.home360.domain.listingEnquiries;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder

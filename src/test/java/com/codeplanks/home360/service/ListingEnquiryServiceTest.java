@@ -1,4 +1,4 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,8 +12,8 @@ import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.domain.user.Role;
 import com.codeplanks.home360.exception.NotFoundException;
-import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.repository.EnquiryMessageRepository;
+import com.codeplanks.home360.repository.ListingEnquiryRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
 import jakarta.validation.*;
@@ -252,7 +252,6 @@ class ListingEnquiryServiceTest {
 
     verify(listingEnquiryRepository, times(1)).findListingEnquiries(agentId, senderId, pageable);
   }
-
 
   @Test
   @DisplayName("Zero listing enquiries found")

@@ -1,4 +1,4 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.filters;
 
 import com.codeplanks.home360.utils.AppConstants;
@@ -65,8 +65,7 @@ public class RateLimitingFilter implements Filter {
       }
     } else if (isAuthenticated) {
       String userId = httpServletRequest.getUserPrincipal().getName();
-      Bucket authBucket =
-          authenticatedBucketCache.get(userId, k -> createNewAuthenticatedBucket());
+      Bucket authBucket = authenticatedBucketCache.get(userId, k -> createNewAuthenticatedBucket());
       if (!authBucket.tryConsume(1)) {
         logger.warn("rate limiting abuse: {}", userId);
         sendErrorResponse(httpResponse, "Rate limit exceeded for authenticated user.");

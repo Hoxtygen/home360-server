@@ -1,4 +1,4 @@
-/* (C)2024-2025 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.controller;
 
 import com.codeplanks.home360.domain.listingEnquiries.*;
@@ -27,8 +27,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SendToUser;
@@ -45,7 +45,7 @@ public class ListingEnquiryController {
   private final ApplicationEventPublisher eventPublisher;
   private final UserService userService;
 
-  private static  final Logger logger = LoggerFactory.getLogger(ListingEnquiryController.class);
+  private static final Logger logger = LoggerFactory.getLogger(ListingEnquiryController.class);
 
   @Operation(
       summary = "Create a listing enquiry",

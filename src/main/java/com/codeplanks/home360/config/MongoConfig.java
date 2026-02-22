@@ -1,4 +1,4 @@
-/* (C)2024 */
+/* (C)2024-2026 */
 package com.codeplanks.home360.config;
 
 import com.codeplanks.home360.converter.*;
@@ -16,7 +16,6 @@ public class MongoConfig {
             new ArrayListToStringConverter(),
             new StringToListingEnquiryMessageReplyArrayListConverter(),
             new ZonedDateTimeToDateConverter(),
-            new DateToZonedDateTimeConverter()
-            ));
+            new DateToZonedDateTimeConverter()));
   }
 }

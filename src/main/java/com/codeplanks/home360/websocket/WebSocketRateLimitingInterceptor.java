@@ -1,4 +1,4 @@
-/* (C)2025 */
+/* (C)2025-2026 */
 package com.codeplanks.home360.websocket;
 
 import com.codeplanks.home360.domain.user.AppUser;
@@ -21,7 +21,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class WebSocketRateLimitingInterceptor implements ChannelInterceptor {
-  private static final Logger logger = LoggerFactory.getLogger(WebSocketRateLimitingInterceptor.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(WebSocketRateLimitingInterceptor.class);
   private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
 
   @Override
@@ -33,7 +34,8 @@ public class WebSocketRateLimitingInterceptor implements ChannelInterceptor {
       return message;
     }
 
-    if (StompCommand.SEND.equals(accessor.getCommand()) || StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+    if (StompCommand.SEND.equals(accessor.getCommand())
+        || StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
       Authentication authentication = (Authentication) accessor.getUser();
       if (authentication != null && authentication.getPrincipal() instanceof AppUser user) {
         String userId = user.getId().toString();
@@ -51,7 +53,9 @@ public class WebSocketRateLimitingInterceptor implements ChannelInterceptor {
 
   private Bucket createNewBucket() {
     return Bucket.builder()
-        .addLimit(limit -> limit.capacity(100).refillGreedy(100, Duration.ofMinutes(1)).initialTokens(100))
+        .addLimit(
+            limit ->
+                limit.capacity(100).refillGreedy(100, Duration.ofMinutes(1)).initialTokens(100))
         .build();
   }
 }

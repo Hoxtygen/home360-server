@@ -1,13 +1,12 @@
-/* (C)2025 */
+/* (C)2025-2026 */
 package com.codeplanks.home360.converter;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.lang.NonNull;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.lang.NonNull;
 
 @ReadingConverter
 public class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
