@@ -5,8 +5,9 @@ import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.domain.user.AppUser;
 import com.codeplanks.home360.event.ListingEnquiryEvent;
 import com.codeplanks.home360.exception.ApiError;
-import com.codeplanks.home360.service.ListingEnquiryServiceImpl;
-import com.codeplanks.home360.service.UserServiceImpl;
+import com.codeplanks.home360.service.EnquiryMessageService;
+import com.codeplanks.home360.service.ListingEnquiryService;
+import com.codeplanks.home360.service.UserService;
 import com.codeplanks.home360.utils.SuccessDataResponse;
 import com.codeplanks.home360.validation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,9 +17,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -35,9 +41,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/listing-enquiries")
 @Tag(name = "Listing Enquiries", description = "Listing enquiries management APIs")
 public class ListingEnquiryController {
-  private final ListingEnquiryServiceImpl listingEnquiryService;
+  private final ListingEnquiryService listingEnquiryService;
+  private final EnquiryMessageService enquiryMessageService;
   private final ApplicationEventPublisher eventPublisher;
-  private final UserServiceImpl userService;
+  private final UserService userService;
+
+  private static  final Logger logger = LoggerFactory.getLogger(ListingEnquiryController.class);
 
   @Operation(
       summary = "Create a listing enquiry",
@@ -244,7 +253,7 @@ public class ListingEnquiryController {
         description = "Created successfully",
         content = {
           @Content(
-              schema = @Schema(implementation = ListingEnquiryMessageReply.class),
+              schema = @Schema(implementation = EnquiryMessage.class),
               mediaType = "application/json")
         }),
     @ApiResponse(
@@ -274,17 +283,41 @@ public class ListingEnquiryController {
   })
   @MessageMapping("/chat/{enquiryId}/sendMessage")
   @SendTo("/topic/public.{enquiryId}")
-  public ListingEnquiryMessageReply sendEnquiryReply(
+  public EnquiryMessage sendEnquiryReply(
       @DestinationVariable String enquiryId,
       @Payload ListingEnquiryMessageReplyDTO replyMessage,
       @CurrentUser AppUser currentUser) {
-    return listingEnquiryService.addReplyMessage(enquiryId, replyMessage, currentUser.getId());
+    logger.info("Reply message: {}", replyMessage);
+    return enquiryMessageService.addReplyMessage(enquiryId, replyMessage, currentUser.getId());
+  }
+
+  @Operation(
+      summary = "Get enquiry message history",
+      description = "Returns paginated history of messages for a given enquiry",
+      tags = {"GET"})
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+    @ApiResponse(responseCode = "403", description = "Forbidden")
+  })
+  @GetMapping("/{enquiryId}/messages")
+  public ResponseEntity<SuccessDataResponse<PaginatedListingEnquiriesChat>> getEnquiryHistory(
+      @PathVariable String enquiryId,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    SuccessDataResponse<PaginatedListingEnquiriesChat> response = new SuccessDataResponse<>();
+    response.setData(enquiryMessageService.getEnquiryMessages(enquiryId, page - 1, size));
+    response.setMessage("Messages retrieved successfully");
+    response.setStatus(HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @MessageExceptionHandler
   @SendToUser("/queue/errors")
-  public String handleException(Throwable exception) {
-    return "An error occurred: " + exception.getMessage();
+  public ApiError handleException(Throwable exception) {
+    logger.error("WebSocket Error: {}", exception.getMessage(), exception);
+    return new ApiError(
+        ZonedDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST, exception.getMessage());
   }
 
   @Operation(

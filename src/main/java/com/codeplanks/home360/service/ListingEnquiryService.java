@@ -3,6 +3,7 @@ package com.codeplanks.home360.service;
 
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface ListingEnquiryService {
   ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest);
@@ -13,9 +14,6 @@ public interface ListingEnquiryService {
   ListingEnquiry getListingEnquiryById(String enquiryMessageId);
 
   Boolean markMessageAsRead(String enquiryMessageId);
-
-  ListingEnquiryMessageReply addReplyMessage(
-      String enquiryId, ListingEnquiryMessageReplyDTO reply, int senderId);
 
   List<ListingEnquiry> getEnquiriesByListingId(String listingId);
 }

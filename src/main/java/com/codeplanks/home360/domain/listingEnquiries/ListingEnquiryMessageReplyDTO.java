@@ -5,15 +5,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ListingEnquiryMessageReplyDTO {
   @NotNull(message = "Agent ID is required")
-  private int agentId;
+  private Integer agentId;
 
   @NotNull(message = "Enquirer ID is required")
-  private int enquirerId;
+  private Integer enquirerId;
 
   @NotNull(message = "message content is required")
   @Size(min = 2, message = "message should be at least 2 characters")

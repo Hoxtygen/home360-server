@@ -31,16 +31,19 @@ import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   private final WebSocketAuthenticationInterceptor authenticationInterceptor;
   private final WebSocketSubscriptionAuthorizationInterceptor authorizationInterceptor;
+  private final WebSocketRateLimitingInterceptor rateLimitingInterceptor;
   private final CurrentUserArgumentResolver currentUserArgumentResolver;
   private final WebsocketBrokerProperties websocketBrokerProperties;
 
   public WebSocketConfig(WebSocketAuthenticationInterceptor authenticationInterceptor,
                          WebSocketSubscriptionAuthorizationInterceptor authorizationInterceptor,
+                         WebSocketRateLimitingInterceptor rateLimitingInterceptor,
                          CurrentUserArgumentResolver currentUserArgumentResolver,
                          WebsocketBrokerProperties websocketBrokerProperties) {
 
     this.authenticationInterceptor = authenticationInterceptor;
     this.authorizationInterceptor = authorizationInterceptor;
+    this.rateLimitingInterceptor = rateLimitingInterceptor;
     this.currentUserArgumentResolver = currentUserArgumentResolver;
     this.websocketBrokerProperties = websocketBrokerProperties;
   }
@@ -86,10 +89,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         if (accessor != null && accessor.getCommand() != null) {
           logger.info("Inbound STOMP command: {} destination={}",
                   accessor.getCommand(), accessor.getDestination());
+          logger.info("message being sent: {}", message.getPayload());
         }
         return message;
       }
-    }, authenticationInterceptor, authorizationInterceptor);
+    }, authenticationInterceptor, rateLimitingInterceptor, authorizationInterceptor);
   }
 
   @Override

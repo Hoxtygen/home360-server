@@ -295,6 +295,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String activeSessionToken =
         (String) redisTemplate.opsForValue().get("active_session:" + userEmail);
 
-    return activeSessionToken != null; // If found, user has an active session
+    return activeSessionToken != null;
   }
 }

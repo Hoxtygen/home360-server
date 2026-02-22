@@ -1,6 +1,7 @@
 /* (C)2024-2025 */
 package com.codeplanks.home360.filters;
 
+import com.codeplanks.home360.utils.AppConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.*;
@@ -37,7 +38,7 @@ public class RateLimitingFilter implements Filter {
 
     String path = httpServletRequest.getRequestURI();
 
-    if (path.startsWith("/swagger") || path.startsWith("/v1/api-docs")) {
+    if (path.startsWith("/swagger") || path.startsWith("/v1/api-docs") || path.startsWith(AppConstants.WS_ENDPOINT)) {
       chain.doFilter(request, response);
       return;
     }

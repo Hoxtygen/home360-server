@@ -5,14 +5,21 @@ import com.codeplanks.home360.domain.listing.Listing;
 import com.codeplanks.home360.domain.listingEnquiries.*;
 import com.codeplanks.home360.exception.NotFoundException;
 import com.codeplanks.home360.repository.ListingEnquiryRepository;
+import com.codeplanks.home360.repository.EnquiryMessageRepository;
 import com.codeplanks.home360.utils.AuthenticationUtils;
 import com.mongodb.client.result.UpdateResult;
-import java.time.LocalDateTime;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -34,16 +41,20 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class ListingEnquiryServiceImpl implements ListingEnquiryService {
   private final ListingEnquiryRepository listingEnquiryRepository;
+  private final EnquiryMessageRepository enquiryMessageRepository;
   private final MongoTemplate mongoTemplate;
   private final UserServiceImpl userService;
   private final ListingServiceImpl listingService;
   private final AuthenticationUtils authenticationUtils;
 
+  private static final Logger logger = LoggerFactory.getLogger(ListingEnquiryServiceImpl.class);
+
   @Caching(
-      evict = {
-        @CacheEvict(value = "enquiriesByListingId", key = "#enquiryRequest.listingId"),
-        @CacheEvict(value = "agentListingEnquiries", key = "#enquiryRequest.agentId + '::*'")
-      })
+          evict = {
+                  @CacheEvict(value = "enquiriesByListingId", key = "#enquiryRequest.listingId"),
+                  @CacheEvict(value = "agentListingEnquiries", key = "#enquiryRequest.agentId + " +
+                          "'::*'")
+          })
   @Override
   public ListingEnquiry makeEnquiry(ListingEnquiryDTO enquiryRequest) {
     if (authenticationUtils.isAuthenticated()) {
@@ -53,44 +64,46 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
 
     listingService.findListingById(enquiryRequest.getListingId());
 
-    enquiryRequest.setCreatedAt(LocalDateTime.now());
+    ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+    enquiryRequest.setCreatedAt(now);
     ListingEnquiry newListingEnquiry =
-        ListingEnquiry.builder()
-            .firstName(enquiryRequest.getFirstName())
-            .lastName(enquiryRequest.getLastName())
-            .email(enquiryRequest.getEmail())
-            .phoneNumber(enquiryRequest.getPhoneNumber())
-            .location(enquiryRequest.getLocation())
-            .salutation(enquiryRequest.getSalutation())
-            .message(enquiryRequest.getMessage())
-            .employmentStatus(enquiryRequest.getEmploymentStatus())
-            .pets(enquiryRequest.getPets())
-            .commercialPurpose(enquiryRequest.getCommercialPurpose())
-            .listingId(enquiryRequest.getListingId())
-            .agentId(enquiryRequest.getAgentId())
-            .userId(enquiryRequest.getUserId())
-            .createdAt(LocalDateTime.now())
-            .build();
+            ListingEnquiry.builder()
+                    .firstName(enquiryRequest.getFirstName())
+                    .lastName(enquiryRequest.getLastName())
+                    .email(enquiryRequest.getEmail())
+                    .phoneNumber(enquiryRequest.getPhoneNumber())
+                    .location(enquiryRequest.getLocation())
+                    .salutation(enquiryRequest.getSalutation())
+                    .message(enquiryRequest.getMessage())
+                    .employmentStatus(enquiryRequest.getEmploymentStatus())
+                    .pets(enquiryRequest.getPets())
+                    .commercialPurpose(enquiryRequest.getCommercialPurpose())
+                    .listingId(enquiryRequest.getListingId())
+                    .agentId(enquiryRequest.getAgentId())
+                    .userId(enquiryRequest.getUserId())
+                    .createdAt(now)
+                    .lastMessageAt(now)
+                    .build();
     return listingEnquiryRepository.save(newListingEnquiry);
   }
 
   @Cacheable(
-      value = "agentListingEnquiries",
-      key =
-          "#agentId + '::senderId::' + #senderId + '::page::' + #page + '::size::' + #size")
+          value = "agentListingEnquiries",
+          key =
+                  "#agentId + '::senderId::' + #senderId + '::page::' + #page + '::size::' + #size")
   @Override
   public PaginatedListingEnquiriesResponse getListingEnquiries(
-      int page, int size, Integer senderId, int agentId) {
-    Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "created_at");
+          int page, int size, Integer senderId, int agentId) {
+    Pageable pageable = PageRequest.of(page, size).withSort(Sort.Direction.DESC, "last_message_at");
     Page<ListingEnquiry> agentListingEnquiries =
-        listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable);
+            listingEnquiryRepository.findListingEnquiries(agentId, senderId, pageable);
     return PaginatedListingEnquiriesResponse.<ListingEnquiry>builder()
-        .currentPage(agentListingEnquiries.getNumber() + 1)
-        .totalItems(agentListingEnquiries.getTotalElements())
-        .totalPages(agentListingEnquiries.getTotalPages())
-        .items(agentListingEnquiries.getContent())
-        .hasNext(agentListingEnquiries.hasNext())
-        .build();
+            .currentPage(agentListingEnquiries.getNumber() + 1)
+            .totalItems(agentListingEnquiries.getTotalElements())
+            .totalPages(agentListingEnquiries.getTotalPages())
+            .items(agentListingEnquiries.getContent())
+            .hasNext(agentListingEnquiries.hasNext())
+            .build();
   }
 
   @Cacheable(value = "listingEnquiry", key = "#enquiryMessageId")
@@ -100,11 +113,11 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
       throw new IllegalArgumentException("Enquiry ID cannot be null or empty");
     }
     ListingEnquiry listingEnquiry =
-        listingEnquiryRepository
-            .findById(enquiryMessageId)
-            .orElseThrow(() -> new NotFoundException("Listing enquiry not found"));
+            listingEnquiryRepository
+                    .findById(enquiryMessageId)
+                    .orElseThrow(() -> new NotFoundException("Listing enquiry not found"));
 
-    validateUserAuthorization(listingEnquiry);
+    validateUserAuthorization(listingEnquiry, userService.extractUserId());
     return listingEnquiry;
   }
 
@@ -114,51 +127,9 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     validateEnquiryExists(query);
     ListingEnquiry listingEnquiry = mongoTemplate.findOne(query, ListingEnquiry.class);
     if (listingEnquiry != null) {
-      validateUserAuthorization(listingEnquiry);
+      validateUserAuthorization(listingEnquiry, userService.extractUserId());
     }
     return updateMessageAsRead(query);
-  }
-
-  @Caching(evict = {@CacheEvict(value = "listingEnquiry", key = "#enquiryMessageId")})
-  @Override
-  public ListingEnquiryMessageReply addReplyMessage(
-      String enquiryMessageId, ListingEnquiryMessageReplyDTO reply, int senderId) {
-    if (reply == null) {
-      throw new IllegalArgumentException("Message reply cannot be null or blank");
-    }
-
-    // 1. Create the reply object
-    ListingEnquiryMessageReply newReply =
-        ListingEnquiryMessageReply.builder()
-            .agentId(reply.getAgentId())
-            .enquirerId(reply.getEnquirerId())
-            .senderId(senderId)
-            .content(reply.getContent())
-            .id(UUID.randomUUID().toString())
-            .createdAt(LocalDateTime.now())
-            .build();
-
-    // 2. Create a single, atomic, authorizing query
-    Query query =
-        new Query(
-            Criteria.where("_id")
-                .is(enquiryMessageId)
-                .orOperator(
-                    Criteria.where("agentId").is(senderId), Criteria.where("userId").is(senderId)));
-
-    // 3. Create the update operation
-    Update update = new Update().push("replies", newReply);
-
-    // 4. Execute the update
-    UpdateResult result = mongoTemplate.updateFirst(query, update, ListingEnquiry.class);
-
-    // 5. Check if the update was successful
-    if (result.getMatchedCount() == 0) {
-      // This means either the enquiry doesn't exist OR the user is not authorized
-      throw new AccessDeniedException("Enquiry not found or you are not authorized to reply to it.");
-    }
-
-    return newReply;
   }
 
   @Cacheable(value = "enquiriesByListingId", key = "#listingId")
@@ -183,13 +154,12 @@ public class ListingEnquiryServiceImpl implements ListingEnquiryService {
     }
   }
 
-  private void validateUserAuthorization(ListingEnquiry listingEnquiry) {
-    Integer userId = userService.extractUserId();
+  private void validateUserAuthorization(ListingEnquiry listingEnquiry, Integer userId) {
     boolean isAgent = userId != null && userId.equals(listingEnquiry.getAgentId());
     boolean isInquirer =
-        userId != null
-            && listingEnquiry.getUserId() != null
-            && userId.equals(listingEnquiry.getUserId());
+            userId != null
+                    && listingEnquiry.getUserId() != null
+                    && userId.equals(listingEnquiry.getUserId());
     if (!isAgent && !isInquirer) {
       throw new AccessDeniedException("Forbidden. You're not authorized to access this data");
     }
